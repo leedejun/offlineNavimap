@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1007296236939",
+    "firebase_url": "https://ftmap-62bad.firebaseio.com",
+    "project_id": "ftmap-62bad",
+    "storage_bucket": "ftmap-62bad.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1007296236939:android:e773c376d202ef1e9ab38e",
+        "android_client_info": {
+          "package_name": "com.mapswithme.maps.pro.debug"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1007296236939-uuntd4annq1rojoeq7j3kiu877u8tnro.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNX1QuAVefL9sj2Jtbv9NDo4vljE-C76o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1007296236939-uuntd4annq1rojoeq7j3kiu877u8tnro.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

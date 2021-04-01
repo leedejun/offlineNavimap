@@ -1,0 +1,5 @@
+XSym
+0045
+db328e73551676c486a52733278a6a32
+../../../android/UnitTests/jni/Application.mk
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SchemeUserState</key>
+	<dict>
+		<key>search.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>72</integer>
+		</dict>
+		<key>search.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>48</integer>
+		</dict>
+		<key>search_integration_tests.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>75</integer>
+		</dict>
+		<key>search_integration_tests.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>91</integer>
+		</dict>
+		<key>search_tests.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>73</integer>
+		</dict>
+		<key>search_tests.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>108</integer>
+		</dict>
+		<key>search_tests_support.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>74</integer>
+		</dict>
+		<key>search_tests_support.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>90</integer>
+		</dict>
+	</dict>
+</dict>
+</plist>

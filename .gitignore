@@ -1,0 +1,10 @@
+# Please use android/.gitignore for all Android stuff
+
+.vscode/
+3party/
+tools/
+
+# build
+
+data/
+build/

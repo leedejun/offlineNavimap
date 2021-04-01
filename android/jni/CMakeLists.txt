@@ -1,0 +1,133 @@
+cmake_minimum_required(VERSION 3.8)
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=gold")
+project(mapswithme C CXX)
+
+include_directories(
+  ${OMIM_ROOT}/3party/jansson/src
+  ${OMIM_ROOT}/3party/boost
+  ${OMIM_ROOT}/3party/protobuf/protobuf/src
+  ${OMIM_ROOT}/3party/glm
+  ${OMIM_ROOT}/3party/succinct
+  ${OMIM_ROOT}/3party/agg
+  ${OMIM_ROOT}/3party/icu/common
+  ${OMIM_ROOT}/3party/icu/i18n
+  ${OMIM_ROOT}/3party/stb_image
+  ${OMIM_ROOT}/3party/sdf_image
+#  ${OMIM_ROOT}/3party/Vulkan-Headers/include
+#  ${OMIM_ROOT}/3party/vulkan_wrapper
+  ${OMIM_ROOT}/android/jni
+)
+
+set(
+  SRC
+  # JNI headers
+  ../../private.h
+  com/mapswithme/core/jni_helper.hpp
+  com/mapswithme/core/logging.hpp
+  com/mapswithme/core/ScopedEnv.hpp
+  com/mapswithme/core/ScopedLocalRef.hpp
+  com/mapswithme/maps/Framework.hpp
+  com/mapswithme/maps/FtMap.cpp
+  com/mapswithme/maps/FtMap.hpp
+  com/mapswithme/maps/SearchEngine.hpp
+  com/mapswithme/opengl/android_gl_utils.hpp
+  com/mapswithme/opengl/androidoglcontext.hpp
+  com/mapswithme/opengl/androidoglcontextfactory.hpp
+  com/mapswithme/opengl/gl3stub.h
+  com/mapswithme/platform/GuiThread.hpp
+  com/mapswithme/platform/Platform.hpp
+  com/mapswithme/util/FeatureIdBuilder.hpp
+
+  # JNI sources
+  com/mapswithme/core/jni_helper.cpp
+  com/mapswithme/core/logging.cpp
+  com/mapswithme/maps/Framework.cpp
+  com/mapswithme/maps/LocationHelper.cpp
+#  com/mapswithme/maps/LocationState.cpp
+  com/mapswithme/maps/MapFragment.cpp
+  com/mapswithme/maps/MapManager.cpp
+  com/mapswithme/maps/PrivateVariables.cpp
+  com/mapswithme/maps/routing/RoutingOptions.cpp
+  com/mapswithme/maps/settings/UnitLocale.cpp
+  com/mapswithme/maps/sound/tts.cpp
+  com/mapswithme/maps/TrackRecorder.cpp
+  com/mapswithme/opengl/android_gl_utils.cpp
+  com/mapswithme/opengl/androidoglcontext.cpp
+  com/mapswithme/opengl/androidoglcontextfactory.cpp
+  com/mapswithme/opengl/gl3stub.c
+  com/mapswithme/platform/Language.cpp
+  com/mapswithme/platform/Localization.cpp
+  com/mapswithme/platform/Platform.cpp
+  com/mapswithme/platform/PThreadImpl.cpp
+  com/mapswithme/platform/SecureStorage.cpp
+  com/mapswithme/platform/SocketImpl.cpp
+
+  com/mapswithme/util/Config.cpp
+  com/mapswithme/util/GeoUtils.cpp
+  com/mapswithme/platform/GuiThread.cpp
+  com/mapswithme/platform/HttpThread.cpp
+  com/mapswithme/platform/HttpUserAgent.cpp
+  com/mapswithme/util/HttpBackgroundUploader.cpp
+  com/mapswithme/util/HttpClient.cpp
+  com/mapswithme/util/HttpUploader.cpp
+  com/mapswithme/util/HttpUploaderUtils.cpp
+  com/mapswithme/util/Language.cpp
+  com/mapswithme/util/LoggerFactory.cpp
+  com/mapswithme/util/StringUtils.cpp
+)
+
+omim_add_library(mapswithme SHARED ${SRC})
+
+target_link_libraries(
+  mapswithme
+  # Android libs
+  log
+  android
+  EGL
+  GLESv2
+  atomic
+  z
+  # MapsWithMe libs
+  map
+  ge0
+  tracking
+  routing
+  traffic
+  routing_common
+  transit
+  drape_frontend
+  shaders
+  search
+  storage
+  descriptions
+#  ugc
+  drape
+  kml
+  editor
+  indexer
+  metrics
+  platform
+#  partners_api
+#  web_api
+#  local_ads
+  mwm_diff
+  bsdiff
+  geometry
+  coding
+  base
+  opening_hours
+  pugixml
+  oauthcpp
+  expat
+  freetype
+  minizip
+  jansson
+  protobuf
+#  stats_client
+  succinct
+  stb_image
+  sdf_image
+  icu
+  agg
+#  vulkan_wrapper
+)
