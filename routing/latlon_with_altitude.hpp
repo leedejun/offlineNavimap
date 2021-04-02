@@ -23,6 +23,7 @@ public:
   geometry::Altitude GetAltitude() const { return m_altitude; }
 
   geometry::PointWithAltitude ToPointWithAltitude() const;
+  geometry::PointWithAltitude ToPointWithWGS84() const;
 
 private:
   ms::LatLon m_latlon;

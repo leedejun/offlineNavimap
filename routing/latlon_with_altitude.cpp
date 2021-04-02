@@ -29,4 +29,10 @@ geometry::PointWithAltitude LatLonWithAltitude::ToPointWithAltitude() const
 {
   return geometry::PointWithAltitude(mercator::FromLatLon(m_latlon), m_altitude);
 }
+
+geometry::PointWithAltitude LatLonWithAltitude::ToPointWithWGS84() const
+{
+  return geometry::PointWithAltitude(m2::PointD(m_latlon.m_lon,m_latlon.m_lat), m_altitude);
+}
+
 }  // namespace routing

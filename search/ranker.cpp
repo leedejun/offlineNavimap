@@ -312,12 +312,11 @@ namespace search {
             if (!ft)
                 return ft;
 
-                center = feature::GetCenter(*ft);
-//            m2::PointD m_center;
-//            //116.30959463350172, 43.69950312152136
-//            m_center.x = 116.30959463350172;
-//            m_center.y = 43.69950312152136;
-//            center = m_center;
+            center = feature::GetCenter(*ft);
+            //mokatuo2dadizuobiao
+            ms::LatLon p =  mercator::ToLatLon(center);
+            center = m2::PointD(p.m_lon,p.m_lat);
+
             m_ranker.GetBestMatchName(*ft, name);
 
             // Country (region) name is a file name if feature isn't from
