@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-cls Bookmark : public UserMark
+class Bookmark : public UserMark
 {
   using Base = UserMark;
 public:
