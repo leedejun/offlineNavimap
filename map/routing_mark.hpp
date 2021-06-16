@@ -1,6 +1,6 @@
 #pragma once
 
-//#include "map/bookmark_manager.hpp"
+#include "map/bookmark_manager.hpp"
 #include "map/user_mark.hpp"
 #include <functional>
 #include <string>
@@ -81,8 +81,8 @@ class RoutePointsLayout
 public:
   static size_t const kMaxIntermediatePointsCount;
 
-//  RoutePointsLayout(BookmarkManager & manager);
-    RoutePointsLayout();
+  RoutePointsLayout(BookmarkManager & manager);
+//    RoutePointsLayout();
 
   void AddRoutePoint(RouteMarkData && data);
   RouteMarkPoint const * GetRoutePoint(RouteMarkType type, size_t intermediateIndex = 0) const;
@@ -102,8 +102,8 @@ private:
   using TRoutePointCallback = std::function<void (RouteMarkPoint * mark)>;
   void ForEachIntermediatePoint(TRoutePointCallback const & fn);
 
-//  BookmarkManager & m_manager;
-//  BookmarkManager::EditSession m_editSession;
+  BookmarkManager & m_manager;
+  BookmarkManager::EditSession m_editSession;
 };
 
 class TransitMark : public UserMark

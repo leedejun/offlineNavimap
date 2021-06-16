@@ -1,6 +1,6 @@
 #pragma once
 
-//#include "map/bookmark_manager.hpp"
+#include "map/bookmark_manager.hpp"
 #include "platform/safe_callback.hpp"
 #include "map/extrapolation/extrapolator.hpp"
 #include "map/routing_mark.hpp"
@@ -127,7 +127,7 @@ public:
 
   RoutingManager(Callbacks && callbacks, Delegate & delegate);
 
-//  void SetBookmarkManager(BookmarkManager * bmManager);
+  void SetBookmarkManager(BookmarkManager * bmManager);
   void SetTransitManager(TransitReadManager * transitManager);
 
   routing::RoutingSession const & RoutingSession() const { return m_routingSession; }
@@ -376,7 +376,7 @@ private:
   tracking::Reporter m_trackingReporter;
   tracking::ArchivalReporter m_trackingReporterArchive;
 
-//  BookmarkManager * m_bmManager = nullptr;
+  BookmarkManager * m_bmManager = nullptr;
   extrapolation::Extrapolator m_extrapolator;
 
   std::vector<dp::DrapeID> m_drapeSubroutes;

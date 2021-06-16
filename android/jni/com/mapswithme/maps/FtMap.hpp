@@ -1,6 +1,7 @@
 #include "com/mapswithme/core/jni_helper.hpp"
 #include "com/mapswithme/platform/Platform.hpp"
 
+
 class CommandHelper{
     jclass      _commandClass;
     JNIEnv*     _env;

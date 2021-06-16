@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -734,6 +735,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
             @Override
             public void Callback(JSONObject dataStr) {
                 callback.op(dataStr);
+
             }
         });
 //        mapFragment
@@ -783,6 +785,21 @@ public class FTMap extends FMap implements View.OnTouchListener {
         } catch (Exception e) {
 
         }
+    }
+
+    @Override
+    public void removeRoute() {
+        FTMap.cmd("removeRoute").run();
+    }
+
+    @Override
+    public void followRoute() {
+        FTMap.cmd("followRoute").run();
+    }
+
+    @Override
+    public void CloseRouting() {
+        FTMap.cmd("CloseRouting").run();
     }
 
 

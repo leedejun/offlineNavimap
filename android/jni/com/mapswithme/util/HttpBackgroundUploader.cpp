@@ -23,12 +23,11 @@ void HttpUploaderBackground::Upload() const
 
   CHECK(env, ());
 
-  HttpPayload const payload = GetPayload();
-  jobject uploader = platform::MakeHttpUploader(env, payload, g_httpBackgroundUploaderClazz);
-  jni::TScopedLocalRef uploaderRef(env, uploader);
-
-  static jmethodID const uploadId = jni::GetMethodID(env, uploaderRef.get(), "upload", "()V");
-  env->CallVoidMethod(uploaderRef.get(), uploadId);
-  jni::HandleJavaException(env);
+//  HttpPayload const payload = GetPayload();
+//  jobject uploader = platform::MakeHttpUploader(env, payload, g_httpBackgroundUploaderClazz);
+//  jni::TScopedLocalRef uploaderRef(env, uploader);
+//  static jmethodID const uploadId = jni::GetMethodID(env, uploaderRef.get(), "upload", "()V");
+//  env->CallVoidMethod(uploaderRef.get(), uploadId);
+//  jni::HandleJavaException(env);
 }
 }  // namespace platform
