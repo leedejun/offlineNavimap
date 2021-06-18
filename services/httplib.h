@@ -599,11 +599,15 @@ public:
   using Expect100ContinueHandler =
       std::function<int(const Request &, Response &)>;
 
+  using HandlerForCheckArgs = std::function<bool(Request &req, Response &res)>;
+  
   Server();
 
   virtual ~Server();
 
   virtual bool is_valid() const;
+
+  Server &checkArgs(const char *pattern, HandlerForCheckArgs handler);
 
   Server &Get(const char *pattern, Handler handler);
   Server &Post(const char *pattern, Handler handler);
@@ -671,6 +675,8 @@ private:
   using HandlersForContentReader =
       std::vector<std::pair<std::regex, HandlerWithContentReader>>;
 
+  using HandlersForCheckArgs = std::vector<std::pair<std::regex, HandlerForCheckArgs>>;
+
   socket_t create_server_socket(const char *host, int port, int socket_flags,
                                 SocketOptions socket_options) const;
   int bind_internal(const char *host, int port, int socket_flags);
@@ -679,6 +685,9 @@ private:
   bool routing(Request &req, Response &res, Stream &strm);
   bool handle_file_request(Request &req, Response &res, bool head = false);
   bool dispatch_request(Request &req, Response &res, const Handlers &handlers);
+
+  bool checkArgs_request(Request &req, Response &res);
+
   bool
   dispatch_request_for_content_reader(Request &req, Response &res,
                                       ContentReader content_reader,
@@ -721,6 +730,7 @@ private:
   std::map<std::string, std::string> file_extension_and_mimetype_map_;
   Handler file_request_handler_;
   Handlers get_handlers_;
+  HandlersForCheckArgs   handlersForCheckArgs_;
   Handlers post_handlers_;
   HandlersForContentReader post_handlers_for_content_reader_;
   Handlers put_handlers_;
@@ -3851,6 +3861,12 @@ inline Server::Server()
 
 inline Server::~Server() {}
 
+inline Server &Server::checkArgs(const char *pattern, HandlerForCheckArgs handler) {
+  handlersForCheckArgs_.push_back(
+      std::make_pair(std::regex(pattern), std::move(handler)));
+  return *this;
+}
+
 inline Server &Server::Get(const char *pattern, Handler handler) {
   get_handlers_.push_back(
       std::make_pair(std::regex(pattern), std::move(handler)));
@@ -4454,7 +4470,8 @@ inline bool Server::routing(Request &req, Response &res, Stream &strm) {
 
   // Regular handler
   if (req.method == "GET" || req.method == "HEAD") {
-    return dispatch_request(req, res, get_handlers_);
+    return checkArgs_request(req, res) && dispatch_request(req, res, get_handlers_);
+    //return dispatch_request(req, res, get_handlers_);
   } else if (req.method == "POST") {
     return dispatch_request(req, res, post_handlers_);
   } else if (req.method == "PUT") {
@@ -4469,6 +4486,31 @@ inline bool Server::routing(Request &req, Response &res, Stream &strm) {
 
   res.status = 400;
   return false;
+}
+
+inline bool Server::checkArgs_request(Request &req, Response &res) {
+  try {
+    for (const auto &x : handlersForCheckArgs_) {
+      const auto &pattern = x.first;
+      const auto &handler = x.second;
+
+      if (std::regex_match(req.path, req.matches, pattern)) {
+        if(handler(req, res)){
+          return true;
+        } else {
+          res.status = 400;
+          return false;
+        }
+      }
+    }
+  } catch (const std::exception &ex) {
+    res.status = 500;
+    res.set_header("EXCEPTION_WHAT", ex.what());
+  } catch (...) {
+    res.status = 500;
+    res.set_header("EXCEPTION_WHAT", "UNKNOWN");
+  }
+  return true;
 }
 
 inline bool Server::dispatch_request(Request &req, Response &res,
