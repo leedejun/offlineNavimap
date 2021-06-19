@@ -1,6 +1,6 @@
 #include "map/track.hpp"
 
-#include "map/bookmark_helpers.hpp"
+//#include "map/bookmark_helpers.hpp"
 #include "map/user_mark_id_storage.hpp"
 
 #include "geometry/mercator.hpp"
@@ -115,7 +115,8 @@ bool Track::HasAltitudes() const
 
 std::string Track::GetName() const
 {
-  return GetPreferredBookmarkStr(m_data.m_name);
+//  return GetPreferredBookmarkStr(m_data.m_name);
+    return "";
 }
 
 m2::RectD Track::GetLimitRect() const

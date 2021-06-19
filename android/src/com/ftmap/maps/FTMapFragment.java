@@ -28,6 +28,7 @@ import com.ftmap.util.log.Logger;
 import com.ftmap.util.log.LoggerFactory;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class FTMapFragment extends Fragment
@@ -66,13 +67,65 @@ public class FTMapFragment extends Fragment
     private static final int INVALID_TOUCH_ID = -1;
     private static FMap.ClickListenerCallback callback;
 
-    private static long firstClickTime;
-    private static long secondClickTime;
-    private static long stillTime;
-    private static float firstClickX;
-    private static float firstClickY;
-    private static boolean isUp=false;
-    private static boolean isDoubleClick=false;
+    //    private static long firstClickTime;
+//    private static long secondClickTime;
+//    private static long stillTime;
+//    private static float firstClickX;
+//    private static float firstClickY;
+//    private static boolean isUp = false;
+//    private static boolean isDoubleClick = false;
+    private int mClickcount;// 点击次数
+    private int mDownX;
+    private int mDownY;
+    private int mMoveX;
+    private int mMoveY;
+    private int mUpX;
+    private int mUpY;
+    private long mLastDownTime;
+    private long mLastUpTime;
+    private long mFirstClick;
+    private long mSecondClick;
+    private boolean isDoubleClick = false;
+    private int MAX_LONG_PRESS_TIME = 350;// 长按/双击最长等待时间
+    private int MAX_SINGLE_CLICK_TIME = 50;// 单击最长等待时间
+    private int MAX_MOVE_FOR_CLICK = 50;// 最长改变距离,超过则算移动
+
+    private Handler mBaseHandler = new Handler();
+
+    private Runnable mLongPressTask = new Runnable() {
+        @Override
+        public void run() {
+            //处理长按
+
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("clickTypr", "longClick");
+                jsonObject.put("screenX", mDownX);
+                jsonObject.put("screenY", mDownY);
+                MapClickListener.Callback(jsonObject);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            mClickcount = 0;
+        }
+    };
+
+    private Runnable mSingleClickTask = new Runnable() {
+        @Override
+        public void run() {
+            // 处理单击
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("clickTypr", "Click");
+                jsonObject.put("screenX", mUpX);
+                jsonObject.put("screenY", mUpY);
+                MapClickListener.Callback(jsonObject);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            mClickcount = 0;
+        }
+    };
 
     private int mHeight;
     private int mWidth;
@@ -276,6 +329,86 @@ public class FTMapFragment extends Fragment
                 action = NATIVE_ACTION_CANCEL;
                 break;
         }
+        if (action == NATIVE_ACTION_DOWN) {
+
+            mLastDownTime = System.currentTimeMillis();
+            mDownX = (int) event.getX();
+            mDownY = (int) event.getY();
+            mClickcount++;
+            Log.e("mouse", "DOWN-->mClickcount=" + mClickcount + "; isDoubleClick=" + isDoubleClick);
+            if (mSingleClickTask != null) {
+                mBaseHandler.removeCallbacks(mSingleClickTask);
+            }
+            if (!isDoubleClick) mBaseHandler.postDelayed(mLongPressTask, MAX_LONG_PRESS_TIME);
+            if (1 == mClickcount) {
+                mFirstClick = System.currentTimeMillis();
+            } else if (mClickcount == 2) {// 双击
+                mSecondClick = System.currentTimeMillis();
+                if (mSecondClick - mFirstClick <= MAX_LONG_PRESS_TIME) {
+                    //处理双击
+                    JSONObject jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("clickTypr", "doubleClick");
+                        jsonObject.put("screenX", mDownX);
+                        jsonObject.put("screenY", mDownX);
+                        MapClickListener.Callback(jsonObject);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    isDoubleClick = true;
+                    mClickcount = 0;
+                    mFirstClick = 0;
+                    mSecondClick = 0;
+                    mBaseHandler.removeCallbacks(mSingleClickTask);
+                    mBaseHandler.removeCallbacks(mLongPressTask);
+                    Log.e("mouse", "double double double....");
+                }
+            }
+
+
+        } else if (action == NATIVE_ACTION_MOVE) {
+            mMoveX = (int) event.getX();
+            mMoveY = (int) event.getY();
+            int absMx = Math.abs(mMoveX - mDownX);
+            int absMy = Math.abs(mMoveY - mDownY);
+            Log.e("mouse", "MOVE-->absMx=" + absMx + "; absMy=" + absMy);
+            if (absMx > MAX_MOVE_FOR_CLICK && absMy > MAX_MOVE_FOR_CLICK) {
+                mBaseHandler.removeCallbacks(mLongPressTask);
+                mBaseHandler.removeCallbacks(mSingleClickTask);
+
+                isDoubleClick = false;
+                mClickcount = 0;//移动了
+            }
+            if (absMx >= 5 && absMy >= 5) {
+                //处理移动
+
+                isDoubleClick = false;
+                mClickcount = 0;//移动了
+            }
+
+        } else if (action == NATIVE_ACTION_UP) {
+            mLastUpTime = System.currentTimeMillis();
+            mUpX = (int) event.getX();
+            mUpY = (int) event.getY();
+            int mx = Math.abs(mUpX - mDownX);
+            int my = Math.abs(mUpY - mDownY);
+            Log.e("mouse", "UP-->mx=" + mx + "; my=" + my);
+            if (mx <= MAX_MOVE_FOR_CLICK && my <= MAX_MOVE_FOR_CLICK) {
+                if ((mLastUpTime - mLastDownTime) <= MAX_LONG_PRESS_TIME) {
+                    mBaseHandler.removeCallbacks(mLongPressTask);
+                    if (!isDoubleClick)
+                        mBaseHandler.postDelayed(mSingleClickTask, MAX_SINGLE_CLICK_TIME);
+                } else {
+                    //超出了双击间隔时间
+                    mClickcount = 0;
+                }
+            } else {
+                //移动了
+                mClickcount = 0;
+            }
+            if (isDoubleClick) isDoubleClick = false;
+        }
+
 
         switch (count) {
             case 1:
@@ -361,43 +494,72 @@ public class FTMapFragment extends Fragment
                 .set("y2", y2)
                 .set("maskedPointer", maskedPointer)
                 .run();
-        if (actionType == 2) {
-            isUp=false;
-            if(firstClickTime==0&secondClickTime==0){//第一次点击
-                firstClickTime=System.currentTimeMillis();
+      /*  if (actionType == 2) {
+            isUp = false;
+            if (firstClickTime == 0 & secondClickTime == 0) {//第一次点击
+                firstClickTime = System.currentTimeMillis();
                 firstClickX = x1;
                 firstClickY = y1;
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        if(!isUp){
-                            Log.d("OnMapClickListener","长按");
-                            firstClickTime=0;
-                            secondClickTime=0;
-                            isDoubleClick=false;
-                        }else {
-                            if(!isDoubleClick){
-                                Log.d("OnMapClickListener","点击");
+                        if (!isUp) {
+                            Log.d("OnMapClickListener", "长按");
+                            firstClickTime = 0;
+                            secondClickTime = 0;
+                            isDoubleClick = false;
+                            JSONObject jsonObject = new JSONObject();
+                            try {
+                                jsonObject.put("clickTypr", "longClick");
+                                jsonObject.put("screenX", x1);
+                                jsonObject.put("screenY", y1);
+                                MapClickListener.Callback(jsonObject);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
-                            isDoubleClick=false;
-                            firstClickTime=0;
-                            secondClickTime=0;
+
+                        } else {
+                            if (!isDoubleClick) {
+                                Log.d("OnMapClickListener", "点击");
+                                JSONObject jsonObject = new JSONObject();
+                                try {
+                                    jsonObject.put("clickTypr", "Click");
+                                    jsonObject.put("screenX", x1);
+                                    jsonObject.put("screenY", y1);
+                                    MapClickListener.Callback(jsonObject);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            isDoubleClick = false;
+                            firstClickTime = 0;
+                            secondClickTime = 0;
                         }
                     }
                 }, 300);
 
-            }else {
-                secondClickTime=System.currentTimeMillis();
-                stillTime =secondClickTime-firstClickTime;
-                if ( stillTime < 300) {//两次点击小于0.3秒
-                    if (firstClickX+5>x1||firstClickX-5>x1){
-                    Log.d("OnMapClickListener","双击");
-                    }else{
-                        Log.d("OnMapClickListener","双点");
+            } else {
+                secondClickTime = System.currentTimeMillis();
+                stillTime = secondClickTime - firstClickTime;
+                if (stillTime < 300) {//两次点击小于0.3秒
+
+                    JSONObject jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("clickTypr", "doubleClick");
+                        jsonObject.put("screenX", x1);
+                        jsonObject.put("screenY", y1);
+                        MapClickListener.Callback(jsonObject);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                    isDoubleClick=true;
-                    firstClickTime=0;
-                    secondClickTime=0;
+//                    if (firstClickX+5>x1||firstClickX-5>x1){
+//                    Log.d("OnMapClickListener","双击");
+//                    }else{
+//                        Log.d("OnMapClickListener","双点");
+//                    }
+                    isDoubleClick = true;
+                    firstClickTime = 0;
+                    secondClickTime = 0;
                 }
             }
 
@@ -408,10 +570,10 @@ public class FTMapFragment extends Fragment
 //                    Log.d("PtoG", s1);
 //                }
 //            });
-        }else if (actionType==1){
-            isUp=true;
+        } else if (actionType == 1) {
+            isUp = true;
         }
-
+*/
         Log.d("nativeOnTouch", "actionType=" + actionType + "\nid1=" + id1 + "\nx1=" + x1 + "\ny1=" + y1 + "\nid2=" + id2 + "\nx2=" + x2 + "\ny2=" + y2);
     }
 

@@ -334,10 +334,10 @@ namespace search {
                              search::RankingInfo &info) {
             auto const &preInfo = res.GetInfo();
 
-//            auto const &pivot = m_ranker.m_params.m_accuratePivotCenter;
+            auto const &pivot = m_ranker.m_params.m_accuratePivotCenter;
             //            116.39126521640469  43.59062286906408  天安门
 
-            auto const &pivot = m2::PointD(116.39126521640469, 43.59062286906408);
+//            auto const &pivot = m2::PointD(116.39126521640469, 43.59062286906408);
             info.m_distanceToPivot = mercator::DistanceOnEarth(center, pivot);
             info.m_rank = preInfo.m_rank;
             info.m_popularity = preInfo.m_popularity;

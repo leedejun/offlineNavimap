@@ -536,6 +536,23 @@ public abstract class FMap {
 
     public abstract void centerPoints(List<Point> points);
 
+
+    /**
+     *删除导航
+     */
+
+    public abstract void removeRoute();
+    /**
+     *开始导航，视角跟随
+     */
+
+    public abstract void followRoute();
+    /**
+     *结束导航
+     */
+
+    public abstract void CloseRouting();
+
     /**
      * 路径规划
      *
@@ -551,6 +568,8 @@ public abstract class FMap {
      * @param style
      */
     public abstract void setMapStyle(String style);
+
+
 
 //    public abstract
 }

@@ -455,6 +455,7 @@ Framework::Framework(FrameworkParams const & params)
 
 //  auto const catalogHeadersProvider = make_shared<CatalogHeadersProvider>(*this, m_storage);
 
+  m_bmManager = make_unique<BookmarkManager>();
 //  m_bmManager = make_unique<BookmarkManager>(m_user, BookmarkManager::Callbacks(
 //      [this]() -> StringsBundle const & { return m_stringsBundle; },
 //      [this]() -> SearchAPI & { return GetSearchAPI(); },
@@ -469,7 +470,7 @@ Framework::Framework(FrameworkParams const & params)
 
 //  catalogHeadersProvider->SetBookmarkCatalog(&m_bmManager->GetCatalog());
 //  m_parsedMapApi.SetBookmarkManager(m_bmManager.get());
-//  m_routingManager.SetBookmarkManager(m_bmManager.get());
+  m_routingManager.SetBookmarkManager(m_bmManager.get());
 ////  m_guidesManager.SetBookmarkManager(m_bmManager.get());
 //  m_searchMarks.SetBookmarkManager(m_bmManager.get());
 //

@@ -304,6 +304,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
     if (cmdName == "initPlatform") {
         jobject instance = cmd.getObj(msg, "thisInstance");
         jstring apkPath = cmd.getNativeStr(msg, "apkPath");
+
         jstring storagePath = cmd.getNativeStr(msg, "storagePath");
         jstring filesPath = cmd.getNativeStr(msg, "filesPath");
         jstring tempPath = cmd.getNativeStr(msg, "tempPath");
@@ -522,14 +523,18 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         auto tmpMsg = env->NewGlobalRef(msg);
         std::double_t mercatorX = cmd.getDouble(msg, "mercatorX");
         std::double_t mercatorY = cmd.getDouble(msg, "mercatorY");
-        auto const featureID = g_framework->NativeFramework()->GetFeatureAtPoint(m2::PointD(mercatorX, mercatorY));
-        osm::MapObject mapObject = g_framework->NativeFramework()->GetMapObjectByID(featureID);
         auto dataJson = json.createJSONObject();
+        json.setDouble(dataJson, "mercatorX", mercatorX);
+        json.setDouble(dataJson, "mercatorY", mercatorY);
+        auto const featureID = g_framework->NativeFramework()->GetFeatureAtPoint(
+                m2::PointD(mercatorX, mercatorY));
+        if (featureID.IsValid()) {
+            osm::MapObject mapObject = g_framework->NativeFramework()->GetMapObjectByID(featureID);
+            json.setString(dataJson, "poiName", mapObject.GetDefaultName());
+        } else {
 
-
-
-
-        json.setString(dataJson, "poiName",mapObject.GetDefaultName());
+            json.setString(dataJson, "poiName", "未知位置");
+        }
         cmd.asyncCall(tmpMsg, dataJson);
     } else if (cmdName == "ClickListener") {
         auto touchListener = [](df::TapInfo const &tapInfo) {
@@ -539,9 +544,9 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
             auto dataJson = json.createJSONObject();
             ms::LatLon latLon = mercator::ToLatLon(mercator);
             ms::LatLon latLon1 = mercator::ToLatLon(mercator);
-            json.setDouble(dataJson, "mercatorX",mercator.x);
+            json.setDouble(dataJson, "mercatorX", mercator.x);
 
-            json.setDouble(dataJson, "mercatorY",mercator.y);
+            json.setDouble(dataJson, "mercatorY", mercator.y);
 //            cmd.asyncCall(tmpMsg, dataJson);
         };
 
@@ -604,16 +609,39 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
     } else if (cmdName == "route") {
         jobject array = cmd.getObj(msg, "points");
         std::string type = cmd.getStr(msg, "type");
-
         int length = json.length(array);
         std::vector<m2::PointD> points;
         for (int i = 0; i < length; i++) {
             jobject o = json.getJSONObject(array, i);
             points.push_back(m2::PointD(json.getDouble(o, "x"), json.getDouble(o, "y")));
+            RouteMarkData data;
+            data.m_title = "40.040045, 116.35874";
+            data.m_subTitle = "";
+            if(i==0){
+                data.m_pointType = static_cast<RouteMarkType>(0);
+            }else if(i==length-1){
+                data.m_pointType = static_cast<RouteMarkType>(2);
+            }else{
+                data.m_pointType = static_cast<RouteMarkType>(1);
+            }
+            data.m_intermediateIndex = static_cast<size_t>(0);
+           if( json.getBool(o,"isMyPosition")){
+               data.m_isMyPosition = static_cast<bool>(true);
+           }else{
+               data.m_isMyPosition = static_cast<bool>(false);
+           }
+            data.m_position = m2::PointD(json.getDouble(o, "x"), json.getDouble(o, "y"));
+//            RoutingManager routingManager = g_framework->NativeFramework()->GetRoutingManager();
+            g_framework->NativeFramework()->GetRoutingManager().AddRoutePoint(std::move(data));
         }
-        auto &routingSession = g_framework->NativeFramework()->GetRoutingManager().RoutingSession();
+        g_framework->NativeFramework()->GetRoutingManager().BuildRoute();
         auto result = env->NewGlobalRef(json.createJSONObject());
         auto tmpMsg = env->NewGlobalRef(msg);
+//        json.setObject(result, "result", "success");
+        cmd.asyncCall(tmpMsg, result);
+      auto &routingSession = g_framework->NativeFramework()->GetRoutingManager().RoutingSession();
+//        auto result = env->NewGlobalRef(json.createJSONObject());
+//        auto tmpMsg = env->NewGlobalRef(msg);
         auto onReady = [&, result, tmpMsg](routing::Route const &route,
                                            routing::RouterResultCode code) {
             if (code == routing::RouterResultCode::NoError) {
@@ -639,8 +667,14 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         auto onRmRode = [&](routing::RouterResultCode code) {
 
         };
-        routingSession.BuildRoute2(routing::Checkpoints(move(points)), onReady, onNeedMap,
-                                   onRmRode);
+//        routingSession.BuildRoute2(routing::Checkpoints(move(points)), onReady, onNeedMap,
+//                                   onRmRode);
+    } else if (cmdName == "followRoute") {
+        g_framework->NativeFramework()->GetRoutingManager().FollowRoute();
+    } else if (cmdName == "removeRoute") {
+        g_framework->NativeFramework()->GetRoutingManager().RemoveRoute(true);
+    } else if (cmdName == "CloseRouting") {
+        g_framework->NativeFramework()->GetRoutingManager().CloseRouting(false);
     } else if (cmdName == "addDrawItem") {
         std::string type = cmd.getStr(msg, "type");
         std::string id = cmd.getStr(msg, "id");
@@ -667,6 +701,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
             double x = cmd.getDouble(msg, "x");
             double y = cmd.getDouble(msg, "y");
             auto mark = userMarks.CreateUserMark<MyUserMark>(m2::PointD(x, y));
+//            mark.
             long id = mark->GetId();
             cmd.set(msg, "result", id);
         }
@@ -692,3 +727,4 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
 
 
 } // extern "C"
+           

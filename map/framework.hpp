@@ -226,7 +226,7 @@ protected:
   location::TMyPositionModeChanged m_myPositionListener;
   df::DrapeEngine::UserPositionPendingTimeoutHandler m_myPositionPendingTimeoutListener;
 
-//  std::unique_ptr<BookmarkManager> m_bmManager;
+  std::unique_ptr<BookmarkManager> m_bmManager;
 
 //  SearchMarks m_searchMarks;
 

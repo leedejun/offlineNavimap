@@ -1,24 +1,27 @@
 package com.ftmap.app;
 
-import android.graphics.Color;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.ftmap.maps.BuildConfig;
 import com.ftmap.maps.FMap;
-import com.ftmap.maps.FTMap;
 import com.ftmap.maps.R;
+import com.ftmap.maps.location.LocationHelper;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class MapTestActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = MapTestActivity.class.getSimpleName();
@@ -44,12 +47,18 @@ public class MapTestActivity extends AppCompatActivity implements View.OnClickLi
         findViewById(R.id.btnStyleClear).setOnClickListener(this);
         findViewById(R.id.btnStyleDark).setOnClickListener(this);
         findViewById(R.id.btSetupWidget).setOnClickListener(this);
+        findViewById(R.id.btFollowRoute).setOnClickListener(this);
         etSearchPoi = (EditText) findViewById(R.id.etSearchPoi);
+
+        String  a = "提交11";
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.btFollowRoute:
+                FMap.INSTANCE.followRoute();
+                break;
             case R.id.btnSearchPoi:
                 String s = etSearchPoi.getText().toString();
                 FMap.INSTANCE.search(s,/*1d,2d,3d,*/ (JSONArray results) -> {
@@ -63,9 +72,29 @@ public class MapTestActivity extends AppCompatActivity implements View.OnClickLi
                 FMap.INSTANCE.OnMapClickListener((JSONObject results) -> {
                     String s1 = results.toString();
                     Log.d("OnMapClickListener", s1);
-//                FMap.INSTANCE.PtoG(345,887,(JSONObject results) -> {
+
+                    try {
+                        if ("longClick".equals(results.get("clickTypr").toString())) {
+                            int screenX = results.getInt("screenX");
+                            int screenY = results.getInt("screenY");
+                            FMap.INSTANCE.PtoG(screenX, screenY, (JSONObject results1) -> {
+                                try {
+                                    double mercatorX = results1.getDouble("mercatorX");
+                                    double mercatorY = results1.getDouble("mercatorY");
+                                    FMap.INSTANCE.GetMapObject(mercatorX, mercatorY, (JSONObject results2) -> {
+                                        Toast.makeText(MapTestActivity.this, results2.toString(), Toast.LENGTH_LONG).show();
+
+                                    });
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            });
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 //                    String s1 = results.toString();
-//                    Log.d("PtoG", s1);0
+//                    Log.d("PtoG", s1);
 //          results.put("");
                 });
 //
@@ -130,40 +159,101 @@ public class MapTestActivity extends AppCompatActivity implements View.OnClickLi
 
                 break;
             case R.id.btnRoute:
+                String json ="[{\"index\":\"0\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450779\",\"lat\":\"27.270722\",\"length\":\"0\"},{\"index\":\"1\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450779\",\"lat\":\"27.270722\",\"length\":\"0.000906538\"},{\"index\":\"2\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450558\",\"lat\":\"27.271601\",\"length\":\"7.97234e-05\"},{\"index\":\"3\",\"m_street\":\"无名路\",\"turnString\":\"TurnRight\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450636\",\"lat\":\"27.271616\",\"length\":\"0.0023955\"},{\"index\":\"4\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.452862\",\"lat\":\"27.272501\",\"length\":\"0.000980554\"},{\"index\":\"5\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.452785\",\"lat\":\"27.271523\",\"length\":\"0.000727163\"},{\"index\":\"6\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.452779\",\"lat\":\"27.270796\",\"length\":\"0.00141439\"},{\"index\":\"7\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.452656\",\"lat\":\"27.269387\",\"length\":\"0.00559783\"},{\"index\":\"8\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.452227\",\"lat\":\"27.263806\",\"length\":\"0.00564217\"},{\"index\":\"9\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.451752\",\"lat\":\"27.258184\",\"length\":\"0.000346771\"},{\"index\":\"10\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.451725\",\"lat\":\"27.257838\",\"length\":\"0.00596223\"},{\"index\":\"11\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.451234\",\"lat\":\"27.251896\",\"length\":\"0.00275031\"},{\"index\":\"12\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450923\",\"lat\":\"27.249163\",\"length\":\"0.000517078\"},{\"index\":\"13\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450878\",\"lat\":\"27.248648\",\"length\":\"0.000167457\"},{\"index\":\"14\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450864\",\"lat\":\"27.248481\",\"length\":\"0.000546488\"},{\"index\":\"15\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450843\",\"lat\":\"27.247935\",\"length\":\"0.000999846\"},{\"index\":\"16\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450805\",\"lat\":\"27.246936\",\"length\":\"0.000644647\"},{\"index\":\"17\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450773\",\"lat\":\"27.246292\",\"length\":\"0.000319549\"},{\"index\":\"18\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450770\",\"lat\":\"27.245973\",\"length\":\"0.000941848\"},{\"index\":\"19\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450676\",\"lat\":\"27.245036\",\"length\":\"0.00523041\"},{\"index\":\"20\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450279\",\"lat\":\"27.239820\",\"length\":\"0.000819395\"},{\"index\":\"21\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450231\",\"lat\":\"27.239002\",\"length\":\"0.000497809\"},{\"index\":\"22\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450151\",\"lat\":\"27.238511\",\"length\":\"0.000341287\"},{\"index\":\"23\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450137\",\"lat\":\"27.238170\",\"length\":\"9.09783e-05\"},{\"index\":\"24\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450129\",\"lat\":\"27.238079\",\"length\":\"0.00347386\"},{\"index\":\"25\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.449823\",\"lat\":\"27.234619\",\"length\":\"3.82519e-05\"},{\"index\":\"26\",\"m_street\":\"西湖路\",\"turnString\":\"GoStraight\",\"targetName\":\"西湖路\",\"sourceName\":\"西湖路\",\"lon\":\"111.449821\",\"lat\":\"27.234581\",\"length\":\"0.000337558\"},{\"index\":\"27\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.449791\",\"lat\":\"27.234245\",\"length\":\"0.000153008\"},{\"index\":\"28\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.449781\",\"lat\":\"27.234092\",\"length\":\"0.000511377\"},{\"index\":\"29\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.449748\",\"lat\":\"27.233582\",\"length\":\"0.0041423\"},{\"index\":\"30\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.449472\",\"lat\":\"27.229449\",\"length\":\"0.00344921\"},{\"index\":\"31\",\"m_street\":\"敏州西路\",\"turnString\":\"TurnRight\",\"targetName\":\"敏州西路\",\"sourceName\":\"西湖路\",\"lon\":\"111.449282\",\"lat\":\"27.226005\",\"length\":\"0.00207327\"},{\"index\":\"32\",\"m_street\":\"马蹄塘路\",\"turnString\":\"UTurnLeft\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.449102\",\"lat\":\"27.223939\",\"length\":\"0.0044745\"},{\"index\":\"33\",\"m_street\":\"敏州西路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.444628\",\"lat\":\"27.224011\",\"length\":\"0.000107362\"},{\"index\":\"34\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.444625\",\"lat\":\"27.223903\",\"length\":\"0.00342812\"},{\"index\":\"35\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.448053\",\"lat\":\"27.223838\",\"length\":\"0.000837974\"},{\"index\":\"36\",\"m_street\":\"无名路\",\"turnString\":\"ReachedYourDestination\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.448032\",\"lat\":\"27.223000\",\"length\":\"0\"}]";
+
+                StringBuilder stringBuilder3 = new StringBuilder();
+                try {
+                    AssetManager assetManager = MapTestActivity.this.getAssets();
+                    BufferedReader bf = new BufferedReader(new InputStreamReader(
+                            assetManager.open("routionData.json")));
+                    String line;
+                    while ((line = bf.readLine()) != null) {
+                        stringBuilder3.append(line);
+                    }
+
+                    JSONArray jsonArray = new JSONArray(stringBuilder3.toString());
+                    StringBuffer stringBuffer = new StringBuffer();
+                    StringBuffer stringBuffer2= new StringBuffer();
+                    for(int i=0 ; i < jsonArray.length() ;i++){
+                        JSONObject o = (JSONObject) jsonArray.get(i);
+                        String lon = o.getString("lon");
+                        String lat = o.getString("lat");
+                        String id = o.getString("index");
+                        stringBuffer.append("<node id='");
+                        stringBuffer.append(id);
+                        stringBuffer.append("' lat='");
+                        stringBuffer.append(lat);
+                        stringBuffer.append("' lon='");
+                        stringBuffer.append(lon);
+                        stringBuffer.append("' />");
+                        stringBuffer.append("\n");
+
+                        stringBuffer2.append("<nd ref='");
+                        stringBuffer2.append(id);
+                        stringBuffer2.append("' />");
+                        stringBuffer2.append("\n");
+                    }
+                    String s1 = stringBuffer.toString();
+                    String s3 = stringBuffer2.toString();
+                    String s2 = stringBuffer.toString();
+                } catch (IOException | JSONException e) {
+                    e.printStackTrace();
+                }
+                FMap.INSTANCE.removeRoute();
+                FMap.INSTANCE.CloseRouting();
                 JSONArray points = new JSONArray();
                 try {
                     JSONObject /*p = new JSONObject();
                     //首都机场
                     p.put("x", 116.56242502154726);
                     p.put("y", 43.776420830014473);
+                    p.put("isMyPosition", true);
                     points.put(p);*/
 
-                    p = new JSONObject();
-//                    116.39126521640469  43.59062286906408 天安门
-                    p.put("x", 116.39126521640469);
-                    p.put("y", 43.59062286906408);
-                    points.put(p);
 
                     //116.30959463350172, 43.69950312152136
                     p = new JSONObject();
 //                    p.put("x", 116.30959463350172);
 //                    p.put("y", 43.69950312152136);   公司
-                    p.put("x", 116.358755);
-                    p.put("y", 43.763775300574764);
-                    points.put(p);
+//                    p.put("x", 116.358755);
+//                    p.put("y", 43.763775300574764);
 
+
+//                    起点
+//                    112.99633288891603,28.165246692798615
+//
+//
+//                    终点
+//                    112.99515672216803,28.16286124053956
+
+//                    p.put("isMyPosition", false);
+                    p.put("x", 111.450779);
+                    p.put("y", 27.270722);
+                    p.put("isMyPosition", false);
+                    points.put(p);
 
                     p = new JSONObject();
-                    //小牛坊
-                    p.put("x", 116.24619745657633);
-                    p.put("y", 43.80949037045025);
-                    //天津植物园
-//                    p.put("x", 117.08956358648513);
-//                    p.put("y", 42.53685670000952);
-                    //北京大学
+//                    116.39126521640469  43.59062286906408 天安门
+//                    p.put("x", 116.39126521640469);
+//                    p.put("y", 43.59062286906408);
+//                    p.put("isMyPosition", false);
+                    p.put("x", 111.448032);
+                    p.put("y", 27.223000);
+                    p.put("isMyPosition", false);
+                    points.put(p);
+
+//                    p = new JSONObject();
+////                    //小牛坊
+////                    p.put("x", 116.24619745657633);
+////                    p.put("y", 43.80949037045025);
+//                    //天津植物园
+////                    p.put("x", 117.08956358648513);
+////                    p.put("y", 42.53685670000952);
+//                    //北京大学
 //                    p.put("x", 116.30959463350172);
 //                    p.put("y", 43.69950312152136);
-                    points.put(p);
+//                    p.put("isMyPosition", false);
+//                    points.put(p);
 
 
                 } catch (Exception e) {

@@ -29,8 +29,8 @@ set(
 #  bookmark_catalog.hpp
 #  bookmark_helpers.cpp
 #  bookmark_helpers.hpp
-#  bookmark_manager.cpp
-#  bookmark_manager.hpp
+  bookmark_manager.cpp
+  bookmark_manager.hpp
 #  bookmarks_search_params.hpp
   caching_address_getter.hpp
 #  catalog_headers_provider.cpp

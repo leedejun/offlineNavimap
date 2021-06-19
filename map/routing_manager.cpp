@@ -404,10 +404,10 @@ RoutingManager::RoutingManager(Callbacks && callbacks, Delegate & delegate)
   });
 }
 
-//void RoutingManager::SetBookmarkManager(BookmarkManager * bmManager)
-//{
-//  m_bmManager = bmManager;
-//}
+void RoutingManager::SetBookmarkManager(BookmarkManager * bmManager)
+{
+  m_bmManager = bmManager;
+}
 
 void RoutingManager::SetTransitManager(TransitReadManager * transitManager)
 {
@@ -570,8 +570,8 @@ void RoutingManager::RemoveRoute(bool deactivateFollowing)
 //      es.ClearGroup(UserMark::Type::SPEED_CAM);
 //      es.ClearGroup(UserMark::Type::ROAD_WARNING);
     }
-    if (deactivateFollowing)
-      SetPointsFollowingMode(false /* enabled */);
+//    if (deactivateFollowing)
+//      SetPointsFollowingMode(false /* enabled */);
   });
 
   if (deactivateFollowing)
@@ -782,7 +782,7 @@ void RoutingManager::FollowRoute()
                         m_currentRouterType == RouterType::Bicycle);
   m_delegate.OnRouteFollow(m_currentRouterType);
 
-//  m_bmManager->GetEditSession().ClearGroup(UserMark::Type::ROAD_WARNING);
+  m_bmManager->GetEditSession().ClearGroup(UserMark::Type::ROAD_WARNING);
   HideRoutePoint(RouteMarkType::Start);
   SetPointsFollowingMode(true /* enabled */);
 
@@ -802,7 +802,7 @@ void RoutingManager::CloseRouting(bool removeRoutePoints)
 
   if (removeRoutePoints)
   {
-//    m_bmManager->GetEditSession().ClearGroup(UserMark::Type::ROUTING);
+    m_bmManager->GetEditSession().ClearGroup(UserMark::Type::ROUTING);
     CancelRecommendation(Recommendation::RebuildAfterPointsLoading);
   }
 }
@@ -814,7 +814,7 @@ void RoutingManager::SetLastUsedRouter(RouterType type)
 
 void RoutingManager::HideRoutePoint(RouteMarkType type, size_t intermediateIndex)
 {
-  RoutePointsLayout routePoints;
+  RoutePointsLayout routePoints(*m_bmManager);
   RouteMarkPoint * mark = routePoints.GetRoutePointForEdit(type, intermediateIndex);
   if (mark != nullptr)
     mark->SetIsVisible(false);
@@ -822,7 +822,7 @@ void RoutingManager::HideRoutePoint(RouteMarkType type, size_t intermediateIndex
 
 bool RoutingManager::IsMyPosition(RouteMarkType type, size_t intermediateIndex)
 {
-  RoutePointsLayout routePoints;
+  RoutePointsLayout routePoints(*m_bmManager);
   RouteMarkPoint const * mark = routePoints.GetRoutePoint(type, intermediateIndex);
   return mark != nullptr ? mark->IsMyPosition() : false;
 }
@@ -830,7 +830,7 @@ bool RoutingManager::IsMyPosition(RouteMarkType type, size_t intermediateIndex)
 vector<RouteMarkData> RoutingManager::GetRoutePoints() const
 {
   vector<RouteMarkData> result;
-  RoutePointsLayout routePoints;
+  RoutePointsLayout routePoints(*m_bmManager);
   for (auto const & p : routePoints.GetRoutePoints())
     result.push_back(p->GetMarkData());
   return result;
@@ -838,7 +838,7 @@ vector<RouteMarkData> RoutingManager::GetRoutePoints() const
 
 size_t RoutingManager::GetRoutePointsCount() const
 {
-  RoutePointsLayout routePoints;
+  RoutePointsLayout routePoints(*m_bmManager);
   return routePoints.GetRoutePointsCount();
 }
 
@@ -855,7 +855,10 @@ bool RoutingManager::CouldAddIntermediatePoint() const
 void RoutingManager::AddRoutePoint(RouteMarkData && markData)
 {
 //  ASSERT(m_bmManager != nullptr, ());
-  RoutePointsLayout routePoints;
+//  RoutePointsLayout routePoints;
+
+//  ASSERT(m_bmManager != nullptr, ());
+  RoutePointsLayout routePoints(*m_bmManager);
 
   // Always replace start and finish points.
   if (markData.m_pointType == RouteMarkType::Start || markData.m_pointType == RouteMarkType::Finish)
@@ -875,39 +878,38 @@ void RoutingManager::AddRoutePoint(RouteMarkData && markData)
 
 void RoutingManager::RemoveRoutePoint(RouteMarkType type, size_t intermediateIndex)
 {
-//  ASSERT(m_bmManager != nullptr, ());
-  RoutePointsLayout routePoints;
+  ASSERT(m_bmManager != nullptr, ());
+  RoutePointsLayout routePoints(*m_bmManager);
   routePoints.RemoveRoutePoint(type, intermediateIndex);
 }
 
 void RoutingManager::RemoveRoutePoints()
 {
-//  ASSERT(m_bmManager != nullptr, ());
-  RoutePointsLayout routePoints;
+  ASSERT(m_bmManager != nullptr, ());
+  RoutePointsLayout routePoints(*m_bmManager);
   routePoints.RemoveRoutePoints();
 }
 
 void RoutingManager::RemoveIntermediateRoutePoints()
 {
-//  ASSERT(m_bmManager != nullptr, ());
-  RoutePointsLayout routePoints;
+  ASSERT(m_bmManager != nullptr, ());
+  RoutePointsLayout routePoints(*m_bmManager);
   routePoints.RemoveIntermediateRoutePoints();
 }
 
 void RoutingManager::MoveRoutePoint(RouteMarkType currentType, size_t currentIntermediateIndex,
                                     RouteMarkType targetType, size_t targetIntermediateIndex)
 {
-//  ASSERT(m_bmManager != nullptr, ());
-  RoutePointsLayout routePoints;
+  ASSERT(m_bmManager != nullptr, ());
+  RoutePointsLayout routePoints(*m_bmManager);
   routePoints.MoveRoutePoint(currentType, currentIntermediateIndex,
                              targetType, targetIntermediateIndex);
 }
 
 void RoutingManager::MoveRoutePoint(size_t currentIndex, size_t targetIndex)
 {
-//  ASSERT(m_bmManager != nullptr, ());
-
-  RoutePointsLayout routePoints;
+  ASSERT(m_bmManager != nullptr, ());
+  RoutePointsLayout routePoints(*m_bmManager);
   size_t const sz = routePoints.GetRoutePointsCount();
   auto const convertIndex = [sz](RouteMarkType & type, size_t & index) {
     if (index == 0)
@@ -937,8 +939,8 @@ void RoutingManager::MoveRoutePoint(size_t currentIndex, size_t targetIndex)
 
 void RoutingManager::SetPointsFollowingMode(bool enabled)
 {
-//  ASSERT(m_bmManager != nullptr, ());
-  RoutePointsLayout routePoints;
+  ASSERT(m_bmManager != nullptr, ());
+  RoutePointsLayout routePoints(*m_bmManager);
   routePoints.SetFollowingMode(enabled);
 }
 
@@ -948,7 +950,7 @@ void RoutingManager::ReorderIntermediatePoints()
   vector<m2::PointD> prevPositions;
   prevPoints.reserve(RoutePointsLayout::kMaxIntermediatePointsCount);
   prevPositions.reserve(RoutePointsLayout::kMaxIntermediatePointsCount);
-  RoutePointsLayout routePoints;
+  RoutePointsLayout routePoints(*m_bmManager);
 
   RouteMarkPoint * addedPoint = nullptr;
   m2::PointD addedPosition;
@@ -1033,13 +1035,13 @@ void RoutingManager::BuildRoute(uint32_t timeoutSec)
     if (!p.m_isMyPosition)
       continue;
 
-//    auto const & myPosition = m_bmManager->MyPositionMark();
-//    if (!myPosition.HasPosition())
-//    {
-//      CallRouteBuilded(RouterResultCode::NoCurrentPosition, storage::CountriesSet());
-//      return;
-//    }
-//    p.m_position = myPosition.GetPivot();
+    auto const & myPosition = m_bmManager->MyPositionMark();
+    if (!myPosition.HasPosition())
+    {
+      CallRouteBuilded(RouterResultCode::NoCurrentPosition, storage::CountriesSet());
+      return;
+    }
+    p.m_position = myPosition.GetPivot();
   }
 
   // Check for equal points.
@@ -1158,7 +1160,7 @@ void RoutingManager::CheckLocationForRouting(location::GpsInfo const & info)
 void RoutingManager::CallRouteBuilded(RouterResultCode code,
                                       storage::CountriesSet const & absentCountries)
 {
-  m_routingBuildingCallback(code, absentCountries);
+//  m_routingBuildingCallback(code, absentCountries);
 }
 
 void RoutingManager::ConfigureArchivalReporter(tracking::ArchivingSettings const & settings)

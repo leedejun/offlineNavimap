@@ -52,7 +52,7 @@ ElevationInfo::ElevationInfo(Track const & track)
 
   if (difficulty > kMaxDifficulty)
   {
-    LOG(LWARNING, ("Invalid difficulty value", m_difficulty, "in track", track.GetName()));
+//    LOG(LWARNING, ("Invalid difficulty value", m_difficulty, "in track", track.GetName()));
     m_difficulty = Difficulty ::Unknown;
   }
   else
