@@ -39,8 +39,7 @@ m2::PointD GetCenter(FeatureType & f, int scale)
   }
 }
 
-m2::PointD GetCenter(FeatureType & f) {
-  return GetCenter(f, FeatureType::BEST_GEOMETRY); }
+m2::PointD GetCenter(FeatureType & f) { return GetCenter(f, FeatureType::BEST_GEOMETRY); }
 
 double GetMinDistanceMeters(FeatureType & ft, m2::PointD const & pt, int scale)
 {
