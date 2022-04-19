@@ -52,7 +52,7 @@ public class MapTestActivity extends AppCompatActivity implements View.OnClickLi
         findViewById(R.id.btFollowRoute).setOnClickListener(this);
         etSearchPoi = (EditText) findViewById(R.id.etSearchPoi);
 
-        String  a = "提交12";
+        String  a = "提交11";
     }
 
     @Override

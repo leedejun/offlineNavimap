@@ -98,10 +98,14 @@ void IndexRoadGraph::GetRouteEdges(EdgeVector & edges) const
   for (Segment const & segment : m_segments)
   {
     //mokatuo2dadizuobiao
+//    auto const & junctionFrom =
+//        m_starter.GetJunction(segment, false /* front */).ToPointWithWGS84();
     auto const & junctionFrom =
-        m_starter.GetJunction(segment, false /* front */).ToPointWithWGS84();
+        m_starter.GetJunction(segment, false /* front */).ToPointWithAltitude();
+//    auto const & junctionTo =
+//        m_starter.GetJunction(segment, true /* front */).ToPointWithWGS84();
     auto const & junctionTo =
-        m_starter.GetJunction(segment, true /* front */).ToPointWithWGS84();
+        m_starter.GetJunction(segment, true /* front */).ToPointWithAltitude();
 
     if (IndexGraphStarter::IsFakeSegment(segment) || TransitGraph::IsTransitSegment(segment))
     {
@@ -160,10 +164,14 @@ void IndexRoadGraph::GetEdges(geometry::PointWithAltitude const & junction, bool
     MwmSet::MwmId const mwmId = m_dataSource.GetMwmIdByCountryFile(file);
 
     //mokatuo2dadizuobiao
+//    edges.push_back(Edge::MakeReal(
+//        FeatureID(mwmId, segment.GetFeatureId()), segment.IsForward(), segment.GetSegmentIdx(),
+//        m_starter.GetJunction(segment, false /* front */).ToPointWithWGS84(),
+//        m_starter.GetJunction(segment, true /* front */).ToPointWithWGS84()));
     edges.push_back(Edge::MakeReal(
         FeatureID(mwmId, segment.GetFeatureId()), segment.IsForward(), segment.GetSegmentIdx(),
-        m_starter.GetJunction(segment, false /* front */).ToPointWithWGS84(),
-        m_starter.GetJunction(segment, true /* front */).ToPointWithWGS84()));
+        m_starter.GetJunction(segment, false /* front */).ToPointWithAltitude(),
+        m_starter.GetJunction(segment, true /* front */).ToPointWithAltitude()));
   }
 }
 

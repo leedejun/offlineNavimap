@@ -172,6 +172,8 @@ set(
   vehicle_mask.hpp
   world_graph.cpp
   world_graph.hpp
+        ft_index_router.cpp
+        ft_index_router.hpp
 )
 
 omim_add_library(${PROJECT_NAME} ${SRC})

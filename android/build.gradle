@@ -13,7 +13,6 @@ buildscript {
 
 allprojects {
   repositories {
-//    google()
     mavenCentral()
     maven{ url'https://maven.aliyun.com/repository/google' }
     maven{ url'https://maven.aliyun.com/repository/public' }
@@ -48,6 +47,7 @@ dependencies {
   implementation 'androidx.legacy:legacy-preference-v14:1.0.0'
   implementation 'androidx.preference:preference:1.1.0'
   implementation 'androidx.fragment:fragment:1.1.0'
+  implementation 'com.google.android.material:material:1.0.0-rc01'
 }
 
 def getDate() {
@@ -104,8 +104,8 @@ android {
   dataBinding {
     enabled = true
   }
+  compileSdkVersion 28
   // All properties are read from gradle.properties file
-  compileSdkVersion propCompileSdkVersion.toInteger()
 
   defaultConfig {
     vectorDrawables.useSupportLibrary = true
@@ -149,7 +149,7 @@ android {
 
     ndk {
       abiFilters "arm64-v8a"
-      abiFilters = new HashSet<>()
+//      abiFilters = new HashSet<>()
     /*  if (project.hasProperty("arm32")) {
         println("Building for the ARM32 architecture")
         abiFilters.add("armeabi-v7a")
@@ -426,10 +426,6 @@ android {
     ignoreAssetsPattern "!.svn:!.git:!.DS_Store:!*.scc:.*:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"
   }
 
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
-  }
 
   packagingOptions {
     exclude 'lib/armeabi/libcrashlytics.so'
@@ -456,6 +452,11 @@ android {
     exclude 'lib/mips/libVkLayer_object_tracker.so'
     exclude 'lib/mips/libVkLayer_swapchain.so'
     exclude 'lib/mips/libVkLayer_unique_objects.so'
+  }
+  buildToolsVersion '21'
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
   }
 }
 
@@ -524,4 +525,6 @@ android.buildTypes.all { buildType ->
   def authority = "\"" + authorityValue + "\""
   buildConfigField 'String', 'FILE_PROVIDER_AUTHORITY', authority
   manifestPlaceholders += [FILE_PROVIDER_PLACEHOLDER : authorityValue]
+
+
 }

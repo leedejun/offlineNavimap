@@ -66,7 +66,7 @@ struct RoutePointInfo
   m2::PointD m_position;
 };
 
-class RoutingManager final
+class RoutingManager
 {
 public:
   class Delegate
@@ -243,6 +243,7 @@ public:
   void CallRouteBuilded(routing::RouterResultCode code,
                         storage::CountriesSet const & absentCountries);
   void OnBuildRouteReady(routing::Route const & route, routing::RouterResultCode code);
+  void OnBuildRouteReadyKsp(std::vector<std::shared_ptr<routing::Route>> const & route, routing::RouterResultCode code);
   void OnRebuildRouteReady(routing::Route const & route, routing::RouterResultCode code);
   void OnNeedMoreMaps(uint64_t routeId, storage::CountriesSet const & absentCountries);
   void OnRemoveRoute(routing::RouterResultCode code);
@@ -313,6 +314,8 @@ public:
   void CancelPreviewMode();
 
   routing::RouterType GetCurrentRouterType() const { return m_currentRouterType; }
+
+  void setFun(std::function<void(const std::vector<std::shared_ptr<routing::Route>> &)> func){m_func=func;}
 
 private:
   /// \returns true if the route has warnings.
@@ -395,6 +398,10 @@ private:
   std::map<std::string, m2::PointF> m_transitSymbolSizes;
 
   TransitReadManager * m_transitReadManager = nullptr;
+
+  std::vector<std::shared_ptr<routing::Route>> m_vec_route;
+
+    std::function<void(const std::vector<std::shared_ptr<routing::Route>> &)> m_func;
 
   DECLARE_THREAD_CHECKER(m_threadChecker);
 };

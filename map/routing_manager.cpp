@@ -46,6 +46,7 @@
 #include <ios>
 #include <map>
 #include <sstream>
+#include "routing/ft_index_router.hpp"
 
 using namespace routing;
 using namespace std;
@@ -337,13 +338,25 @@ RoutingManager::RoutingManager(Callbacks && callbacks, Delegate & delegate)
 #endif
   );
 
+//  m_routingSession.SetRoutingCallbacks(
+//      [this](Route const & route, RouterResultCode code) { OnBuildRouteReady(route, code); },
+//      [this](Route const & route, RouterResultCode code) { OnRebuildRouteReady(route, code); },
+//      [this](uint64_t routeId, storage::CountriesSet const & absentCountries) {
+//        OnNeedMoreMaps(routeId, absentCountries);
+//      },
+//      [this](RouterResultCode code) { OnRemoveRoute(code); });
+
+
   m_routingSession.SetRoutingCallbacks(
-      [this](Route const & route, RouterResultCode code) { OnBuildRouteReady(route, code); },
-      [this](Route const & route, RouterResultCode code) { OnRebuildRouteReady(route, code); },
-      [this](uint64_t routeId, storage::CountriesSet const & absentCountries) {
-        OnNeedMoreMaps(routeId, absentCountries);
-      },
-      [this](RouterResultCode code) { OnRemoveRoute(code); });
+          [this](Route const & route, RouterResultCode code) { OnBuildRouteReady(route, code); },
+          [this](const std::vector<shared_ptr<Route>> & route, RouterResultCode code) {
+              OnBuildRouteReadyKsp(route, code);
+          },
+          [this](Route const & route, RouterResultCode code) { OnRebuildRouteReady(route, code); },
+          [this](uint64_t routeId, storage::CountriesSet const & absentCountries) {
+              OnNeedMoreMaps(routeId, absentCountries);
+          },
+          [this](RouterResultCode code) { OnRemoveRoute(code); });
 
   m_routingSession.SetCheckpointCallback([this](size_t passedCheckpointIdx)
   {
@@ -414,6 +427,28 @@ void RoutingManager::SetTransitManager(TransitReadManager * transitManager)
   m_transitReadManager = transitManager;
 }
 
+void RoutingManager::OnBuildRouteReadyKsp(std::vector<std::shared_ptr<Route>>  const & routes, RouterResultCode code)
+{
+  // @TODO(bykoianko) Remove |code| from callback signature.
+  CHECK_EQUAL(code, RouterResultCode::NoError, ());
+  HidePreviewSegments();
+ Route && route = (Route &&) routes[1];
+  auto const hasWarnings = InsertRoute( route);
+  m_drapeEngine.SafeCall(&df::DrapeEngine::StopLocationFollow);
+
+  // Validate route (in case of bicycle routing it can be invalid).
+  ASSERT(route.IsValid(), ());
+  if (route.IsValid())
+  {
+    m2::RectD routeRect = route.GetPoly().GetLimitRect();
+    routeRect.Scale(kRouteScaleMultiplier);
+    m_drapeEngine.SafeCall(&df::DrapeEngine::SetModelViewRect, routeRect,
+                           true /* applyRotation */, -1 /* zoom */, true /* isAnim */,
+                           true /* useVisibleViewport */);
+  }
+
+  CallRouteBuilded(hasWarnings ? RouterResultCode::HasWarnings : code, storage::CountriesSet());
+}
 void RoutingManager::OnBuildRouteReady(Route const & route, RouterResultCode code)
 {
   // @TODO(bykoianko) Remove |code| from callback signature.
@@ -550,10 +585,10 @@ void RoutingManager::SetRouterImpl(RouterType type)
   };
 
   auto fetcher = make_unique<OnlineAbsentCountriesFetcher>(countryFileGetter, localFileChecker);
-  auto router = make_unique<IndexRouter>(vehicleType, m_loadAltitudes, m_callbacks.m_countryParentNameGetterFn,
+  auto router = make_unique<FtIndexRouter>(vehicleType, m_loadAltitudes, m_callbacks.m_countryParentNameGetterFn,
                                          countryFileGetter, getMwmRectByName, numMwmIds,
                                          MakeNumMwmTree(*numMwmIds, m_callbacks.m_countryInfoGetter()),
-                                         m_routingSession, dataSource);
+                                         m_routingSession, dataSource,FtStrategy::MotorwayFirst);
 
   m_routingSession.SetRoutingSettings(GetRoutingSettings(vehicleType));
   m_routingSession.SetRouter(move(router), move(fetcher));
@@ -671,7 +706,8 @@ bool RoutingManager::InsertRoute(Route const & route)
     return false;
 
   // TODO: Now we always update whole route, so we need to remove previous one.
-  RemoveRoute(false /* deactivateFollowing */);
+  //注释掉后不会每画一条删除一条线
+//  RemoveRoute(false /* deactivateFollowing */);
 
   auto numMwmIds = make_shared<NumMwmIds>();
   m_delegate.RegisterCountryFilesOnRoute(numMwmIds);
@@ -711,6 +747,7 @@ bool RoutingManager::InsertRoute(Route const & route)
         {
           subroute->m_routeType = m_currentRouterType == RouterType::Vehicle ? df::RouteType::Car : df::RouteType::Taxi;
           subroute->AddStyle(df::SubrouteStyle(df::kRouteColor, df::kRouteOutlineColor));
+//          subroute->AddStyle(df::SubrouteStyle("111", df::kRouteOutlineColor));
           FillTrafficForRendering(segments, subroute->m_traffic);
           FillTurnsDistancesForRendering(segments, subroute->m_baseDistance, subroute->m_turns);
           if (m_currentRouterType == RouterType::Vehicle)
@@ -873,6 +910,7 @@ void RoutingManager::AddRoutePoint(RouteMarkData && markData)
 
   markData.m_isVisible = !markData.m_isMyPosition;
   routePoints.AddRoutePoint(move(markData));
+
   ReorderIntermediatePoints();
 }
 
@@ -1107,6 +1145,8 @@ void RoutingManager::BuildRoute(uint32_t timeoutSec)
     points.push_back(point.m_position);
 
   m_routingSession.BuildRoute(Checkpoints(move(points)), GetGuidesTracks(), timeoutSec);
+
+  m_vec_route= m_routingSession.GetVecRoute();
 }
 
 void RoutingManager::SetUserCurrentPosition(m2::PointD const & position)
@@ -1152,6 +1192,8 @@ void RoutingManager::CheckLocationForRouting(location::GpsInfo const & info)
     m_routingSession.RebuildRoute(
         mercator::FromLatLon(info.m_latitude, info.m_longitude),
         [this](Route const & route, RouterResultCode code) { OnRebuildRouteReady(route, code); },
+        [this](const std::vector<shared_ptr<Route>> & route, RouterResultCode code) {
+            OnBuildRouteReadyKsp(route, code);},
         nullptr /* needMoreMapsCallback */, nullptr /* removeRouteCallback */,
         RouterDelegate::kNoTimeout, SessionState::RouteRebuilding, true /* adjustToPrevRoute */);
   }

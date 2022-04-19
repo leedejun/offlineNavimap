@@ -281,6 +281,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
     private class DrawItemImpl implements DrawItem {
         private String _id;
         private String _color;
+        private String _icon;
         private boolean _visible;
         protected boolean isAdded = false;
 
@@ -297,6 +298,16 @@ public class FTMap extends FMap implements View.OnTouchListener {
         @Override()
         public void color(String v) {
             this._color = v;
+        }
+
+        @Override
+        public String icon() {
+            return this._icon;
+        }
+
+        @Override
+        public void icon(String v) {
+            this._icon = v;
         }
 
         @Override()
@@ -367,6 +378,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
                         .set("type", "point")
                         .set("markId", this._markId)
                         .set("color", this.color())
+                        .set("icon", this.icon())
                         .set("radius", this.radius())
                         .set("x", this._pos.x)
                         .set("y", this._pos.y)
@@ -375,6 +387,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
                 this._markId = (long) FTMap.cmd("addDrawItem")
                         .set("type", "point")
                         .set("id", this.id())
+                        .set("icon", this.icon())
                         .set("color", this.color())
                         .set("radius", this.radius())
                         .set("x", this._pos.x)
@@ -425,6 +438,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
                 FTMap.cmd("addDrawItem")
                         .set("type", "line")
                         .set("id", this.id())
+                        .set("icon", this.icon())
                         .set("color", this.color())
                         .set("width", this.width())
                         .set("points", this.points())
@@ -671,6 +685,17 @@ public class FTMap extends FMap implements View.OnTouchListener {
     @Override
     public void PtoG(double screenX, double screenY, MapUtilsResultsCallback callback) {
         cmd("PtoG")
+                .set("screenX", screenX)
+                .set("screenY", screenY)
+                .setAsyncCallback((Object obj) -> {
+                    JSONObject objData = (JSONObject) obj;
+                    callback.op(objData);
+                })
+                .run();
+    }
+    @Override
+    public void ScreenToMapObject(double screenX, double screenY, MapUtilsResultsCallback callback) {
+        cmd("ScreenToMapObject")
                 .set("screenX", screenX)
                 .set("screenY", screenY)
                 .setAsyncCallback((Object obj) -> {

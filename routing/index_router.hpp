@@ -82,7 +82,12 @@ public:
               TCountryFileFn const & countryFileFn, CourntryRectFn const & countryRectFn,
               std::shared_ptr<NumMwmIds> numMwmIds, std::unique_ptr<m4::Tree<NumMwmId>> numMwmTree,
               traffic::TrafficCache const & trafficCache, DataSource & dataSource);
-
+    IndexRouter(VehicleType vehicleType, bool loadAltitudes,
+                std::shared_ptr<VehicleModelFactoryInterface> vehicleModelFactory,
+                CountryParentNameGetterFn const & countryParentNameGetterFn,
+                TCountryFileFn const & countryFileFn, CourntryRectFn const & countryRectFn,
+                std::shared_ptr<NumMwmIds> numMwmIds, std::unique_ptr<m4::Tree<NumMwmId>> numMwmTree,
+                traffic::TrafficCache const & trafficCache, DataSource & dataSource);
   std::unique_ptr<WorldGraph> MakeSingleMwmWorldGraph();
   bool FindBestSegments(m2::PointD const & checkpoint, m2::PointD const & direction, bool isOutgoing,
                         WorldGraph & worldGraph, std::vector<Segment> & bestSegments);
@@ -109,7 +114,11 @@ public:
 
   void SetAvoidPolygon(std::vector<Polygon> const & polygons) override;
 
-private:
+    RouterResultCode ConvertTransitResult(std::set<NumMwmId> const & mwmIds,
+                                          RouterResultCode resultCode) const;
+
+ protected:
+
   RouterResultCode CalculateSubrouteJointsMode(IndexGraphStarter & starter,
                                                RouterDelegate const & delegate,
                                                std::shared_ptr<AStarProgress> const & progress,
@@ -133,9 +142,6 @@ private:
                                      IndexGraphStarter & graph, std::vector<Segment> & subroute,
                                      bool guidesActive = false);
 
-  RouterResultCode AdjustRoute(Checkpoints const & checkpoints,
-                               m2::PointD const & startDirection,
-                               RouterDelegate const & delegate, Route & route);
 
   std::unique_ptr<WorldGraph> MakeWorldGraph();
 
@@ -195,8 +201,6 @@ private:
   bool AreMwmsNear(IndexGraphStarter const & starter) const;
   bool DoesTransitSectionExist(NumMwmId numMwmId) const;
 
-  RouterResultCode ConvertTransitResult(std::set<NumMwmId> const & mwmIds,
-                                        RouterResultCode resultCode) const;
 
   /// \brief Fills |speedcamProhibitedMwms| with mwms which are crossed by |segments|
   /// where speed cameras are prohibited.
@@ -240,6 +244,11 @@ private:
 
   std::vector<Segment> GetBestSegments(m2::PointD const & checkpoint, WorldGraph & graph);
 
+protected:
+    RouterResultCode AdjustRoute(Checkpoints const & checkpoints,
+                                 m2::PointD const & startDirection,
+                                 RouterDelegate const & delegate, Route & route);
+protected:
   VehicleType m_vehicleType;
   bool m_loadAltitudes;
   std::string const m_name;
@@ -255,8 +264,8 @@ private:
 
   std::shared_ptr<EdgeEstimator> m_estimator;
   std::unique_ptr<IDirectionsEngine> m_directionsEngine;
-  std::unique_ptr<SegmentedRoute> m_lastRoute;
-  std::unique_ptr<FakeEdgesContainer> m_lastFakeEdges;
+
+
 
   // If a ckeckpoint is near to the guide track we need to build route through this track.
   GuidesConnections m_guides;
@@ -264,5 +273,17 @@ private:
   CountryParentNameGetterFn m_countryParentNameGetterFn;
 
   std::vector<Polygon> m_polygons;
+
+    std::unique_ptr<SegmentedRoute> m_lastRoute;
+    std::unique_ptr<FakeEdgesContainer> m_lastFakeEdges;
 };
 }  // namespace routing
+
+namespace routing_ksp_help
+{
+    void PushPassedSubroutes_help(routing::Checkpoints const & checkpoints,
+                                  std::vector<routing::Route::SubrouteAttrs> & subroutes);
+
+    bool GetLastRealOrPart_help(routing::IndexGraphStarter const & starter, std::vector<routing::Segment> const & route,
+                                routing::Segment & real);
+}

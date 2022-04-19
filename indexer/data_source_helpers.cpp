@@ -11,7 +11,7 @@ namespace indexer
 void ForEachFeatureAtPoint(DataSource const & dataSource, function<void(FeatureType &)> && fn,
                            m2::PointD const & mercator, double toleranceInMeters)
 {
-  double constexpr kSelectRectWidthInMeters = 2000.1;
+  double constexpr kSelectRectWidthInMeters = 1.1;
   double constexpr kMetersToLinearFeature = 3;
   int constexpr kScale = scales::GetUpperScale();
   m2::RectD const rect =

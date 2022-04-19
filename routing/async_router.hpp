@@ -54,6 +54,22 @@ public:
                       RemoveRouteCallback const & removeRouteCallback,
                       ProgressCallback const & progressCallback,
                       uint32_t timeoutSec = RouterDelegate::kNoTimeout);
+  void CalculateRoute(Checkpoints const & checkpoints, m2::PointD const & direction,
+                      bool adjustToPrevRoute, ReadyCallbackOwnership const & readyCallback,ReadyCallbackOwnershipKsp const &readyCallbackKsp,
+                      NeedMoreMapsCallback const & needMoreMapsCallback,
+                      RemoveRouteCallback const & removeRouteCallback,
+                      ProgressCallback const & progressCallback,
+                      uint32_t timeoutSec = RouterDelegate::kNoTimeout);
+
+  // added by baixiaojun,2022.04.19
+  void CalculateRoute2(Checkpoints const & checkpoints, m2::PointD const & direction,
+                      bool adjustToPrevRoute, ReadyCallbackOwnershipKsp const &readyCallbackKsp,
+                        NeedMoreMapsCallback const & needMoreMapsCallback,
+                        RemoveRouteCallback const & removeRouteCallback,
+                        ProgressCallback const & progressCallback,
+                        uint32_t requireRouteCount,
+                        uint32_t timeoutSec = RouterDelegate::kNoTimeout);
+  // ended by baixiaojun
 
   void SetGuidesTracks(GuidesTracks && guides);
   /// Interrupt routing and clear buffers
@@ -61,6 +77,9 @@ public:
 
   bool FindClosestProjectionToRoad(m2::PointD const & point, m2::PointD const & direction,
                                    double radius, EdgeProj & proj);
+
+
+    std::vector<std::shared_ptr<Route>> GetVecRoute(){return m_vec_route;}
 
 private:
   /// Worker thread function
@@ -76,6 +95,13 @@ private:
   {
   public:
     RouterDelegateProxy(ReadyCallbackOwnership const & onReady,
+                        ReadyCallbackOwnershipKsp const &onReadyKsp,
+                        NeedMoreMapsCallback const & onNeedMoreMaps,
+                        RemoveRouteCallback const & onRemoveRoute,
+                        PointCheckCallback const & onPointCheck,
+                        ProgressCallback const & onProgress,
+                        uint32_t timeoutSec);
+    RouterDelegateProxy(ReadyCallbackOwnership const & onReady,
                         NeedMoreMapsCallback const & onNeedMoreMaps,
                         RemoveRouteCallback const & onRemoveRoute,
                         PointCheckCallback const & onPointCheck,
@@ -83,6 +109,7 @@ private:
                         uint32_t timeoutSec);
 
     void OnReady(std::shared_ptr<Route> route, RouterResultCode resultCode);
+    void OnReady( std::vector<std::shared_ptr<Route>>  route, RouterResultCode resultCode);
     void OnNeedMoreMaps(uint64_t routeId, std::set<std::string> const & absentCounties);
     void OnRemoveRoute(RouterResultCode resultCode);
     void Cancel();
@@ -95,6 +122,7 @@ private:
 
     std::mutex m_guard;
     ReadyCallbackOwnership const m_onReadyOwnership;
+    ReadyCallbackOwnershipKsp const m_onReadyOwnershipKsp;
     // |m_onNeedMoreMaps| may be called after |m_onReadyOwnership| if
     // - it's possible to build route only if to load some maps
     // - there's a faster route, but it's necessary to load some more maps to build it
@@ -113,7 +141,7 @@ private:
   std::condition_variable m_threadCondVar;
   bool m_threadExit;
   bool m_hasRequest;
-
+  uint32_t m_requireRountCount = 1;
   /// Current request parameters
   bool m_clearState = false;
   Checkpoints m_checkpoints;
@@ -128,5 +156,7 @@ private:
   RoutingStatisticsCallback const m_routingStatisticsCallback;
   PointCheckCallback const m_pointCheckCallback;
   uint64_t m_routeCounter = 0;
+
+  std::vector<std::shared_ptr<Route>> m_vec_route;
 };
 }  // namespace routing

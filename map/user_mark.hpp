@@ -102,6 +102,7 @@ protected:
   void SetDirty() { m_isDirty = true; }
 
   m2::PointD m_ptOrg;
+    std::string _icon;
 
 private:
   mutable bool m_isDirty = true;

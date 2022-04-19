@@ -57,6 +57,7 @@ drape_ptr<df::UserPointMark::SymbolNameZoomInfo> DebugMarkPoint::GetSymbolNames(
 {
   auto symbol = make_unique_dp<SymbolNameZoomInfo>();
   symbol->insert(std::make_pair(1 /* zoomLevel */, "non-found-search-result"));
+//  symbol->insert(std::make_pair(1 /* zoomLevel */, "route-point-finish"));
   return symbol;
 }
 

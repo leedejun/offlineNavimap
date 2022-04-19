@@ -314,8 +314,8 @@ namespace search {
 
             center = feature::GetCenter(*ft);
             //mokatuo2dadizuobiao
-            ms::LatLon p =  mercator::ToLatLon(center);
-            center = m2::PointD(p.m_lon,p.m_lat);
+//            ms::LatLon p =  mercator::ToLatLon(center);
+//            center = m2::PointD(p.m_lon,p.m_lat);
 
             m_ranker.GetBestMatchName(*ft, name);
 

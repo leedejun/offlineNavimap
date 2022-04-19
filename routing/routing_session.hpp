@@ -63,12 +63,17 @@ public:
                     NeedMoreMapsCallback const & needMoreMapsCallback,
                     RemoveRouteCallback const & removeRouteCallback, uint32_t timeoutSec,
                     SessionState routeRebuildingState, bool adjustToPrevRoute);
+  void RebuildRoute(m2::PointD const & startPoint, ReadyCallback const & readyCallback,
+                    ReadyCallbackKsp const & readyCallbackKsp,
+                    NeedMoreMapsCallback const & needMoreMapsCallback,
+                    RemoveRouteCallback const & removeRouteCallback, uint32_t timeoutSec,
+                    SessionState routeRebuildingState, bool adjustToPrevRoute);
 
-  void BuildRoute2(Checkpoints const & checkpoints,ReadyCallback const & readyCallback,
+  void BuildRoute2(Checkpoints const & checkpoints,ReadyCallbackKsp const & readyCallback,
                    NeedMoreMapsCallback const & needMoreMapsCallback,
-                   RemoveRouteCallback const & removeRouteCallback);
+                   RemoveRouteCallback const & removeRouteCallback, uint32_t requireRouteCount);
 
-    m2::PointD GetStartPoint() const;
+  m2::PointD GetStartPoint() const;
   m2::PointD GetEndPoint() const;
 
   bool IsActive() const;
@@ -130,6 +135,11 @@ public:
                            ReadyCallback const & rebuildReadyCallback,
                            NeedMoreMapsCallback const & needMoreMapsCallback,
                            RemoveRouteCallback const & removeRouteCallback);
+  void SetRoutingCallbacks(ReadyCallback const & buildReadyCallback,
+                           ReadyCallbackKsp const & buildReadyCallbackKsp,
+                           ReadyCallback const & rebuildReadyCallback,
+                           NeedMoreMapsCallback const & needMoreMapsCallback,
+                           RemoveRouteCallback const & removeRouteCallback);
   void SetProgressCallback(ProgressCallback const & progressCallback);
   void SetCheckpointCallback(CheckpointCallback const & checkpointCallback);
   /// \brief Sets a callback which is called every time when RoutingSession::m_state is changed.
@@ -171,17 +181,43 @@ public:
 
   std::shared_ptr<Route> GetRouteForTests() const { return m_route; }
 
+
+    std::vector<std::shared_ptr<Route>> GetVecRoute(){return m_router->GetVecRoute();}
+
 private:
   struct DoReadyCallback
   {
     RoutingSession & m_rs;
     ReadyCallback m_callback;
+      ReadyCallbackKsp m_callbackKsp;
 
-    DoReadyCallback(RoutingSession & rs, ReadyCallback const & cb)
-        : m_rs(rs), m_callback(cb)
+    DoReadyCallback(RoutingSession & rs, ReadyCallback const & cb, ReadyCallbackKsp const & cbKsp)
+        : m_rs(rs), m_callback(cb),m_callbackKsp(cbKsp)
+    {}
+
+      DoReadyCallback(RoutingSession & rs, ReadyCallback const & cb)
+              : m_rs(rs), m_callback(cb)
+      {}
+
+      DoReadyCallback(RoutingSession & rs, ReadyCallbackKsp const & cb)
+              : m_rs(rs), m_callbackKsp(cb)
+      {}
+
+    void operator()(std::shared_ptr<Route> route, RouterResultCode e);
+    void operator()(std::vector<std::shared_ptr<Route>> route, RouterResultCode e);
+  };
+  struct DoReadyCallbackKsp
+  {
+    RoutingSession & m_rs;
+    ReadyCallback m_callback;
+    ReadyCallbackKsp m_callbackKsp;
+
+    DoReadyCallbackKsp(RoutingSession & rs, ReadyCallback const & cb, ReadyCallbackKsp const & cbKsp)
+        : m_rs(rs), m_callback(cb),m_callbackKsp(cbKsp)
     {}
 
     void operator()(std::shared_ptr<Route> route, RouterResultCode e);
+    void operator()(const std::vector<std::shared_ptr<Route>>& route, RouterResultCode e);
   };
 
   void AssignRoute(std::shared_ptr<Route> route, RouterResultCode e);
@@ -219,6 +255,7 @@ private:
   PositionAccumulator m_positionAccumulator;
 
   ReadyCallback m_buildReadyCallback;
+    ReadyCallbackKsp m_buildReadyCallbackKsp;
   ReadyCallback m_rebuildReadyCallback;
   NeedMoreMapsCallback m_needMoreMapsCallback;
   RemoveRouteCallback m_removeRouteCallback;

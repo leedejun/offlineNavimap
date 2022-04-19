@@ -218,7 +218,7 @@ public:
   typename AStarAlgorithm<Vertex, Edge, Weight>::Result AdjustRoute(P & params,
                                                                     RoutingResult<Vertex, Weight> & result) const;
 
-private:
+protected:
   // Periodicity of switching a wave of bidirectional algorithm.
   static uint32_t constexpr kQueueSwitchPeriod = 128;
 
@@ -226,6 +226,7 @@ private:
   static Weight constexpr kZeroDistance = GetAStarWeightZero<Weight>();
   static Weight constexpr kInfiniteDistance = GetAStarWeightMax<Weight>();
 
+protected:
   class PeriodicPollCancellable final
   {
   public:
@@ -243,6 +244,7 @@ private:
     uint32_t count = 0;
   };
 
+protected:
   // State is what is going to be put in the priority queue. See the
   // comment for FindPath for more information.
   struct State

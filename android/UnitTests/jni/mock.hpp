@@ -9,3 +9,5 @@
 
 void Initialize(android_app * state);
 JavaVM * GetJVM();
+
+

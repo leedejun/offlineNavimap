@@ -180,6 +180,8 @@ public:
         jobject s = _env->CallObjectMethod(obj,mid,jni::ToJavaString(_env,key.c_str()));
         jboolean isCopy;
         std::string const res = _env->GetStringUTFChars((jstring)s, &isCopy);
+//        std::string tmp = res;
+//        _env->DeleteLocalRef(s);
         return res;
     }
 

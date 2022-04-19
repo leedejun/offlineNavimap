@@ -21,6 +21,43 @@ namespace
 {
 string const kTransitColorFileName = "transit_colors.txt";
 
+// added by baixiaojun, 2022.04.17
+    template<class TT>
+    static uint32_t toIntFromHexString(const TT &t) {
+
+      uint32_t x;
+      std::stringstream ss;
+      ss << std::hex << t;
+      ss >> x;
+      return x;
+
+    }
+
+
+    static dp::Color stringToDpColor(std::string colorString) {
+      if (colorString[0] == '#') {
+        colorString.erase(0, 1);
+      }
+      else{
+        return dp::Color();
+      }
+
+      std::string stringR = colorString.substr(0, 2);
+      std::string stringG = colorString.substr(2, 2);
+      std::string stringB = colorString.substr(4, 2);
+      std::string stringA = colorString.substr(6, 2);
+
+      uint32_t r = toIntFromHexString(stringR);
+      uint32_t g = toIntFromHexString(stringG);
+      uint32_t b = toIntFromHexString(stringB);
+      uint32_t a = 255;//toIntFromHexString(stringA);
+      if (stringA.length() > 0) {
+        a = toIntFromHexString(stringA);
+      }
+      return dp::Color(r, g, b, a);
+    }
+// end by baixiaojun
+
 class TransitColorsHolder
 {
 public:
@@ -127,7 +164,15 @@ dp::Color GetColorConstant(ColorConstant const & constant)
   if (IsTransitColor(constant))
     return TransitColors().GetColor(constant);
   uint32_t const color = drule::rules().GetColor(constant);
-  return ToDrapeColor(color);
+  // modified by baixiaojun, 2022.4.17
+  //return ToDrapeColor(color);
+  if( color != 0 ){
+    return ToDrapeColor(color);
+  }
+  else{
+    return stringToDpColor(constant);
+  }
+  // end by baixiaojun
 }
 
 map<string, dp::Color> const & GetTransitClearColors() { return TransitColors().GetClearColors(); }

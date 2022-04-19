@@ -1,35 +1,15 @@
 package com.ftmap.maps.settings;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
-import android.os.Environment;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-
-import com.ftmap.util.Config;
-import com.ftmap.util.StorageUtils;
-import com.ftmap.util.concurrency.ThreadPool;
-import com.ftmap.util.concurrency.UiThread;
 import com.ftmap.util.log.Logger;
 import com.ftmap.util.log.LoggerFactory;
-import com.ftmap.util.log.LoggerFactory;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class StoragePathManager
 {

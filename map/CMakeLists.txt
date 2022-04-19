@@ -92,6 +92,11 @@ set(
 #  local_ads_supported_types.cpp
 #  mwm_url.cpp
 #  mwm_url.hpp
+  fd/map_engine.cpp
+  fd/map_engine.hpp
+  fd/route_mgr.cpp
+  fd/route_mgr.hpp
+  notifications/notification_manager.cpp
   notifications/notification_manager.cpp
   notifications/notification_manager.hpp
   notifications/notification_manager_delegate.cpp

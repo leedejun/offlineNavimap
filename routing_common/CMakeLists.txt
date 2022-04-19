@@ -18,6 +18,8 @@ set(
   pedestrian_model.hpp
   vehicle_model.cpp
   vehicle_model.hpp
+  ft_car_model_factory.cpp
+  ft_car_model_factory.hpp
 )
 
 omim_add_library(${PROJECT_NAME} ${SRC})

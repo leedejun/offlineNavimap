@@ -1,5 +1,6 @@
 package com.ftmap.maps;
 
+import android.app.Activity;
 import android.app.Application;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
@@ -391,6 +392,9 @@ public abstract class FMap {
         public String color();
 
         public void color(String v);
+        public String icon();
+
+        public void icon(String v);
 
         public boolean visible();
 
@@ -491,6 +495,8 @@ public abstract class FMap {
 
 
     public abstract void PtoG(double screenX, double screenY, MapUtilsResultsCallback callback);
+
+    public abstract void ScreenToMapObject(double screenX, double screenY, MapUtilsResultsCallback callback);
 
     public abstract void ToLatLon(double mercatorX, double mercatorY, MapUtilsResultsCallback callback);
 

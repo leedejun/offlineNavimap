@@ -305,6 +305,40 @@ IndexRouter::IndexRouter(VehicleType vehicleType, bool loadAltitudes,
   CHECK(m_directionsEngine, ());
 }
 
+    IndexRouter::IndexRouter(VehicleType vehicleType, bool loadAltitudes,
+                             std::shared_ptr<VehicleModelFactoryInterface> vehicleModelFactory,
+                             CountryParentNameGetterFn const & countryParentNameGetterFn,
+                             TCountryFileFn const & countryFileFn, CourntryRectFn const & countryRectFn,
+                             shared_ptr<NumMwmIds> numMwmIds, unique_ptr<m4::Tree<NumMwmId>> numMwmTree,
+                             traffic::TrafficCache const & trafficCache, DataSource & dataSource)
+            : m_vehicleType(vehicleType)
+            , m_loadAltitudes(loadAltitudes)
+            , m_name("astar-bidirectional-" + ToString(m_vehicleType))
+            , m_dataSource(dataSource)
+            , m_vehicleModelFactory(vehicleModelFactory)
+            , m_countryFileFn(countryFileFn)
+            , m_countryRectFn(countryRectFn)
+            , m_numMwmIds(move(numMwmIds))
+            , m_numMwmTree(move(numMwmTree))
+            , m_trafficStash(CreateTrafficStash(m_vehicleType, m_numMwmIds, trafficCache))
+            , m_roadGraph(m_dataSource,
+                          vehicleType == VehicleType::Pedestrian || vehicleType == VehicleType::Transit
+                          ? IRoadGraph::Mode::IgnoreOnewayTag
+                          : IRoadGraph::Mode::ObeyOnewayTag,
+                          m_vehicleModelFactory)
+            , m_estimator(EdgeEstimator::Create(
+                    m_vehicleType, CalcMaxSpeed(*m_numMwmIds, *m_vehicleModelFactory, m_vehicleType),
+                    CalcOffroadSpeed(*m_vehicleModelFactory), m_trafficStash))
+            , m_directionsEngine(CreateDirectionsEngine(m_vehicleType, m_numMwmIds, m_dataSource))
+            , m_countryParentNameGetterFn(countryParentNameGetterFn)
+    {
+      CHECK(!m_name.empty(), ());
+      CHECK(m_numMwmIds, ());
+      CHECK(m_numMwmTree, ());
+      CHECK(m_vehicleModelFactory, ());
+      CHECK(m_estimator, ());
+      CHECK(m_directionsEngine, ());
+    }
 unique_ptr<WorldGraph> IndexRouter::MakeSingleMwmWorldGraph()
 {
   auto worldGraph = MakeWorldGraph();
@@ -1480,9 +1514,9 @@ RouterResultCode IndexRouter::RedressRoute(vector<Segment> const & segments,
   junctions.reserve(numPoints);
 
   for (size_t i = 0; i < numPoints; ++i)
-    //junctions.emplace_back(starter.GetRouteJunction(segments, i).ToPointWithAltitude());
+    junctions.emplace_back(starter.GetRouteJunction(segments, i).ToPointWithAltitude());
     //mokatuo2dadizuobiao
-    junctions.emplace_back(starter.GetRouteJunction(segments, i).ToPointWithWGS84());
+//    junctions.emplace_back(starter.GetRouteJunction(segments, i).ToPointWithWGS84());
 
   IndexRoadGraph roadGraph(m_numMwmIds, starter, segments, junctions, m_dataSource);
   starter.GetGraph().SetMode(WorldGraphMode::NoLeaps);
@@ -1646,3 +1680,19 @@ void IndexRouter::SetupAlgorithmMode(IndexGraphStarter & starter, bool guidesAct
   }
 }
 }  // namespace routing
+
+namespace routing_ksp_help
+{
+    void PushPassedSubroutes_help(routing::Checkpoints const & checkpoints,
+                                  vector<Route::SubrouteAttrs> & subroutes)
+    {
+        PushPassedSubroutes(checkpoints, subroutes);
+    }
+
+
+    bool GetLastRealOrPart_help(IndexGraphStarter const & starter, vector<Segment> const & route,
+                                Segment & real)
+    {
+        return GetLastRealOrPart(starter, route, real);
+    }
+}  // namespace routing_ksp_help

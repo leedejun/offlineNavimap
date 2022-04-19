@@ -75,7 +75,10 @@ using NeedMoreMapsCallback = std::function<void(uint64_t, std::set<std::string> 
 using PointCheckCallback = std::function<void(ms::LatLon const &)>;
 using ProgressCallback = std::function<void(float)>;
 using ReadyCallback = std::function<void(Route const &, RouterResultCode)>;
+using ReadyCallbackKsp = std::function<void(const std::vector<std::shared_ptr<Route>> &, RouterResultCode)>;
 using ReadyCallbackOwnership = std::function<void(std::shared_ptr<Route>, RouterResultCode)>;
+//增加三条线
+using ReadyCallbackOwnershipKsp = std::function<void( const std::vector<std::shared_ptr<Route>>& , RouterResultCode)>;
 using RemoveRouteCallback = std::function<void(RouterResultCode)>;
 using RouteCallback = std::function<void(Route const &)>;
 using ChangeSessionStateCallback = std::function<void(SessionState previous, SessionState current)>;

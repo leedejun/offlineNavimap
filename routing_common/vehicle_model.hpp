@@ -161,12 +161,17 @@ struct InOutCitySpeedKMpH
   SpeedKMpH const & GetSpeed(bool isCity) const { return isCity ? m_inCity : m_outCity; }
   bool IsValid() const { return m_inCity.IsValid() && m_outCity.IsValid(); }
 
+    void setInCity(SpeedKMpH const & inCity) { m_inCity = inCity; }
+
+    void setOutCity(SpeedKMpH const & outCity) { m_outCity = outCity; }
+
   SpeedKMpH m_inCity;
   SpeedKMpH m_outCity;
 };
 
 struct InOutCityFactor
 {
+    constexpr InOutCityFactor() = default;
   constexpr explicit InOutCityFactor(SpeedFactor const & factor) noexcept
     : m_inCity(factor), m_outCity(factor)
   {
@@ -183,6 +188,9 @@ struct InOutCityFactor
 
   SpeedFactor const & GetFactor(bool isCity) const { return isCity ? m_inCity : m_outCity; }
   bool IsValid() const { return m_inCity.IsValid() && m_outCity.IsValid(); }
+
+    void setInCity(SpeedFactor const & factor) { m_inCity = factor; }
+    void setOutCity(SpeedFactor const & factor) { m_outCity = factor; }
 
   SpeedFactor m_inCity;
   SpeedFactor m_outCity;
@@ -262,6 +270,7 @@ class VehicleModel : public VehicleModelInterface
 public:
   struct FeatureTypeLimits final
   {
+      FeatureTypeLimits(){}
     FeatureTypeLimits(std::vector<std::string> const & types, bool isPassThroughAllowed)
       : m_types(types), m_isPassThroughAllowed(isPassThroughAllowed)
     {
@@ -292,9 +301,11 @@ public:
     std::vector<std::string> m_hwtag;
     InOutCitySpeedKMpH m_speed;
   };
+        // using LimitsInitList = std::initializer_list<FeatureTypeLimits>;
+        // using SurfaceInitList = std::initializer_list<FeatureTypeSurface>;
 
-  using LimitsInitList = std::initializer_list<FeatureTypeLimits>;
-  using SurfaceInitList = std::initializer_list<FeatureTypeSurface>;
+        using LimitsInitList = std::vector<FeatureTypeLimits>;
+        using SurfaceInitList = std::vector<FeatureTypeSurface>;
 
   VehicleModel(Classificator const & c, LimitsInitList const & featureTypeLimits,
                SurfaceInitList const & featureTypeSurface, HighwayBasedInfo const & info);

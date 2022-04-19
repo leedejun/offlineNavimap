@@ -126,6 +126,22 @@ public class FTMapFragment extends Fragment
             mClickcount = 0;
         }
     };
+    private Runnable mMoveClickTask = new Runnable() {
+        @Override
+        public void run() {
+            // 处理单击
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("clickTypr", "Move");
+                jsonObject.put("screenX", mUpX);
+                jsonObject.put("screenY", mUpY);
+                MapClickListener.Callback(jsonObject);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            mClickcount = 0;
+        }
+    };
 
     private int mHeight;
     private int mWidth;
@@ -404,6 +420,7 @@ public class FTMapFragment extends Fragment
                 }
             } else {
                 //移动了
+                mBaseHandler.postDelayed(mMoveClickTask, MAX_SINGLE_CLICK_TIME);
                 mClickcount = 0;
             }
             if (isDoubleClick) isDoubleClick = false;

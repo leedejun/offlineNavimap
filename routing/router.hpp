@@ -86,7 +86,12 @@ public:
                                            double radius, EdgeProj & proj) = 0;
   
   virtual void SetAvoidPolygon(std::vector<Polygon> const & polygons) = 0;
-  
+
+  virtual RouterResultCode CalculateRouteKsp(Checkpoints const & checkpoints,
+                                       m2::PointD const & startDirection, bool adjustToPrevRoute,
+                                       RouterDelegate const & delegate,
+                                       std::vector<std::shared_ptr<Route>> & vec_route,
+                                       const int k) {return RouterResultCode();}
 };
 
 }  // namespace routing
