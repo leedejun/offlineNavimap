@@ -8,3 +8,5 @@ tools/
 
 data/
 build/
+
+config.cfg

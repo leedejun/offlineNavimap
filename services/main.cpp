@@ -36,6 +36,26 @@ int main(int argc, char * argv[])
   config.readConfigFile("ipAddress",ipAddress);
   config.readConfigFile("port",port);
   
+    //added by zhengzhanpeng
+  svr.checkArgs("/route", [](Request &req, Response &res){
+    vector<string> sPoints;
+    vector<string> ePoints;
+    if (req.has_param("sPoint")) {
+      string sPoint = req.get_param_value("sPoint");
+      boost::split(sPoints, sPoint,boost::is_any_of(","), boost::token_compress_on );
+    }
+    if (req.has_param("ePoint")) {
+      string ePoint = req.get_param_value("ePoint");
+      boost::split(ePoints, ePoint,boost::is_any_of(","), boost::token_compress_on );
+    }
+
+    if(sPoints.size()!=2||sPoints.size()!=2){
+      return false;
+    }
+
+    return true;
+  });
+  
   svr.Get("/route", [](const Request& req, Response& res) {
 
     vector<string> sPoints;
@@ -104,9 +124,9 @@ int main(int argc, char * argv[])
     Checkpoints checkpoints(points);
 
     vector<Polygon> polygons;
-    Polygon polygon;
     if(strPolygons.size()>0){
       for(string p:strPolygons){
+        Polygon polygon;
         vector<string> sp;
         boost::split(sp, p,boost::is_any_of(";"), boost::token_compress_on );
         for(string point:sp){
@@ -116,8 +136,8 @@ int main(int argc, char * argv[])
           m2::PointD const & mercator = mercator::FromLatLon(atof(spoint[1].c_str()), atof(spoint[0].c_str()));
           boost::geometry::append ( polygon, Point(mercator.x,mercator.y) );
         }
+        polygons.emplace_back(polygon);
       }
-      polygons.emplace_back(polygon);
     }
 
     TRouteResult const routeResult =integration::CalculateRoute(routerComponents,
