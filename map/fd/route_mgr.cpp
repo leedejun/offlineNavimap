@@ -16,31 +16,26 @@ namespace fd{
         return engine->getFramework()->GetDrapeEngine();
     }
 
-    void RouteMgr::buildRoute(std::vector<m2::PointD>& points)
+    void RouteMgr::buildRoute(std::vector<m2::PointD>& points,BuildRouteCallback callback)
     {
         auto &routingSession = engine->getFramework()->GetRoutingManager().RoutingSession();
-        routing::ReadyCallbackKsp onReady = [&,this](const std::vector<std::shared_ptr<routing::Route>>& routes,
+        routing::ReadyCallbackKsp onReady = [&,callback,this](const std::vector<std::shared_ptr<routing::Route>>& routes,
                                            routing::RouterResultCode code)
         {
             int i = 0;
             if (code == routing::RouterResultCode::NoError) {
-                std::vector<std::string> colors;
-                colors.push_back("#ff0000");
-                colors.push_back("#00ff00");
-                colors.push_back("#0000ff");
-
-                for(int i = 0; i < 3; i++){
-                    auto wrapper = std::make_shared<RouteWrapper>(*this,*routes[i].get());
+                std::vector<std::string> routeIds;
+                for(int i = 0; i < routes.size(); i++){
+                    routing::Route* route = routes[i].get();
+                    routeIds.push_back( route->GetRouterId() );
+                    auto wrapper = std::make_shared<RouteWrapper>(*this,*route);
                     caculatedRoutes.push_back(wrapper);
-                    wrapper.get()->show(colors[i],"#000000");
-                }
-//                caculatedRoutes.push_back( std::make_shared<RouteWrapper>(*this,route) );
-//                showRoute(route,colors[i]);
-//                i = (i+1)%3;
+               }
+                callback("ok",routeIds);
             }
         };
         auto onNeedMap = [&](uint64_t, std::set<std::string> const &) {
-
+            callback("needMap",std::vector<std::string>());
         };
         auto onRmRode = [&](routing::RouterResultCode code) {
 
@@ -58,16 +53,42 @@ namespace fd{
         return nullptr;
     }
 
-    void RouteMgr::showRoute(const std::string& routeId)
+    void RouteMgr::showRoute(const std::string& routeId,const std::string& fillColor,const std::string& outlineColor)
     {
         auto routePtr = getRoute(routeId);
-        if( routePtr == nullptr )
-            return;
-        routePtr.get()->show("","");
+        if( routePtr ){
+            routePtr.get()->show(fillColor,outlineColor);
+        }
     }
 
-    void RouteMgr::showRoute(routing::Route const& route, std::string color)
+    void RouteMgr::hideRoute(const std::string& routeId)
     {
+        auto routePtr = getRoute(routeId);
+        if( routePtr ){
+            routePtr.get()->hide();
+        }
+    }
+
+    void RouteMgr::enterFollowRoute(const std::string& routeId)
+    {
+        auto routePtr = getRoute(routeId);
+        if( routePtr ){
+            auto &routingSession = engine->getFramework()->GetRoutingManager().RoutingSession();
+            routingSession.AssignRoute(std::shared_ptr<routing::Route>(&routePtr.get()->getRoute()),routing::RouterResultCode::NoError);
+            engine->getFramework()->GetRoutingManager().FollowRoute();
+        }
+    }
+    void RouteMgr::exitFollowRoute()
+    {
+        engine->getFramework()->GetRoutingManager().DisableFollowMode();
+    }
+
+    void RouteMgr::clearRoutes()
+    {
+        for(int i = 0; i < caculatedRoutes.size(); i++){
+            caculatedRoutes[i].get()->hide();
+        }
+        caculatedRoutes.clear();
     }
 
     //*********************************************

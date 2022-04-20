@@ -53,7 +53,12 @@ namespace fd{
         // route functions
         // 算路
         // 更改路线样式
-        void buildRoute(std::vector<m2::PointD>& points);
+        void buildRoute(std::vector<m2::PointD>& points,BuildRouteCallback callback);
+        void clearRoutes();
+        void showRoute(const std::string& routeId,const std::string& fillColor,const std::string& outlineColor);
+        void hideRoute(const std::string& routeId);
+        void enterFollowRoute(const std::string& routeId);
+        void exitFollowRoute();
 
         //
         void getAvaliableRoute();

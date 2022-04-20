@@ -41,6 +41,8 @@
 #include <vector>
 
 namespace fd{
+    typedef std::function<void(const std::string&, const std::vector<std::string>&)> BuildRouteCallback;
+
     class MapEngine;
     class RouteMgr;
     class RouteWrapper{
@@ -53,6 +55,7 @@ namespace fd{
         void show(const std::string& fillColor, const std::string& outlineColor);
         void hide();
         bool isRouteId(const std::string& routeId);
+        routing::Route& getRoute(){ return route; }
     private:
         std::vector<dp::DrapeID> subrouteIds;
     };
@@ -65,11 +68,15 @@ namespace fd{
         RouteMgr(MapEngine* engine);
         ~RouteMgr();
 
-        void buildRoute(std::vector<m2::PointD>& points);
-        void showRoute(const std::string& routeId);
-        void showRoute(routing::Route const& route, std::string color);
+        void buildRoute(std::vector<m2::PointD>& points,BuildRouteCallback callback);
+        void clearRoutes();
+        void showRoute(const std::string& routeId,const std::string& fillColor,const std::string& outlineColor);
+        void hideRoute(const std::string& routeId);
+        void enterFollowRoute(const std::string& routeId);
+        void exitFollowRoute();
         ref_ptr<df::DrapeEngine> GetDrapeEngine();
     private:
+        void showRoute(routing::Route const& route, std::string color);
         RouteWrapperPtr getRoute(const std::string& routeId);
         /// Worker thread function
         void ThreadFunc();

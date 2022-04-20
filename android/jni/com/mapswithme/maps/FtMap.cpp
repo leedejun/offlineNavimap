@@ -634,11 +634,12 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
                                  true /* applyRotation */, -1 /* zoom */, true /* isAnim */,
                                  true /* useVisibleViewport */);
     } else if (cmdName == "setMapStyle") {
-        std::string style = cmd.getStr(msg, "style");
-        if (style == "dark")
-            g_framework->NativeFramework()->SetMapStyle(MapStyle::MapStyleDark);
-        else
-            g_framework->NativeFramework()->SetMapStyle(MapStyle::MapStyleClear);
+        ENGINE().clearRoutes();
+//        std::string style = cmd.getStr(msg, "style");
+//        if (style == "dark")
+//            g_framework->NativeFramework()->SetMapStyle(MapStyle::MapStyleDark);
+//        else
+//            g_framework->NativeFramework()->SetMapStyle(MapStyle::MapStyleClear);
     } else if (cmdName == "route") {
         jobject array = cmd.getObj(msg, "points");
         std::string type = cmd.getStr(msg, "type");
@@ -667,7 +668,15 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
             g_framework->NativeFramework()->GetRoutingManager().AddRoutePoint(std::move(data));
 
         }
-        ENGINE().buildRoute(points);
+        ENGINE().buildRoute(points,[&](const std::string& code, const std::vector<std::string>& routeIds){
+                std::vector<std::string> colors;
+                colors.push_back("#ff0000");
+                colors.push_back("#00ff00");
+                colors.push_back("#0000ff");
+                for(int i = 0; i < 1; i++){
+                    ENGINE().showRoute(routeIds[0],"#ff0000","#000000");
+                }
+        });
 //        auto result1 = env->NewGlobalRef(json.createJSONObject());
 //        auto tmpMsg = env->NewGlobalRef(msg);
 //        std::function<void(const std::vector<std::shared_ptr<routing::Route>> &)> func = [&, result1, tmpMsg](const std::vector<std::shared_ptr<routing::Route>> & route) {
@@ -712,7 +721,8 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
 //        routingSession.BuildRoute2(routing::Checkpoints(move(points)), onReady, onNeedMap,
 //                                   onRmRode);
     } else if (cmdName == "followRoute") {
-        g_framework->NativeFramework()->GetRoutingManager().FollowRoute();
+//        g_framework->NativeFramework()->GetRoutingManager().FollowRoute();
+        ENGINE().enterFollowRoute("route-1");
     } else if (cmdName == "removeRoute") {
         g_framework->NativeFramework()->GetRoutingManager().RemoveRoute(true);
     } else if (cmdName == "CloseRouting") {

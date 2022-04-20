@@ -219,7 +219,9 @@ private:
     void operator()(std::shared_ptr<Route> route, RouterResultCode e);
     void operator()(const std::vector<std::shared_ptr<Route>>& route, RouterResultCode e);
   };
-
+  // added by baixiaojun,2022.04.20
+public:
+    // ended by baixiaojun
   void AssignRoute(std::shared_ptr<Route> route, RouterResultCode e);
   /// RemoveRoute() removes m_route and resets route attributes (m_lastDistance, m_moveAwayCounter).
   void RemoveRoute();
