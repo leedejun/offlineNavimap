@@ -666,16 +666,14 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
            }
             data.m_position = m2::PointD(json.getDouble(o, "x"), json.getDouble(o, "y"));
             g_framework->NativeFramework()->GetRoutingManager().AddRoutePoint(std::move(data));
-
         }
         ENGINE().buildRoute(points,[&](const std::string& code, const std::vector<std::string>& routeIds){
-                std::vector<std::string> colors;
-                colors.push_back("#ff0000");
-                colors.push_back("#00ff00");
-                colors.push_back("#0000ff");
-                for(int i = 0; i < 1; i++){
-                    ENGINE().showRoute(routeIds[0],"#ff0000","#000000");
-                }
+            auto tmpMsg = env->NewGlobalRef(msg);
+            auto result = json.createJSONArray();
+            for(int i = 0; i < routeIds.size(); i++){
+                json.append(result, json.toJNIString(routeIds[i].c_str()) );
+            }
+            cmd.asyncCall(tmpMsg, result);
         });
 //        auto result1 = env->NewGlobalRef(json.createJSONObject());
 //        auto tmpMsg = env->NewGlobalRef(msg);

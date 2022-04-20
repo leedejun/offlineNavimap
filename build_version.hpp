@@ -9,9 +9,9 @@ namespace build_version
 {
 namespace git
 {
-constexpr char const * const kHash = "a2120c8a5c4435f66102491f3f7b56b1b1133d0a-dirty";
+constexpr char const * const kHash = "962c9c5018417856b79d8cd624c2848ba6be9e31-dirty";
 constexpr char const * const kTag = "";
-constexpr uint64_t kTimestamp = 1650368336;
+constexpr uint64_t kTimestamp = 1650421125;
 constexpr char const * const kProjectName = "omim";
 }  // namespace git
 }  // namespace build_version

@@ -185,6 +185,10 @@ public:
         return res;
     }
 
+    jstring toJNIString(const std::string& value){
+        return jni::ToJavaString(_env,value.c_str());
+    }
+
     void setString(jobject obj, const std::string& key, const std::string& value){
         _env->CallObjectMethod(obj,_setMethd,jni::ToJavaString(_env,key.c_str()),jni::ToJavaString(_env,value.c_str()));
     }
