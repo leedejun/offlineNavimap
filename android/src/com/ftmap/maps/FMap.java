@@ -94,6 +94,8 @@ public abstract class FMap {
     }
 
 
+
+
     public class NaviRoute {
 
     }
@@ -530,6 +532,8 @@ public abstract class FMap {
      */
     public abstract void setViewCenter(double lat, double lon, int zoom);
 
+    public abstract void showRoute(String routeId, String fillColor, String outlineColor);
+    public abstract void hideRoute(String routeId);
 
     public abstract void nativeSetupWidget(int widget, float x, float y, int anchor, SearchResultsCallback callback);
 

@@ -634,13 +634,14 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
                                  true /* applyRotation */, -1 /* zoom */, true /* isAnim */,
                                  true /* useVisibleViewport */);
     } else if (cmdName == "setMapStyle") {
-        ENGINE().clearRoutes();
-//        std::string style = cmd.getStr(msg, "style");
-//        if (style == "dark")
-//            g_framework->NativeFramework()->SetMapStyle(MapStyle::MapStyleDark);
-//        else
-//            g_framework->NativeFramework()->SetMapStyle(MapStyle::MapStyleClear);
+//        ENGINE().clearRoutes();
+        std::string style = cmd.getStr(msg, "style");
+        if (style == "dark")
+            g_framework->NativeFramework()->SetMapStyle(MapStyle::MapStyleDark);
+        else
+            g_framework->NativeFramework()->SetMapStyle(MapStyle::MapStyleClear);
     } else if (cmdName == "route") {
+
         jobject array = cmd.getObj(msg, "points");
         std::string type = cmd.getStr(msg, "type");
         int length = json.length(array);
@@ -667,14 +668,18 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
             data.m_position = m2::PointD(json.getDouble(o, "x"), json.getDouble(o, "y"));
             g_framework->NativeFramework()->GetRoutingManager().AddRoutePoint(std::move(data));
         }
+        auto tmpMsg = env->NewGlobalRef(msg);
         ENGINE().buildRoute(points,[&](const std::string& code, const std::vector<std::string>& routeIds){
-            auto tmpMsg = env->NewGlobalRef(msg);
+//            auto tmpMsg = env->NewGlobalRef(msg);
             auto result = json.createJSONArray();
             for(int i = 0; i < routeIds.size(); i++){
                 json.append(result, json.toJNIString(routeIds[i].c_str()) );
             }
             cmd.asyncCall(tmpMsg, result);
         });
+
+
+
 //        auto result1 = env->NewGlobalRef(json.createJSONObject());
 //        auto tmpMsg = env->NewGlobalRef(msg);
 //        std::function<void(const std::vector<std::shared_ptr<routing::Route>> &)> func = [&, result1, tmpMsg](const std::vector<std::shared_ptr<routing::Route>> & route) {
@@ -718,6 +723,14 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
 //        };
 //        routingSession.BuildRoute2(routing::Checkpoints(move(points)), onReady, onNeedMap,
 //                                   onRmRode);
+    } else if (cmdName == "hideRoute") {
+        std::string routeId = cmd.getStr(msg, "routeId");
+        ENGINE().hideRoute(routeId);
+    } else if (cmdName == "showRoute") {
+        std::string routeId = cmd.getStr(msg, "routeId");
+        std::string fillColor = cmd.getStr(msg, "fillColor");
+        std::string outlineColor = cmd.getStr(msg, "outlineColor");
+        ENGINE().showRoute(routeId,fillColor,outlineColor);
     } else if (cmdName == "followRoute") {
 //        g_framework->NativeFramework()->GetRoutingManager().FollowRoute();
         ENGINE().enterFollowRoute("route-1");

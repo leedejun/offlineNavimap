@@ -72,17 +72,24 @@
       android:layout_marginRight="80dp"
       android:layout_height="wrap_content"/>
   <Button
-      android:id="@+id/btSetupWidget"
+      android:id="@+id/btShowRoute"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_marginLeft="10dp"
       android:layout_marginTop="160dp"
-      android:text="指南针" />
+      android:text="显示路线1" />
+  <Button
+      android:id="@+id/btHideRoute"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginLeft="120dp"
+      android:layout_marginTop="160dp"
+      android:text="隐藏路线1" />
   <Button
       android:id="@+id/btFollowRoute"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginLeft="120dp"
+      android:layout_marginLeft="240dp"
       android:layout_marginTop="160dp"
       android:text="导航" />
 </RelativeLayout>

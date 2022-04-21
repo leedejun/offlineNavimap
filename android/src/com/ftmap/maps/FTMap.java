@@ -787,6 +787,14 @@ public class FTMap extends FMap implements View.OnTouchListener {
     public void setViewCenter(double lat, double lon, int zoom) {
         FTMap.cmd("setViewCenter").set("lat", lat).set("lon", lon).set("zoom", zoom).run();
     }
+    @Override
+    public void showRoute(String routeId, String fillColor, String outlineColor) {
+        FTMap.cmd("showRoute").set("routeId", routeId).set("fillColor", fillColor).set("outlineColor", outlineColor).run();
+    }
+    @Override
+    public void hideRoute(String routeId) {
+        FTMap.cmd("hideRoute").set("routeId", routeId).run();
+    }
 
     /**
      * 将点集合全部显示到视图中间

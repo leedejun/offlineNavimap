@@ -41,6 +41,7 @@ public class MapTestActivity extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ftmap);
         FMap.INSTANCE.init(this.getApplication(), this, R.id.map_view_container, BuildConfig.APPLICATION_ID);
+        initOnMapClickListener();
         findViewById(R.id.btnSearchPoi).setOnClickListener(this);
         findViewById(R.id.btnLocate).setOnClickListener(this);
         findViewById(R.id.btnRoute).setOnClickListener(this);
@@ -48,7 +49,8 @@ public class MapTestActivity extends AppCompatActivity implements View.OnClickLi
         findViewById(R.id.btnZoomOut).setOnClickListener(this);
         findViewById(R.id.btnStyleClear).setOnClickListener(this);
         findViewById(R.id.btnStyleDark).setOnClickListener(this);
-        findViewById(R.id.btSetupWidget).setOnClickListener(this);
+        findViewById(R.id.btShowRoute).setOnClickListener(this);
+        findViewById(R.id.btHideRoute).setOnClickListener(this);
         findViewById(R.id.btFollowRoute).setOnClickListener(this);
         etSearchPoi = (EditText) findViewById(R.id.etSearchPoi);
 
@@ -101,48 +103,20 @@ public class MapTestActivity extends AppCompatActivity implements View.OnClickLi
                 });
 //        this.line.destroy();
                 break;
-            case R.id.btSetupWidget:
-                FMap.INSTANCE.OnMapClickListener((JSONObject results) -> {
-                    String s1 = results.toString();
-                    Log.d("OnMapClickListener", s1);
+            case R.id.btShowRoute:
 
-                    try {
-                        if ("longClick".equals(results.get("clickTypr").toString())) {
-                            int screenX = results.getInt("screenX");
-                            int screenY = results.getInt("screenY");
-                            FMap.INSTANCE.PtoG(screenX, screenY, (JSONObject results1) -> {
-                                try {
-                                    double mercatorX = results1.getDouble("mercatorX");
-                                    double mercatorY = results1.getDouble("mercatorY");
-                                    FMap.INSTANCE.GetMapObject(mercatorX, mercatorY, (JSONObject results2) -> {
-//                                        Toast.makeText(MapTestActivity.this, results2.toString(), Toast.LENGTH_LONG).show();
-
-                                    });
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            });
-                        }else if ("Move".equals(results.get("clickTypr").toString())){
-                            DisplayMetrics dm1 = getResources().getDisplayMetrics();
-                            FMap.INSTANCE.ScreenToMapObject(dm1.widthPixels/2, dm1.heightPixels/2, (JSONObject results1) -> {
-//                                Toast.makeText(MapTestActivity.this, results1.toString(), Toast.LENGTH_LONG).show();
-
-                            });
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-//                    String s1 = results.toString();
-//                    Log.d("PtoG", s1);
-//          results.put("");
-                });
+                FMap.INSTANCE.showRoute("route-1","#ff0000","#00ff00");
 //
+                break;
+            case R.id.btHideRoute:
+                FMap.INSTANCE.hideRoute("route-1");
                 break;
             case R.id.btnLocate:
                 //119.8681282,35.338494221984661
                 //124.79901609409046，55.887908445347364
                 //112.95700768349326,29.411557982948096
                 FMap.INSTANCE.setViewCenter(112.95700768349326, 29.411557982948096, -1);
+//                FMap.INSTANCE.showRoute("route-1","#ff0000","#ff0000");
 //        if( this.line != null ){
 //          this.line.width(10.0 );
 //          this.line.update();
@@ -316,7 +290,8 @@ public class MapTestActivity extends AppCompatActivity implements View.OnClickLi
                 });
                 break;
             case R.id.btnZoomIn:
-                FMap.INSTANCE.zoom(true);
+                FMap.INSTANCE.hideRoute("route-1");
+//                FMap.INSTANCE.zoom(true);
                 break;
             case R.id.btnZoomOut:
                 FMap.INSTANCE.zoom(false);
@@ -330,6 +305,43 @@ public class MapTestActivity extends AppCompatActivity implements View.OnClickLi
             default:
                 break;
         }
+    }
+
+    private void initOnMapClickListener() {
+        FMap.INSTANCE.OnMapClickListener((JSONObject results) -> {
+            String s1 = results.toString();
+            Log.d("OnMapClickListener", s1);
+
+            try {
+                if ("longClick".equals(results.get("clickTypr").toString())) {
+                    int screenX = results.getInt("screenX");
+                    int screenY = results.getInt("screenY");
+                    FMap.INSTANCE.PtoG(screenX, screenY, (JSONObject results1) -> {
+                        try {
+                            double mercatorX = results1.getDouble("mercatorX");
+                            double mercatorY = results1.getDouble("mercatorY");
+                            FMap.INSTANCE.GetMapObject(mercatorX, mercatorY, (JSONObject results2) -> {
+//                                        Toast.makeText(MapTestActivity.this, results2.toString(), Toast.LENGTH_LONG).show();
+
+                            });
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }else if ("Move".equals(results.get("clickTypr").toString())){
+                    DisplayMetrics dm1 = getResources().getDisplayMetrics();
+                    FMap.INSTANCE.ScreenToMapObject(dm1.widthPixels/2, dm1.heightPixels/2, (JSONObject results1) -> {
+//                                Toast.makeText(MapTestActivity.this, results1.toString(), Toast.LENGTH_LONG).show();
+
+                    });
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+//                    String s1 = results.toString();
+//                    Log.d("PtoG", s1);
+//          results.put("");
+        });
     }
 
 }
