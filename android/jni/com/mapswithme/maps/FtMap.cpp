@@ -669,12 +669,13 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
             g_framework->NativeFramework()->GetRoutingManager().AddRoutePoint(std::move(data));
         }
         auto tmpMsg = env->NewGlobalRef(msg);
+        auto result = env->NewGlobalRef(json.createJSONObject());
         ENGINE().buildRoute(points,[&](const std::string& code, const std::vector<std::string>& routeIds){
-//            auto tmpMsg = env->NewGlobalRef(msg);
-            auto result = json.createJSONArray();
+            auto routeIdList = json.createJSONArray();
             for(int i = 0; i < routeIds.size(); i++){
-                json.append(result, json.toJNIString(routeIds[i].c_str()) );
+                json.append(routeIdList,  json.toJNIString(routeIds[i]));
             }
+            json.setObject(result, "routeIdList" ,routeIdList);
             cmd.asyncCall(tmpMsg, result);
         });
 

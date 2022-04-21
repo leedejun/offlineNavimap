@@ -273,6 +273,8 @@ public class MapTestActivity extends AppCompatActivity implements View.OnClickLi
                     return;
                 }
                 FMap.INSTANCE.routing(points, "car", (JSONObject result) -> {
+                    String s1 = result.toString();
+                    Log.d("routing", s1);
                     // 把路线画出来
                     try {
                         JSONArray routePoints = result.getJSONArray("result");
