@@ -594,6 +594,49 @@ void RoutingManager::SetRouterImpl(RouterType type)
   m_routingSession.SetRouter(move(router), move(fetcher));
   m_currentRouterType = type;
 }
+void RoutingManager::SetRouterImpl(RouterType type,const int k)
+{
+  auto const dataSourceGetterFn = m_callbacks.m_dataSourceGetter;
+  CHECK(dataSourceGetterFn, ("Type:", type));
+
+  VehicleType const vehicleType = GetVehicleType(type);
+
+  m_loadAltitudes = vehicleType != VehicleType::Car;
+
+  auto const countryFileGetter = [this](m2::PointD const & p) -> string {
+    // TODO (@gorshenin): fix CountryInfoGetter to return CountryFile
+    // instances instead of plain strings.
+    return m_callbacks.m_countryInfoGetter().GetRegionCountryId(p);
+  };
+
+  auto numMwmIds = make_shared<NumMwmIds>();
+  m_delegate.RegisterCountryFilesOnRoute(numMwmIds);
+
+  auto & dataSource = m_callbacks.m_dataSourceGetter();
+
+  auto localFileChecker = [this](string const & countryFile) -> bool {
+    MwmSet::MwmId const mwmId = m_callbacks.m_dataSourceGetter().GetMwmIdByCountryFile(
+      platform::CountryFile(countryFile));
+    if (!mwmId.IsAlive())
+      return false;
+
+    return version::MwmTraits(mwmId.GetInfo()->m_version).HasRoutingIndex();
+  };
+
+  auto const getMwmRectByName = [this](string const & countryId) -> m2::RectD {
+    return m_callbacks.m_countryInfoGetter().GetLimitRectForLeaf(countryId);
+  };
+
+  auto fetcher = make_unique<OnlineAbsentCountriesFetcher>(countryFileGetter, localFileChecker);
+  auto router = make_unique<FtIndexRouter>(vehicleType, m_loadAltitudes, m_callbacks.m_countryParentNameGetterFn,
+                                         countryFileGetter, getMwmRectByName, numMwmIds,
+                                         MakeNumMwmTree(*numMwmIds, m_callbacks.m_countryInfoGetter()),
+                                         m_routingSession, dataSource,FtStrategy::MotorwayFirst);
+
+  m_routingSession.SetRoutingSettings(GetRoutingSettings(vehicleType));
+  m_routingSession.SetRouter(move(router), move(fetcher));
+  m_currentRouterType = type;
+}
 
 void RoutingManager::RemoveRoute(bool deactivateFollowing)
 {
@@ -1364,6 +1407,19 @@ bool RoutingManager::IsTrackingReporterArchiveEnabled() const
   return enableTracking;
 }
 
+void RoutingManager::SetRouter(RouterType type, const int k)
+{
+  CHECK_THREAD_CHECKER(m_threadChecker, ("SetRouter"));
+
+  if (m_currentRouterType == type)
+    return;
+
+  // Hide preview.
+  HidePreviewSegments();
+
+  SetLastUsedRouter(type);
+  SetRouterImpl(type,k);
+}
 void RoutingManager::SetRouter(RouterType type)
 {
   CHECK_THREAD_CHECKER(m_threadChecker, ("SetRouter"));

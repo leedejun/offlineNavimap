@@ -10,6 +10,7 @@
 #include "map/user_mark_id_storage.hpp"
 #include "map/fd/map_engine.hpp"
 
+
 #define cmd CommandHelper::getIns()
 #define json JsonHelper::getIns()
 
@@ -330,20 +331,20 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
 
 
 
-//        g_framework->SetupWidget(static_cast<gui::EWidget>(WIDGET_RULER), 30, 1942, static_cast<dp::Anchor>(ANCHOR_LEFT_BOTTOM));
-//        g_framework->SetupWidget(static_cast<gui::EWidget>(WIDGET_COMPASS), 978, 169, static_cast<dp::Anchor>(ANCHOR_CENTER));
-//        g_framework->SetupWidget(static_cast<gui::EWidget>(WIDGET_COPYRIGHT), 30, 1942, static_cast<dp::Anchor>(ANCHOR_LEFT_BOTTOM));
-//        g_framework->SetupWidget(static_cast<gui::EWidget>(WIDGET_SCALE_FPS_LABEL), 48, 48, static_cast<dp::Anchor>(ANCHOR_LEFT_TOP));
-//        g_framework->SetupWidget(static_cast<gui::EWidget>(WIDGET_WATERMARK), 1050, 1942, static_cast<dp::Anchor>(ANCHOR_RIGHT_BOTTOM));
-        g_framework->SetupWidget(static_cast<gui::EWidget>(1), 30, 1942,
-                                 static_cast<dp::Anchor>(9));
-        g_framework->SetupWidget(static_cast<gui::EWidget>(2), 978, 1942,
-                                 static_cast<dp::Anchor>(0));
-        g_framework->SetupWidget(static_cast<gui::EWidget>(4), 30, 1942,
-                                 static_cast<dp::Anchor>(9));
-        g_framework->SetupWidget(static_cast<gui::EWidget>(8), 0, 100, static_cast<dp::Anchor>(5));
-        g_framework->SetupWidget(static_cast<gui::EWidget>(10), 1050, 1942,
-                                 static_cast<dp::Anchor>(10));
+        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_RULER), 30, 1942, static_cast<dp::Anchor>(dp::Anchor::LeftBottom));
+        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_COMPASS), 120, 1942, static_cast<dp::Anchor>(dp::Anchor::Center));
+        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_COPYRIGHT), 150, 1942, static_cast<dp::Anchor>(dp::Anchor::LeftBottom));
+        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_SCALE_FPS_LABEL), 60, 1942, static_cast<dp::Anchor>(dp::Anchor::LeftTop));
+        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_WATERMARK), 50, 1942, static_cast<dp::Anchor>(dp::Anchor::Right));
+//        g_framework->SetupWidget(static_cast<gui::EWidget>(1), 30, 1942,
+//                                 static_cast<dp::Anchor>(9));
+//        g_framework->SetupWidget(static_cast<gui::EWidget>(2), 978, 1942,
+//                                 static_cast<dp::Anchor>(0));
+//        g_framework->SetupWidget(static_cast<gui::EWidget>(4), 30, 1942,
+//                                 static_cast<dp::Anchor>(9));
+//        g_framework->SetupWidget(static_cast<gui::EWidget>(8), 0, 100, static_cast<dp::Anchor>(5));
+//        g_framework->SetupWidget(static_cast<gui::EWidget>(10), 1050, 1942,
+//                                 static_cast<dp::Anchor>(10));
         cmd.set(msg, "result", true);
     } else if (cmdName == "processTask") {
         long taskPointer = cmd.getLong(msg, "taskPointer");
@@ -543,8 +544,8 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         m2::PointD mercator = mercator::FromLatLon(ms::LatLon(lat, lon));
         auto dataJson = json.createJSONObject();
         json.setDouble(dataJson, "mercatorY", mercator.y);
-        cmd.asyncCall(tmpMsg, dataJson);
         json.setDouble(dataJson, "mercatorX", mercator.x);
+        cmd.asyncCall(tmpMsg, dataJson);
 
     } else if (cmdName == "GetFeatureID") {
         auto tmpMsg = env->NewGlobalRef(msg);
@@ -667,10 +668,11 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
            }
             data.m_position = m2::PointD(json.getDouble(o, "x"), json.getDouble(o, "y"));
             g_framework->NativeFramework()->GetRoutingManager().AddRoutePoint(std::move(data));
+//            g_framework->NativeFramework()->GetRoutingManager().SetRouter(routing::RouterType::Vehicle,1);
         }
         auto tmpMsg = env->NewGlobalRef(msg);
         auto result = env->NewGlobalRef(json.createJSONObject());
-        ENGINE().buildRoute(points,[&](const std::string& code, const std::vector<std::string>& routeIds){
+        ENGINE().buildRoute(points,[&,result,tmpMsg](const std::string& code, const std::vector<std::string>& routeIds){
             auto routeIdList = json.createJSONArray();
             for(int i = 0; i < routeIds.size(); i++){
                 json.append(routeIdList,  json.toJNIString(routeIds[i]));
@@ -724,6 +726,8 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
 //        };
 //        routingSession.BuildRoute2(routing::Checkpoints(move(points)), onReady, onNeedMap,
 //                                   onRmRode);
+    } else if (cmdName == "getRoute") {
+
     } else if (cmdName == "hideRoute") {
         std::string routeId = cmd.getStr(msg, "routeId");
         ENGINE().hideRoute(routeId);

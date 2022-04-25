@@ -38,6 +38,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+//#include "routing_common/ft_car_model_factory.hpp"
 
 namespace storage
 {
@@ -133,6 +134,7 @@ public:
   routing::RoutingSession const & RoutingSession() const { return m_routingSession; }
   routing::RoutingSession & RoutingSession() { return m_routingSession; }
   void SetRouter(routing::RouterType type);
+  void SetRouter(routing::RouterType type, const int k);
   routing::RouterType GetRouter() const { return m_currentRouterType; }
   bool IsRoutingActive() const { return m_routingSession.IsActive(); }
   bool IsRouteBuilt() const { return m_routingSession.IsBuilt(); }
@@ -237,6 +239,7 @@ public:
   bool IsMyPosition(RouteMarkType type, size_t intermediateIndex = 0);
 
   void SetRouterImpl(routing::RouterType type);
+  void SetRouterImpl(routing::RouterType type,const int k);
   void RemoveRoute(bool deactivateFollowing);
 
   void CheckLocationForRouting(location::GpsInfo const & info);

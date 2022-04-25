@@ -448,7 +448,7 @@ namespace routing {
             delegateProxy = m_delegateProxy;
             router = m_router;
             absentFetcher = m_absentFetcher;
-            routeId = ++m_routeCounter;
+//            routeId = ++m_routeCounter;
             routingStatisticsCallback = m_routingStatisticsCallback;
             routerName = router->GetName();
             router->SetGuides(move(m_guides));
@@ -459,7 +459,9 @@ namespace routing {
         vector<shared_ptr<Route>> vec_route;
         for (int i = 0; i < m_requireRountCount; i++) {
             std::ostringstream stringStream;
+            auto str =routeId+i;
             stringStream << "route-" << routeId+i;
+            auto str1 =stringStream.str();
             vec_route.push_back(make_shared<Route>(stringStream.str(), routeId));
         }
         RouterResultCode code;

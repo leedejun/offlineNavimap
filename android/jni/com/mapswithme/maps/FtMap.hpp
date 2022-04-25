@@ -1,5 +1,6 @@
 #include "com/mapswithme/core/jni_helper.hpp"
 #include "com/mapswithme/platform/Platform.hpp"
+//#include "routing_common/ft_car_model_factory.hpp"
 
 
 class CommandHelper{
