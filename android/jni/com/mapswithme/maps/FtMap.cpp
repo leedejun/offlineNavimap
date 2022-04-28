@@ -726,8 +726,28 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
 //        };
 //        routingSession.BuildRoute2(routing::Checkpoints(move(points)), onReady, onNeedMap,
 //                                   onRmRode);
-    } else if (cmdName == "getRoute") {
-
+    } else if (cmdName == "getRouteInfo") {
+        auto tmpMsg = env->NewGlobalRef(msg);
+        std::string routeId = cmd.getStr(msg, "routeId");
+        std::string routeInfo =  ENGINE().getRouteInfo(routeId);
+//        json jsonstr =routeInfo _json;
+        auto result = env->NewGlobalRef(json.createJSONObject());
+        json.setObject(result, "routeDistance" ,json.toJNIString(routeInfo));
+        cmd.asyncCall(tmpMsg, result);
+    } else if (cmdName == "getRouteDistance") {
+        auto tmpMsg = env->NewGlobalRef(msg);
+        std::string routeId = cmd.getStr(msg, "routeId");
+        double routeDistance =  ENGINE().getRouteDistance(routeId);
+        auto result = env->NewGlobalRef(json.createJSONObject());
+        json.setObject(result, "routeDistance" ,json.toJNIString(std::to_string(routeDistance)));
+        cmd.asyncCall(tmpMsg, result);
+    } else if (cmdName == "getRouteTime") {
+        auto tmpMsg = env->NewGlobalRef(msg);
+        std::string routeId = cmd.getStr(msg, "routeId");
+        double time =  ENGINE().getRouteTime(routeId);
+        auto result = env->NewGlobalRef(json.createJSONObject());
+        json.setObject(result, "routeTime" ,json.toJNIString(std::to_string(time)));
+        cmd.asyncCall(tmpMsg, result);
     } else if (cmdName == "hideRoute") {
         std::string routeId = cmd.getStr(msg, "routeId");
         ENGINE().hideRoute(routeId);

@@ -58,6 +58,9 @@ namespace fd{
         void showRoute(const std::string& routeId,const std::string& fillColor,const std::string& outlineColor);
         void hideRoute(const std::string& routeId);
         void enterFollowRoute(const std::string& routeId);
+        double getRouteTime(const std::string& routeId);
+        double getRouteDistance(const std::string& routeId);
+        std::string getRouteInfo(const std::string& routeId);
         void exitFollowRoute();
 
         //

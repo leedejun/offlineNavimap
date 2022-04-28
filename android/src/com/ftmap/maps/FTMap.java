@@ -837,6 +837,45 @@ public class FTMap extends FMap implements View.OnTouchListener {
 
 
     /**
+     * 获取路线详情
+     *
+     * @param routeId
+     * @param callback
+     */
+    @Override
+    public void getRouteInfo( String routeId, RoutingResultsCallback callback) {
+        FTMap.cmd("getRouteInfo").set("routeId", routeId).setAsyncCallback((Object obj) -> {
+            JSONObject array = (JSONObject) obj;
+            callback.op(array);
+        }).run();
+    }
+    /**
+     * 获取路线距离
+     *
+     * @param routeId
+     * @param callback
+     */
+    @Override
+    public void getRouteDistance( String routeId, RoutingResultsCallback callback) {
+        FTMap.cmd("getRouteDistance").set("routeId", routeId).setAsyncCallback((Object obj) -> {
+            JSONObject array = (JSONObject) obj;
+            callback.op(array);
+        }).run();
+    }
+    /**
+     * 获取路线长度
+     *
+     * @param routeId
+     * @param callback
+     */
+    @Override
+    public void getRouteTime( String routeId, RoutingResultsCallback callback) {
+        FTMap.cmd("getRouteTime").set("routeId", routeId).setAsyncCallback((Object obj) -> {
+            JSONObject array = (JSONObject) obj;
+            callback.op(array);
+        }).run();
+    }
+    /**
      * 路径规划
      *
      * @param points

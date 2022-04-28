@@ -34,6 +34,21 @@ namespace fd{
     {
         routeMgr.enterFollowRoute(routeId);
     }
+    double MapEngine::getRouteTime(const std::string& routeId)
+    {
+        return  routeMgr.getRouteTime(routeId);
+
+    }
+    double MapEngine::getRouteDistance(const std::string& routeId)
+    {
+        return  routeMgr.getRouteDistance(routeId);
+
+    }
+    std::string  MapEngine::getRouteInfo(const std::string& routeId)
+    {
+        return  routeMgr.getRouteInfo(routeId);
+
+    }
     void MapEngine::exitFollowRoute()
     {
         routeMgr.exitFollowRoute();

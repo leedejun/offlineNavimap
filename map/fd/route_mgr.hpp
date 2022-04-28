@@ -55,6 +55,8 @@ namespace fd{
         void show(const std::string& fillColor, const std::string& outlineColor);
         void hide();
         bool isRouteId(const std::string& routeId);
+       void getRouteTime(const std::string& routeId);
+
         routing::Route& getRoute(){ return route; }
     private:
         std::vector<dp::DrapeID> subrouteIds;
@@ -73,6 +75,9 @@ namespace fd{
         void showRoute(const std::string& routeId,const std::string& fillColor,const std::string& outlineColor);
         void hideRoute(const std::string& routeId);
         void enterFollowRoute(const std::string& routeId);
+        double getRouteTime(const std::string& routeId);
+        double getRouteDistance(const std::string& routeId);
+        std::string getRouteInfo(const std::string& routeId);
         void exitFollowRoute();
         ref_ptr<df::DrapeEngine> GetDrapeEngine();
     private:

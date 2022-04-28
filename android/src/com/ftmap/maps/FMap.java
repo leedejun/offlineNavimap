@@ -534,6 +534,9 @@ public abstract class FMap {
 
     public abstract void showRoute(String routeId, String fillColor, String outlineColor);
     public abstract void hideRoute(String routeId);
+    public abstract void getRouteTime(String type, RoutingResultsCallback callback);
+    public abstract void getRouteDistance(String type, RoutingResultsCallback callback);
+    public abstract void getRouteInfo(String type, RoutingResultsCallback callback);
 
     public abstract void nativeSetupWidget(int widget, float x, float y, int anchor, SearchResultsCallback callback);
 
@@ -571,6 +574,7 @@ public abstract class FMap {
      * @param callback
      */
     public abstract void routing(JSONArray points, String type, RoutingResultsCallback callback);
+
 
     /**
      * 改变地图风格

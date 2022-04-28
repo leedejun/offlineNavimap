@@ -108,7 +108,28 @@ public class MapTestActivity extends AppCompatActivity implements View.OnClickLi
 //
                 break;
             case R.id.btHideRoute:
-                FMap.INSTANCE.hideRoute("route-1");
+                FMap.INSTANCE.getRouteTime("route-1", (JSONObject result) -> {
+                    String a =result.toString();
+                    Log.d("getRouteTime", a);
+                });
+                FMap.INSTANCE.getRouteDistance("route-1", (JSONObject result) -> {
+                    String a1 =result.toString();
+                    Log.d("getRouteDistance", a1);
+                });
+                FMap.INSTANCE.getRouteInfo("route-1", (JSONObject result) -> {
+                    String a1 =result.toString();
+                    try {
+                        String routeDistance = result.getString("routeDistance");
+                        JSONArray jsonArray = new JSONArray(routeDistance);
+                        JSONObject o = (JSONObject) jsonArray.get(0);
+                        String m_street = o.getString("m_street");
+                        String turnString = o.getString("turnString");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    Log.d("getRouteDistance", a1);
+                });
+//                FMap.INSTANCE.hideRoute("route-1");
                 break;
             case R.id.btnLocate:
                 //119.8681282,35.338494221984661

@@ -1,5 +1,8 @@
 #include "route_mgr.hpp"
 #include "map_engine.hpp"
+#include "search/result.hpp"
+//#include "services/json.hpp"
+#define json JsonHelper::getIns()
 
 
 namespace fd{
@@ -19,19 +22,20 @@ namespace fd{
     void RouteMgr::buildRoute(std::vector<m2::PointD>& points,BuildRouteCallback callback)
     {
         auto &routingSession = engine->getFramework()->GetRoutingManager().RoutingSession();
-        routing::ReadyCallbackKsp onReady = [&,callback,this](const std::vector<std::shared_ptr<routing::Route>>& routes,
-                                           routing::RouterResultCode code)
-        {
+        routing::ReadyCallbackKsp onReady;
+        onReady = [&, callback, this](const std::vector<std::shared_ptr<routing::Route>> &routes,
+                                      routing::RouterResultCode code) {
             int i = 0;
             if (code == routing::RouterResultCode::NoError) {
                 std::vector<std::string> routeIds;
-                for(int i = 0; i < routes.size(); i++){
-                    routing::Route* route = routes[i].get();
-                    routeIds.push_back( route->GetRouterId() );
-                    auto wrapper = std::make_shared<RouteWrapper>(*this,*route);
+                for (int i = 0; i < routes.size(); i++) {
+                    routing::Route *route = routes[i].get();
+                    routeIds.push_back(route->GetRouterId());
+
+                    auto wrapper = std::make_shared<RouteWrapper>(*this, *route);
                     caculatedRoutes.push_back(wrapper);
-               }
-                callback("ok",routeIds);
+                }
+                callback("ok", routeIds);
             }
         };
         auto onNeedMap = [&](uint64_t, std::set<std::string> const &) {
@@ -245,4 +249,62 @@ namespace fd{
     }
 
 
+    double RouteMgr::getRouteTime(const std::string& routeId)
+    {
+        RouteWrapperPtr RouteMgr = getRoute(routeId);
+        routing::Route  route = RouteMgr.get()->getRoute();
+//        route.GetTotalTimeSec();
+        return  route.GetTotalTimeSec();
+    }
+    double RouteMgr::getRouteDistance(const std::string& routeId)
+    {
+        RouteWrapperPtr RouteMgr = getRoute(routeId);
+        routing::Route  route = RouteMgr.get()->getRoute();
+//        route.GetTotalTimeSec();
+        return  route.GetTotalDistanceMeters();
+    }
+    std::string RouteMgr::getRouteInfo(const std::string& routeId)
+    {
+        RouteWrapperPtr RouteMgr = getRoute(routeId);
+        routing::Route  route = RouteMgr.get()->getRoute();
+        std::vector<routing::RouteSegment> segment = route.GetRouteSegments();
+        std::vector<routing::RouteSegment>::const_iterator sItor, sLast = segment.end();
+        std::stringstream stream;
+        int i = 0;
+        //{"routeDistance":[{"index":0,"m_street":"无名路","turnString":"None","targetName":"无名路","sourceName":"无名路"}]}
+//        using  nlohmann::json;
+
+//        JsonObject& data = json.createNestedObject("data");
+        stream << "[";
+        for (sItor = segment.begin(); sItor != sLast; ++sItor) {
+            stream << "{";
+            stream << "\"index\":" << "\"" << i << "\",";
+            std::string street = sItor->GetStreet();
+            std::string turnStr = GetTurnString(sItor->GetTurn().m_turn);
+            std::string targetName = sItor->GetTurn().m_targetName;
+            std::string sourceName = sItor->GetTurn().m_sourceName;
+            if(street==""){
+                street = "无名路";
+            }
+            if(targetName==""){
+                targetName = "无名路";
+            }
+            if(sourceName==""){
+                sourceName = "无名路";
+            }
+            stream << "\"m_street\":" << "\"" << street << "\",";
+            stream << "\"turnString\":" << "\"" << turnStr << "\",";
+            stream << "\"targetName\":" << "\"" << targetName << "\",";
+            stream << "\"sourceName\":" << "\"" << sourceName << "\"";
+
+            stream << "}";
+            if(sItor != sLast -1) {
+                stream << ",";
+            }
+            ++i;
+        }
+        stream << "]";
+//        route.GetTotalTimeSec();
+        return  stream.str().c_str();
+    }
 };
