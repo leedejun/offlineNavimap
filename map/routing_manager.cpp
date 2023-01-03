@@ -584,14 +584,35 @@ void RoutingManager::SetRouterImpl(RouterType type)
     return m_callbacks.m_countryInfoGetter().GetLimitRectForLeaf(countryId);
   };
 
-  auto fetcher = make_unique<OnlineAbsentCountriesFetcher>(countryFileGetter, localFileChecker);
-  auto router = make_unique<FtIndexRouter>(vehicleType, m_loadAltitudes, m_callbacks.m_countryParentNameGetterFn,
-                                         countryFileGetter, getMwmRectByName, numMwmIds,
-                                         MakeNumMwmTree(*numMwmIds, m_callbacks.m_countryInfoGetter()),
-                                         m_routingSession, dataSource,FtStrategy::MotorwayFirst);
+//  auto fetcher = make_unique<OnlineAbsentCountriesFetcher>(countryFileGetter, localFileChecker);
+//  auto router = make_unique<FtIndexRouter>(vehicleType, m_loadAltitudes, m_callbacks.m_countryParentNameGetterFn,
+//                                         countryFileGetter, getMwmRectByName, numMwmIds,
+//                                         MakeNumMwmTree(*numMwmIds, m_callbacks.m_countryInfoGetter()),
+//                                         m_routingSession, dataSource,FtStrategy::MotorwayFirst);
+
+  std::vector<unique_ptr<IRouter>> vec_router;
+  std::vector<unique_ptr<OnlineAbsentCountriesFetcher>> vec_fetcher;
+  vec_fetcher.push_back(make_unique<OnlineAbsentCountriesFetcher>(countryFileGetter, localFileChecker));
+  vec_fetcher.push_back(make_unique<OnlineAbsentCountriesFetcher>(countryFileGetter, localFileChecker));
+  vec_fetcher.push_back(make_unique<OnlineAbsentCountriesFetcher>(countryFileGetter, localFileChecker));
+  vec_router.push_back(make_unique<FtIndexRouter>(vehicleType, m_loadAltitudes, m_callbacks.m_countryParentNameGetterFn,
+                                                  countryFileGetter, getMwmRectByName, numMwmIds,
+                                                  MakeNumMwmTree(*numMwmIds, m_callbacks.m_countryInfoGetter()),
+                                                  m_routingSession, dataSource,FtStrategy::MotorwayFirst));
+
+  vec_router.push_back(make_unique<FtIndexRouter>(vehicleType, m_loadAltitudes, m_callbacks.m_countryParentNameGetterFn,
+                                                  countryFileGetter, getMwmRectByName, numMwmIds,
+                                                  MakeNumMwmTree(*numMwmIds, m_callbacks.m_countryInfoGetter()),
+                                                  m_routingSession, dataSource,FtStrategy::NoMotorway));
+
+  vec_router.push_back(make_unique<FtIndexRouter>(vehicleType, m_loadAltitudes, m_callbacks.m_countryParentNameGetterFn,
+                                                  countryFileGetter, getMwmRectByName, numMwmIds,
+                                                  MakeNumMwmTree(*numMwmIds, m_callbacks.m_countryInfoGetter()),
+                                                  m_routingSession, dataSource,FtStrategy::ShortestWay));
 
   m_routingSession.SetRoutingSettings(GetRoutingSettings(vehicleType));
-  m_routingSession.SetRouter(move(router), move(fetcher));
+//  m_routingSession.SetRouter(move(router), move(fetcher));
+  m_routingSession.SetVecRouter(move(vec_router), move(vec_fetcher));
   m_currentRouterType = type;
 }
 void RoutingManager::SetRouterImpl(RouterType type,const int k)

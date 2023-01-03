@@ -99,6 +99,20 @@ public:
         jobject result = _env->NewObject(clazz, constructorID, value);
         _env->CallObjectMethod(obj,_setMethd,jni::ToJavaString(_env,key.c_str()),result);
     }
+    void set(jobject obj, const std::string& key, long long value){
+        jclass clazz = _env->FindClass("java/lang/Long");
+        jmethodID constructorID = _env->GetMethodID(clazz, "<init>", "(J)V");
+        jobject result = _env->NewObject(clazz, constructorID, value);
+
+        _env->CallObjectMethod(obj,_setMethd,jni::ToJavaString(_env,key.c_str()),result);
+    }
+    void set(jobject obj, const std::string& key, double  value){
+        jclass clazz = _env->FindClass("java/lang/Long");
+        jmethodID constructorID = _env->GetMethodID(clazz, "<init>", "(J)V");
+        jobject result = _env->NewObject(clazz, constructorID, value);
+        _env->CallObjectMethod(obj,_setMethd,jni::ToJavaString(_env,key.c_str()),result);
+    }
+
 
     void set(jobject obj, const std::string& key, jobject value){
         _env->CallObjectMethod(obj,_setMethd,jni::ToJavaString(_env,key.c_str()),value);
@@ -168,6 +182,14 @@ public:
         jmethodID mid = jni::GetMethodID(_env,obj,"getLong","(Ljava/lang/String;)J");
         return _env->CallLongMethod(obj,mid,jni::ToJavaString(_env,key.c_str()));
     }
+    long getLong(jobject obj, int idx){
+        jmethodID mid = jni::GetMethodID(_env,obj,"getLong","(I)J");
+        return _env->CallLongMethod(obj,mid,idx);
+    }
+   long long getLongLong(jobject obj, int idx){
+        jmethodID mid = jni::GetMethodID(_env,obj,"getLong","(I)J");
+        return _env->CallLongMethod(obj,mid,idx);
+    }
     double getDouble(jobject obj, const std::string& key){
         jmethodID mid = jni::GetMethodID(_env,obj,"getDouble","(Ljava/lang/String;)D");
         return _env->CallDoubleMethod(obj,mid,jni::ToJavaString(_env,key.c_str()));
@@ -179,6 +201,15 @@ public:
     std::string getString(jobject obj, const std::string& key){
         jmethodID mid = jni::GetMethodID(_env,obj,"getString","(Ljava/lang/String;)Ljava/lang/String;");
         jobject s = _env->CallObjectMethod(obj,mid,jni::ToJavaString(_env,key.c_str()));
+        jboolean isCopy;
+        std::string const res = _env->GetStringUTFChars((jstring)s, &isCopy);
+//        std::string tmp = res;
+//        _env->DeleteLocalRef(s);
+        return res;
+    }
+    std::string getString(jobject obj, int idx){
+        jmethodID mid = jni::GetMethodID(_env,obj,"getString","(I)Ljava/lang/String;");
+        jobject s = _env->CallObjectMethod(obj,mid,idx);
         jboolean isCopy;
         std::string const res = _env->GetStringUTFChars((jstring)s, &isCopy);
 //        std::string tmp = res;

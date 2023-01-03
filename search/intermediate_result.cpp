@@ -135,10 +135,11 @@ bool PreRankerResult::CategoriesComparator::operator()(PreRankerResult const & l
 
 // RankerResult ------------------------------------------------------------------------------------
 RankerResult::RankerResult(FeatureType & f, m2::PointD const & center, m2::PointD const & pivot,
-                           string const & displayName, string const & fileName)
+                           string const & displayName, string const &address,string const & fileName)
   : m_id(f.GetID())
   , m_types(f)
   , m_str(displayName)
+  , m_address(address)
   , m_resultType(ftypes::IsBuildingChecker::Instance()(m_types) ? Type::Building : Type::Feature)
   , m_geomType(f.GetGeomType())
 {

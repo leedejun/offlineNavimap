@@ -9,8 +9,8 @@ include_directories(
 
 set(
   SRC
-#  api_mark_point.cpp
-#  api_mark_point.hpp
+  api_mark_point.cpp
+  api_mark_point.hpp
 #  benchmark_tools.hpp
 #  benchmark_tools.cpp
 #  booking_availability_filter.cpp

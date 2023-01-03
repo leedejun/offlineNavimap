@@ -51,7 +51,7 @@ void FillSegmentInfo(vector<Segment> const & segments,
   double routeLengthMeters = 0.0;
   double routeLengthMerc = 0.0;
   double timeFromBeginningS = 0.0;
-
+  string curStreet;
   for (size_t i = 0; i < segments.size(); ++i)
   {
     size_t const segmentEndPointIdx = i + 1;
@@ -65,7 +65,7 @@ void FillSegmentInfo(vector<Segment> const & segments,
         ++turnIdx;
     }
 
-    string curStreet;
+
     if (!streets.empty())
     {
       CHECK_LESS_OR_EQUAL(streetIdx, streets.size(), ());

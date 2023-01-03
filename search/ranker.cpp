@@ -307,6 +307,30 @@ namespace search {
 
         // For the best performance, incoming ids should be sorted by id.first (mwm file id).
         unique_ptr<FeatureType> LoadFeature(FeatureID const &id, m2::PointD &center, string &name,
+                                            string &address, string &country) {
+            auto ft = LoadFeature(id);
+            if (!ft)
+                return ft;
+
+            center = feature::GetCenter(*ft);
+            address = feature::GetAddress(*ft);
+            //mokatuo2dadizuobiao
+//            ms::LatLon p =  mercator::ToLatLon(center);
+//            center = m2::PointD(p.m_lon,p.m_lat);
+
+            m_ranker.GetBestMatchName(*ft, name);
+
+            // Country (region) name is a file name if feature isn't from
+            // World.mwm.
+            ASSERT(m_loader && m_loader->GetId() == id.m_mwmId, ());
+            if (m_loader->IsWorld())
+                country.clear();
+            else
+                country = m_loader->GetCountryFileName();
+
+            return ft;
+        }
+        unique_ptr<FeatureType> LoadFeature(FeatureID const &id, m2::PointD &center, string &name,
                                             string &country) {
             auto ft = LoadFeature(id);
             if (!ft)
@@ -509,14 +533,16 @@ namespace search {
             m2::PointD center;
             string name;
             string country;
+            string address;
 
-            auto ft = LoadFeature(preRankerResult.GetId(), center, name, country);
+
+            auto ft = LoadFeature(preRankerResult.GetId(), center, name, address,country);
             if (!ft)
                 return {};
 
 //            116.39126521640469  43.59062286906408  天安门
 
-            RankerResult r(*ft, center, m_ranker.m_params.m_pivot, name, country);
+            RankerResult r(*ft, center, m_ranker.m_params.m_pivot, name, address,country);
 
             search::RankingInfo info;
             InitRankingInfo(*ft, center, preRankerResult, info);
@@ -566,15 +592,17 @@ namespace search {
             // Insert exact address (street and house number) instead of empty result name.
             if (name.empty()) {
                 ReverseGeocoder::Address addr;
-                if (addressGetter.GetExactAddress(addr))
-                    name = FormatStreetAndHouse(addr);
+                if (addressGetter.GetExactAddress(addr)){
+//                    name = FormatStreetAndHouse(addr);
+                   name =addr.GetHouseNumber();}
             }
 
-            address = GetLocalizedRegionInfoForResult(rankerResult);
+//            address = GetLocalizedRegionInfoForResult(rankerResult);
+            address = rankerResult.GetAddress();
 
             // Format full address only for suitable results.
-            if (ftypes::IsAddressObjectChecker::Instance()(rankerResult.GetTypes()))
-                address = FormatFullAddress(addressGetter.GetNearbyAddress(), address);
+//            if (ftypes::IsAddressObjectChecker::Instance()(rankerResult.GetTypes()))
+//                address = FormatFullAddress(addressGetter.GetNearbyAddress(), address);
         }
 
         // todo(@m) Used because Result does not have a default constructor. Factor out?
@@ -596,7 +624,7 @@ namespace search {
 
         auto res = mk(rankerResult);
 
-        if (needAddress &&
+     /*   if (needAddress &&
             ftypes::IsLocalityChecker::Instance().GetType(rankerResult.GetTypes()) ==
             ftypes::LocalityType::None) {
             m_localities.GetLocality(res.GetFeatureCenter(), [&](LocalityItem const &item) {
@@ -604,7 +632,7 @@ namespace search {
                 if (item.GetReadableName(city))
                     res.PrependCity(city);
             });
-        }
+        }*/
 
         if (needHighlighting)
             HighlightResult(m_params.m_tokens, m_params.m_prefix, res);

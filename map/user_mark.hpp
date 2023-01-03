@@ -34,26 +34,27 @@ public:
     RoadWarningFirstDirty,
     RoadWarningFirstToll,
     RoadWarningFirstFerry,
+      Green
   };
 
   enum Type : uint32_t
   {
-    BOOKMARK,  // Should always be the first one
+    BOOKMARK,  // Should always be the first one //wzd 书签mark
     API,
-    SEARCH,
-    STATIC,
-    ROUTING,
-    SPEED_CAM,
-    ROAD_WARNING,
-    TRANSIT,
-    LOCAL_ADS,
-    TRACK_INFO,
-    TRACK_SELECTION,
-    GUIDE,
+    SEARCH,    //wzd 搜索mark
+    STATIC,    //wzd 静态mark
+    ROUTING,   //wzd 路线mark
+    SPEED_CAM,  //wzd 速度视角mark
+    ROAD_WARNING, //wzd 公路标识mark
+    TRANSIT,     //wzd  通过？
+    LOCAL_ADS,   //wzd 本地地址mark
+    TRACK_INFO,  //wzd 轨迹信息
+    TRACK_SELECTION,//wzd 选择轨迹
+    GUIDE,          //wzd  手册
     GUIDE_CLUSTER,
     GUIDE_SELECTION,
     DEBUG_MARK,  // Plain "DEBUG" results in a name collision.
-    COLORED,
+    COLORED,  //wzd  自定义颜色mark
     USER_MARK_TYPES_COUNT,
     USER_MARK_TYPES_COUNT_MAX = 1000,
   };

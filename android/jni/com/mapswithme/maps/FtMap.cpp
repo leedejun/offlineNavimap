@@ -10,7 +10,6 @@
 #include "map/user_mark_id_storage.hpp"
 #include "map/fd/map_engine.hpp"
 
-
 #define cmd CommandHelper::getIns()
 #define json JsonHelper::getIns()
 
@@ -76,24 +75,81 @@ static void LocationPendingTimeout(std::shared_ptr<jobject> const &listener) {
 /****************************************************************************/
 //MyUserMark
 /****************************************************************************/
+
+struct MyUserMarkData
+{
+    std::string m_title;
+    std::string m_subTitle;
+    RouteMarkType m_pointType = RouteMarkType::Start;
+    size_t m_intermediateIndex = 0;
+    bool m_isVisible = true;
+    bool m_isMyPosition = false;
+    bool m_isPassed = false;
+    m2::PointD m_position;
+
+};
+
+float const kMyUserMarkSecondaryTextSize = 10.0f;
+float const kMyUserMarkSecondaryOffsetY = 2.0f;
+float const kMyUserMarkPrimaryTextSize = 10.5f;
+static std::string const kMyUserMarkPrimaryText = "MyUserMarkPrimaryText";
+static std::string const kMyUserMarkPrimaryTextOutline = "MyUserMarkPrimaryTextOutline";
+static std::string const kMyUserMarkSecondaryText = "MyUserMarkSecondaryText";
+static std::string const kMyUserMarkSecondaryTextOutline = "MyUserMarkSecondaryTextOutline";
+
 class MyUserMark : public UserMark {
 
 public:
     MyUserMark(m2::PointD const &ptOrg) : UserMark(ptOrg, UserMark::Type::SEARCH) {
+        m_titleDecl.m_anchor = dp::Top;
+        m_titleDecl.m_primaryTextFont.m_color = df::GetColorConstant(kMyUserMarkPrimaryText);
+        m_titleDecl.m_primaryTextFont.m_outlineColor = df::GetColorConstant(kMyUserMarkPrimaryTextOutline);
+        m_titleDecl.m_primaryTextFont.m_size = kMyUserMarkPrimaryTextSize;
+        m_titleDecl.m_secondaryTextFont.m_color = df::GetColorConstant(kMyUserMarkSecondaryText);
+        m_titleDecl.m_secondaryTextFont.m_outlineColor = df::GetColorConstant(kMyUserMarkSecondaryTextOutline);
+        m_titleDecl.m_secondaryTextFont.m_size = kMyUserMarkSecondaryTextSize;
+        m_titleDecl.m_secondaryOffset = m2::PointF(0, kMyUserMarkSecondaryOffsetY);
 
+        m_markData.m_position = ptOrg;
     }
 
     void setPos(m2::PointD p) {
         m_ptOrg = p;
     }
-    void setIcon(std::string icon){
-        _icon=icon;
-    }
-    virtual drape_ptr<SymbolNameZoomInfo> GetSymbolNames() const;
 
+    void setIcon(std::string icon) {
+        _icon = icon;
+    }
+    MyUserMarkData const & GetMarkData() const { return m_markData; }
+    void SetMarkData(MyUserMarkData && data){
+        SetDirty();
+        m_markData = std::move(data);
+        m_titleDecl.m_primaryText = m_markData.m_title;
+        if (!m_titleDecl.m_primaryText.empty())
+        {
+            m_titleDecl.m_secondaryText = m_markData.m_subTitle;
+            m_titleDecl.m_secondaryOptional = true;
+        }
+        else
+            m_titleDecl.m_secondaryText.clear();
+    }
+    drape_ptr<df::UserPointMark::TitlesInfo> GetTitleDecl() const
+    {
+        if (m_followingMode)
+            return nullptr;
+
+        auto titles = make_unique_dp<TitlesInfo>();
+        titles->push_back(m_titleDecl);
+        return titles;
+    }
+    virtual drape_ptr <SymbolNameZoomInfo> GetSymbolNames() const;
+private:
+    MyUserMarkData m_markData;
+    dp::TitleDecl m_titleDecl;
+    bool m_followingMode = false;
 };
 
-drape_ptr<df::UserPointMark::SymbolNameZoomInfo> MyUserMark::GetSymbolNames() const {
+drape_ptr <df::UserPointMark::SymbolNameZoomInfo> MyUserMark::GetSymbolNames() const {
     auto symbol = make_unique_dp<df::UserPointMark::SymbolNameZoomInfo>();
 
     symbol->emplace(1, _icon);
@@ -256,6 +312,7 @@ public:
     UserMarkT *CreateUserMark(m2::PointD const &ptOrg) {
         CHECK_THREAD_CHECKER(m_threadChecker, ());
         auto mark = std::make_unique<UserMarkT>(ptOrg);
+
         auto *m = mark.get();
         auto const markId = m->GetId();
         auto const groupId = static_cast<kml::MarkGroupId>(m->GetMarkType());
@@ -278,13 +335,23 @@ public:
         return m;
     }
 
-    void RemoveUserPointMark(long id) {
+    void RemoveUserPointMark( long id) {
+        m_removedMarks.insert(id);
+        m_groupMarks.erase(id);
+        this->notifyChanges();
+    }
+    void RemoveUserPointMark(long long id) {
         m_removedMarks.insert(id);
         m_groupMarks.erase(id);
         this->notifyChanges();
     }
 
     void UpdateUserPointMark(long id) {
+        m_updatedMarks.insert(id);
+        m_groupMarks.insert(id);
+        this->notifyChanges();
+    }
+    void UpdateUserPointMark(long long id) {
         m_updatedMarks.insert(id);
         m_groupMarks.insert(id);
         this->notifyChanges();
@@ -306,7 +373,8 @@ static UserMarkerManager userMarks;
 #define ENGINE fd::MapEngine::get
 extern "C"
 {
-JNIEXPORT jobject JNICALL
+JNIEXPORT jobject
+JNICALL
 Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
     std::string cmdName = cmd.getStr(msg, "_command");
     if (cmdName == "initPlatform") {
@@ -323,19 +391,23 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         android::Platform::Instance().Initialize(env, instance, apkPath, storagePath, filesPath,
                                                  tempPath, obbPath, flavor, buildType, isTablet);
 
-        if (!g_framework){
+        if (!g_framework) {
             g_framework = std::make_unique<android::Framework>();
             // 初始化飞度引擎
             ENGINE(g_framework->NativeFramework());
         }
 
 
-
-        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_RULER), 30, 1942, static_cast<dp::Anchor>(dp::Anchor::LeftBottom));
-        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_COMPASS), 120, 1942, static_cast<dp::Anchor>(dp::Anchor::Center));
-        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_COPYRIGHT), 150, 1942, static_cast<dp::Anchor>(dp::Anchor::LeftBottom));
-        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_SCALE_FPS_LABEL), 60, 1942, static_cast<dp::Anchor>(dp::Anchor::LeftTop));
-        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_WATERMARK), 50, 1942, static_cast<dp::Anchor>(dp::Anchor::Right));
+//        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_RULER), 30, 1942,
+//                                 static_cast<dp::Anchor>(dp::Anchor::LeftBottom));
+        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_COMPASS), 670, 1180,
+                                 static_cast<dp::Anchor>(dp::Anchor::Center));
+//        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_COPYRIGHT), 150, 1942,
+//                                 static_cast<dp::Anchor>(dp::Anchor::LeftBottom));
+//        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_SCALE_FPS_LABEL), 60, 1942,
+//                                 static_cast<dp::Anchor>(dp::Anchor::LeftTop));
+//        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_WATERMARK), 50, 1942,
+//                                 static_cast<dp::Anchor>(dp::Anchor::Left));
 //        g_framework->SetupWidget(static_cast<gui::EWidget>(1), 30, 1942,
 //                                 static_cast<dp::Anchor>(9));
 //        g_framework->SetupWidget(static_cast<gui::EWidget>(2), 978, 1942,
@@ -467,7 +539,34 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
                                      std::vector<search::ProductInfo> const &productInfo) {
             auto it = results.begin();
             auto array = json.createJSONArray();
+            std::stringstream stream;
+            stream << "[";
             while (it != results.end()) {
+                stream << "{";
+                std::string name = it->GetString();
+                std::string address = it->GetAddress();
+                double lat =0;
+                double lon =0;
+                if (it->HasPoint()) {
+                    m2::PointD pt = it->GetFeatureCenter();
+                    ms::LatLon latLon = mercator::ToLatLon(pt);
+                    lat = latLon.m_lat;
+                    lon = latLon.m_lon;
+                }
+                auto info = it->GetRankingInfo();
+                double distance =  info.m_distanceToPivot;
+
+                stream << "\"name\":" << "\"" << name << "\",";
+                stream << "\"address\":" << "\"" << address << "\",";
+                stream << "\"lat\":" << "\"" << lat << "\",";
+                stream << "\"lon\":" << "\"" << lon << "\",";
+                stream << "\"distance\":" << "\"" << distance << "\"";
+                stream << "}";
+                if(it != results.end()) {
+                    stream << ",";
+                }
+/*
+
                 auto item = json.createJSONObject();
                 json.setString(item, "name", it->GetString());
                 json.setString(item, "address", it->GetAddress());
@@ -481,8 +580,19 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
                 json.setDouble(item, "distance", info.m_distanceToPivot);
 
                 json.append(array, item);
+                //小内存手机
+                if (it == results.begin() + 20) {
+//                    break;
+                }*/
                 it++;
             }
+            stream << "]";
+
+
+//            jobject jObject = jobject.Parse(stream.str());
+            auto item = json.createJSONObject();
+            json.setString(item, "data", stream.str().c_str());
+            json.append(array, item);
             cmd.asyncCall(tmpMsg, array);
         };
         search::EverywhereSearchParams params;
@@ -492,6 +602,22 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         params.m_inputLocale = "zh_CN_#Hans";
         params.m_onResults = onResults;
         g_framework->NativeFramework()->GetSearchAPI().SearchEverywhere(params);
+    } else if (cmdName == "LatLonToMapObject") {
+        auto tmpMsg = env->NewGlobalRef(msg);
+        double_t lat = cmd.getDouble(msg, "lat");
+        double_t lon = cmd.getDouble(msg, "lon");
+        m2::PointD mercator = mercator::FromLatLon(ms::LatLon(lat, lon));
+        auto const featureID = g_framework->NativeFramework()->GetFeatureAtPoint(mercator);
+        auto dataJson = json.createJSONObject();
+        if (featureID.IsValid()) {
+            osm::MapObject mapObject = g_framework->NativeFramework()->GetMapObjectByID(featureID);
+            json.setString(dataJson, "poiName", mapObject.GetDefaultName());
+            json.setString(dataJson, "poiAddress", mapObject.GetHouseNumber());
+        } else {
+            json.setString(dataJson, "poiName", "未知位置");
+            json.setString(dataJson, "poiAddress", "未获取到地址");
+        }
+        cmd.asyncCall(tmpMsg, dataJson);
     } else if (cmdName == "ScreenToMapObject") {
 
         auto tmpMsg = env->NewGlobalRef(msg);
@@ -504,15 +630,16 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         m2::PointD tmpMercator = m2::PointD(mercatorX, mercatorY);
         ms::LatLon latLon = mercator::ToLatLon(tmpMercator);
         json.setDouble(dataJson, "lat", latLon.m_lat);
-        json.setDouble(dataJson, "Lon", latLon.m_lon);
+        json.setDouble(dataJson, "lon", latLon.m_lon);
         auto const featureID = g_framework->NativeFramework()->GetFeatureAtPoint(
                 m2::PointD(mercatorX, mercatorY));
         if (featureID.IsValid()) {
             osm::MapObject mapObject = g_framework->NativeFramework()->GetMapObjectByID(featureID);
             json.setString(dataJson, "poiName", mapObject.GetDefaultName());
+            json.setString(dataJson, "poiAddress", mapObject.GetHouseNumber());
         } else {
-
             json.setString(dataJson, "poiName", "未知位置");
+            json.setString(dataJson, "poiAddress", "未获取到地址");
         }
         cmd.asyncCall(tmpMsg, dataJson);
     } else if (cmdName == "PtoG") {
@@ -560,11 +687,16 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         auto dataJson = json.createJSONObject();
         json.setDouble(dataJson, "mercatorX", mercatorX);
         json.setDouble(dataJson, "mercatorY", mercatorY);
+        //gandong
+//        m2::PointD mercator = mercator::FromLatLon(ms::LatLon( 39.909291795684,116.388100209744));
         auto const featureID = g_framework->NativeFramework()->GetFeatureAtPoint(
                 m2::PointD(mercatorX, mercatorY));
+//        auto const featureID = g_framework->NativeFramework()->GetFeatureAtPoint(
+//                mercator);
         if (featureID.IsValid()) {
             osm::MapObject mapObject = g_framework->NativeFramework()->GetMapObjectByID(featureID);
             json.setString(dataJson, "poiName", mapObject.GetDefaultName());
+            json.setString(dataJson, "poiAddress", mapObject.GetHouseNumber());
         } else {
             json.setString(dataJson, "poiName", "未知位置");
         }
@@ -598,7 +730,6 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
 //        墨卡托转wgs84
         ms::LatLon latLon = mercator::ToLatLon(tam);
 //        wgs84获取FeatureID
-        auto const id1 = g_framework->NativeFramework()->GetFeatureAtPoint(tam);
         auto const id = g_framework->NativeFramework()->GetFeatureAtPoint(
                 mercator::FromLatLon(latLon));
 
@@ -617,6 +748,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
             auto engine = g_framework->NativeFramework()->GetDrapeEngine();
             if (engine)
                 engine->SetModelViewCenter(mercatorPT, zoom, true, false);
+
         }
     } else if (cmdName == "centerPoints") {
         auto engine = g_framework->NativeFramework()->GetDrapeEngine();
@@ -627,7 +759,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         for (int i = 0; i < length; i += 2) {
             double x = json.getDouble(array, i);
             double y = json.getDouble(array, i + 1);
-            m2::PointD  mercatorPoint =   mercator::FromLatLon(y, x);
+            m2::PointD mercatorPoint = mercator::FromLatLon(y, x);
             routeRect.Add(mercatorPoint);
         }
         routeRect.Scale(1.5);
@@ -642,45 +774,51 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         else
             g_framework->NativeFramework()->SetMapStyle(MapStyle::MapStyleClear);
     } else if (cmdName == "route") {
-
+        ENGINE().clearRoutes();
         jobject array = cmd.getObj(msg, "points");
         std::string type = cmd.getStr(msg, "type");
         int length = json.length(array);
         std::vector<m2::PointD> points;
         for (int i = 0; i < length; i++) {
             jobject o = json.getJSONObject(array, i);
-            points.push_back(m2::PointD(json.getDouble(o, "x"), json.getDouble(o, "y")));
+            m2::PointD mercator = mercator::FromLatLon(ms::LatLon(json.getDouble(o, "lat"), json.getDouble(o, "lon")));
+            points.push_back(mercator);
             RouteMarkData data;
-            data.m_title = "40.040045, 116.35874";
+            data.m_title = json.getString(o,"name");
             data.m_subTitle = "";
-            if(i==0){
-                data.m_pointType = static_cast<RouteMarkType>(0);
-            }else if(i==length-1){
-                data.m_pointType = static_cast<RouteMarkType>(2);
-            }else{
-                data.m_pointType = static_cast<RouteMarkType>(1);
+            if (i == 0) {
+                data.m_pointType = RouteMarkType::Start;
+            } else if (i == length - 1) {
+                data.m_pointType = RouteMarkType::Finish;
+            } else {
+                data.m_pointType = RouteMarkType::Intermediate;
             }
             data.m_intermediateIndex = static_cast<size_t>(0);
-           if( json.getBool(o,"isMyPosition")){
-               data.m_isMyPosition = static_cast<bool>(true);
-           }else{
-               data.m_isMyPosition = static_cast<bool>(false);
-           }
-            data.m_position = m2::PointD(json.getDouble(o, "x"), json.getDouble(o, "y"));
+//            data.
+            if (json.getBool(o, "isMyPosition")) {
+                data.m_isMyPosition = static_cast<bool>(true);
+            } else {
+                data.m_isMyPosition = static_cast<bool>(false);
+            }
+            data.m_position = mercator;
+            if (type=="Vehicle"){
+                g_framework->NativeFramework()->GetRoutingManager().SetRouter(routing::RouterType::Vehicle);
+            }else if(type=="Pedestrian"){
+                g_framework->NativeFramework()->GetRoutingManager().SetRouter(routing::RouterType::Pedestrian);
+            }
             g_framework->NativeFramework()->GetRoutingManager().AddRoutePoint(std::move(data));
-//            g_framework->NativeFramework()->GetRoutingManager().SetRouter(routing::RouterType::Vehicle,1);
         }
         auto tmpMsg = env->NewGlobalRef(msg);
         auto result = env->NewGlobalRef(json.createJSONObject());
-        ENGINE().buildRoute(points,[&,result,tmpMsg](const std::string& code, const std::vector<std::string>& routeIds){
+        ENGINE().buildRoute(points, [&, result, tmpMsg](const std::string &code,
+                                                        const std::vector<std::string> &routeIds) {
             auto routeIdList = json.createJSONArray();
-            for(int i = 0; i < routeIds.size(); i++){
-                json.append(routeIdList,  json.toJNIString(routeIds[i]));
+            for (int i = 0; i < routeIds.size(); i++) {
+                json.append(routeIdList, json.toJNIString(routeIds[i]));
             }
-            json.setObject(result, "routeIdList" ,routeIdList);
+            json.setObject(result, "routeIdList", routeIdList);
             cmd.asyncCall(tmpMsg, result);
         });
-
 
 
 //        auto result1 = env->NewGlobalRef(json.createJSONObject());
@@ -691,6 +829,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
 //        };
 //        g_framework->NativeFramework()->GetRoutingManager().setFun(func);
 //        g_framework->NativeFramework()->GetRoutingManager().BuildRoute();
+
 
         //        auto result = env->NewGlobalRef(json.createJSONObject());
 //        auto tmpMsg = env->NewGlobalRef(msg);
@@ -726,27 +865,50 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
 //        };
 //        routingSession.BuildRoute2(routing::Checkpoints(move(points)), onReady, onNeedMap,
 //                                   onRmRode);
+    } else if (cmdName == "getAllRouteInfo") {
+        auto tmpMsg = env->NewGlobalRef(msg);
+        jobject array = cmd.getObj(msg, "allRouteInfo");
+        int length = json.length(array);
+        auto routeInfoList = json.createJSONArray();
+        for (int i = 0; i < length; i++) {
+            jobject routeIdobj = json.getJSONObject(array, i);
+            std::string routeId =strings::to_string(routeIdobj);
+            std::string routeInfo = ENGINE().getRouteInfo(routeId);
+            auto result = env->NewGlobalRef(json.createJSONObject());
+            json.setObject(result, "RouteInfo", json.toJNIString(routeInfo));
+            double routeDistance = ENGINE().getRouteDistance(routeId);
+            json.setObject(result, "routeDistance", json.toJNIString(std::to_string(routeDistance)));
+            double time = ENGINE().getRouteTime(routeId);
+            json.setObject(result, "routeTime", json.toJNIString(std::to_string(time)));
+
+            json.setObject(routeInfoList, "routeIdList", result);
+
+        }
+        cmd.asyncCall(tmpMsg, routeInfoList);
     } else if (cmdName == "getRouteInfo") {
         auto tmpMsg = env->NewGlobalRef(msg);
         std::string routeId = cmd.getStr(msg, "routeId");
-        std::string routeInfo =  ENGINE().getRouteInfo(routeId);
-//        json jsonstr =routeInfo _json;
+        std::string routeInfo = ENGINE().getRouteInfo(routeId);
         auto result = env->NewGlobalRef(json.createJSONObject());
-        json.setObject(result, "routeDistance" ,json.toJNIString(routeInfo));
+        json.setObject(result, "routeInfo", json.toJNIString(routeInfo));
+        double routeDistance = ENGINE().getRouteDistance(routeId);
+        json.setObject(result, "routeDistance", json.toJNIString(std::to_string(routeDistance)));
+        double time = ENGINE().getRouteTime(routeId);
+        json.setObject(result, "routeTime", json.toJNIString(std::to_string(time)));
         cmd.asyncCall(tmpMsg, result);
     } else if (cmdName == "getRouteDistance") {
         auto tmpMsg = env->NewGlobalRef(msg);
         std::string routeId = cmd.getStr(msg, "routeId");
-        double routeDistance =  ENGINE().getRouteDistance(routeId);
+        double routeDistance = ENGINE().getRouteDistance(routeId);
         auto result = env->NewGlobalRef(json.createJSONObject());
-        json.setObject(result, "routeDistance" ,json.toJNIString(std::to_string(routeDistance)));
+        json.setObject(result, "routeDistance", json.toJNIString(std::to_string(routeDistance)));
         cmd.asyncCall(tmpMsg, result);
     } else if (cmdName == "getRouteTime") {
         auto tmpMsg = env->NewGlobalRef(msg);
         std::string routeId = cmd.getStr(msg, "routeId");
-        double time =  ENGINE().getRouteTime(routeId);
+        double time = ENGINE().getRouteTime(routeId);
         auto result = env->NewGlobalRef(json.createJSONObject());
-        json.setObject(result, "routeTime" ,json.toJNIString(std::to_string(time)));
+        json.setObject(result, "routeTime", json.toJNIString(std::to_string(time)));
         cmd.asyncCall(tmpMsg, result);
     } else if (cmdName == "hideRoute") {
         std::string routeId = cmd.getStr(msg, "routeId");
@@ -755,20 +917,20 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         std::string routeId = cmd.getStr(msg, "routeId");
         std::string fillColor = cmd.getStr(msg, "fillColor");
         std::string outlineColor = cmd.getStr(msg, "outlineColor");
-        ENGINE().showRoute(routeId,fillColor,outlineColor);
+        ENGINE().showRoute(routeId, fillColor, outlineColor);
     } else if (cmdName == "followRoute") {
+        std::string routeId = cmd.getStr(msg, "routeId");
 //        g_framework->NativeFramework()->GetRoutingManager().FollowRoute();
-        ENGINE().enterFollowRoute("route-1");
+        ENGINE().enterFollowRoute(routeId);
     } else if (cmdName == "removeRoute") {
         g_framework->NativeFramework()->GetRoutingManager().RemoveRoute(true);
     } else if (cmdName == "CloseRouting") {
         g_framework->NativeFramework()->GetRoutingManager().CloseRouting(false);
     } else if (cmdName == "addDrawItem") {
         std::string type = cmd.getStr(msg, "type");
-        std::string id = cmd.getStr(msg, "id");
-        std::string icon = cmd.getStr(msg, "icon");
-        dp::Color color = stringToDpColor(cmd.getStr(msg, "color"));
         if (type == "line") {
+            std::string id = cmd.getStr(msg, "id");
+            dp::Color color = stringToDpColor(cmd.getStr(msg, "color"));
 //            auto lineMask = userMarks.CreateUserLineMark();
             jobject array = cmd.getObj(msg, "points");
             int length = json.length(array);
@@ -776,60 +938,118 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
             for (int i = 0; i < length; i += 2) {
                 double x = json.getDouble(array, i);
                 double y = json.getDouble(array, i + 1);
-                m2::PointD  mercatorPoint =   mercator::FromLatLon(y, x);
+                m2::PointD mercatorPoint = mercator::FromLatLon(y, x);
 //                lineMask->addPoint(mercatorPoint.x,mercatorPoint. y);
                 points.push_back(mercatorPoint);
             }
 //            lineMask->SetColor(color);
-            df::DrapeApiLineData lineData( points, color);
-            double width = cmd.getDouble(msg,"width");
-            lineData.Width(width );
-            g_framework->NativeFramework()->GetDrapeApi().AddLine(id,lineData);
+            df::DrapeApiLineData lineData(points, color);
+            double width = cmd.getDouble(msg, "width");
+            lineData.Width(width);
+            g_framework->NativeFramework()->GetDrapeApi().AddLine(id, lineData);
 
 //            long id = lineMask->GetId();
-                long number =std::atoi(id.c_str());
+            long number = std::atoi(id.c_str());
 //            long  long  number = strtoll(id, NULL, 10);
             cmd.set(msg, "result", number);
 //            userMarks.notifyChanges();
-        } else if (type == "point") {
+        } else if (type == "coloredPoint") {
+            std::string icon = cmd.getStr(msg, "icon");
             double x = cmd.getDouble(msg, "x");
             double y = cmd.getDouble(msg, "y");
+            m2::PointD mercatorPoint = mercator::FromLatLon(y, x);
+            auto mark = userMarks.CreateUserMark<ColoredMarkPoint>(mercatorPoint);
+            mark->SetColor(dp::Color(200, 100, 240, 255));
+            mark->SetRadius(18.0f);
+            long long id =  mark->GetId();
+            cmd.set(msg, "result", id);
+            userMarks.notifyChanges();
+        } else if (type == "textPoint") {
+            double x = cmd.getDouble(msg, "x");
+            double y = cmd.getDouble(msg, "y");
+            m2::PointD mercatorPoint = mercator::FromLatLon(y, x);
+            auto mark =  userMarks.CreateUserMark<RouteMarkPoint>(mercatorPoint);
+            long long id =  mark->GetId();
+            std::string title = cmd.getStr(msg, "title");
+            RouteMarkData data;
+            data.m_title = title;
+            mark->SetMarkData(std::move(data));
+            cmd.set(msg, "result", id);
+            userMarks.notifyChanges();
+        } else if (type == "point") {
+            std::string icon = cmd.getStr(msg, "icon");
+            double x = cmd.getDouble(msg, "x");
+            double y = cmd.getDouble(msg, "y");
+            m2::PointD mercatorPoint = mercator::FromLatLon(y, x);
 
-            m2::PointD  mercatorPoint =   mercator::FromLatLon(y, x);
+//            auto mark1 =  userMarks.CreateUserMark<ApiMarkPoint>(mercatorPoint);
+//            auto mark2 =  userMarks.CreateUserMark<RouteMarkPoint>(mercatorPoint);
             auto mark = userMarks.CreateUserMark<MyUserMark>(mercatorPoint);
-
-//            auto mark = userMarks.CreateUserMark<ColoredMarkPoint>(m2::PointD(x, y));
+//            auto mark = userMarks.CreateUserMark<ColoredMarkPoint>(mercatorPoint);
 //            mark->SetColor(dp::Color(200, 100, 240, 255));
-
 //            auto * newPoint = userMarks.CreateUserMark<DebugMarkPoint>(m2::PointD(x, y));
 //            mark->SetRadius(18.0f);
 //            std::string a("route-point-finish");
             mark->setIcon(icon);
-            long id = mark->GetId();
+            std::string  name  ="测试点名称";
+//            mark1->SetName(name);
+//            long long id = mark->GetId();
+            long long id =  mark->GetId();
             RouteMarkData data;
+            MyUserMarkData data1;
+            data1.m_title = "测试点名称";
             data.m_title = "测试点名称";
-            data.m_subTitle = "测试点名称";
-//            newPoint->SetMarkData(std::move(data));
+//            data.m_pointType = RouteMarkType::Green;
+//            mark2->SetMarkData(std::move(data));
+//            mark2->SetRoutePointType(RouteMarkType::Green);
+//            mark->SetMarkData(std::move(data1));
+//            mark1.
             cmd.set(msg, "result", id);
+//            cmd.set(msg, "result", 10000020100);
             userMarks.notifyChanges();
+//            newPoint.notifyChanges();
         }
     } else if (cmdName == "updateDrawItem") {
         g_framework->NativeFramework()->GetDrapeApi().Invalidate();
+    } else if (cmdName == "removeLineItem") {
+        jobject array = cmd.getObj(msg, "lineIdList");
+        int length = json.length(array);
+        for (int i = 0; i < length; i ++) {
+            std::string lineIdStr = json.getString(array, i);
+            g_framework->NativeFramework()->GetDrapeApi().RemoveLine(lineIdStr);
+        }
     } else if (cmdName == "removeDrawItem") {
         std::string id = cmd.getStr(msg, "id");
         g_framework->NativeFramework()->GetDrapeApi().RemoveLine(id);
     } else if (cmdName == "removeMarkItem") {
-        long id = cmd.getLong(msg, "markId");
-        userMarks.RemoveUserPointMark(id);
+        jobject array = cmd.getObj(msg, "markIdList");
+        int length = json.length(array);
+        for (int i = 0; i < length; i ++) {
+            std::string markIdStr = json.getString(array, i);
+            long long markId;
+            std::stringstream sstr;
+            sstr.clear();
+            sstr<<markIdStr;
+            sstr>>markId;
+            userMarks.RemoveUserPointMark(markId);
+        }
+
+
     } else if (cmdName == "updateMarkItem") {
         double x = cmd.getDouble(msg, "x");
         double y = cmd.getDouble(msg, "y");
-        long id = cmd.getLong(msg, "markId");//mark->GetId();
-        auto mark = (MyUserMark *) userMarks.GetUserPointMark(id);
-        cmd.set(msg, "result", id);
-        m2::PointD  mercatorPoint =   mercator::FromLatLon(y, x);
+//        long  long id = cmd.getLong(msg, "markId");//mark->GetId();
+        std::string  id = cmd.getStr(msg, "markId");
+        long long markId;
+        std::stringstream sstr;
+        sstr.clear();
+        sstr<<id;
+        sstr>>markId;
+        auto mark = (MyUserMark *) userMarks.GetUserPointMark(markId);
+        cmd.set(msg, "result", markId);
+        m2::PointD mercatorPoint = mercator::FromLatLon(y, x);
         mark->setPos(mercatorPoint);
-        userMarks.UpdateUserPointMark(id);
+        userMarks.UpdateUserPointMark(markId);
     }
     return nullptr;
 }

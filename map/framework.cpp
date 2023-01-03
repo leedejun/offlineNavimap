@@ -138,48 +138,46 @@ Framework::FixedPosition::FixedPosition()
 }
 #endif
 
-namespace
-{
-char const kMapStyleKey[] = "MapStyleKeyV1";
-char const kAllow3dKey[] = "Allow3d";
-char const kAllow3dBuildingsKey[] = "Buildings3d";
-char const kAllowAutoZoom[] = "AutoZoom";
-char const kTrafficEnabledKey[] = "TrafficEnabled";
-char const kTransitSchemeEnabledKey[] = "TransitSchemeEnabled";
-char const kIsolinesEnabledKey[] = "IsolinesEnabled";
-char const kGuidesEnabledKey[] = "GuidesEnabledKey";
-char const kTrafficSimplifiedColorsKey[] = "TrafficSimplifiedColors";
-char const kLargeFontsSize[] = "LargeFontsSize";
-char const kTranslitMode[] = "TransliterationMode";
-char const kPreferredGraphicsAPI[] = "PreferredGraphicsAPI";
-char const kShowDebugInfo[] = "DebugInfo";
+namespace {
+    char const kMapStyleKey[] = "MapStyleKeyV1";
+    char const kAllow3dKey[] = "Allow3d";
+    char const kAllow3dBuildingsKey[] = "Buildings3d";
+    char const kAllowAutoZoom[] = "AutoZoom";
+    char const kTrafficEnabledKey[] = "TrafficEnabled";
+    char const kTransitSchemeEnabledKey[] = "TransitSchemeEnabled";
+    char const kIsolinesEnabledKey[] = "IsolinesEnabled";
+    char const kGuidesEnabledKey[] = "GuidesEnabledKey";
+    char const kTrafficSimplifiedColorsKey[] = "TrafficSimplifiedColors";
+    char const kLargeFontsSize[] = "LargeFontsSize";
+    char const kTranslitMode[] = "TransliterationMode";
+    char const kPreferredGraphicsAPI[] = "PreferredGraphicsAPI";
+    char const kShowDebugInfo[] = "DebugInfo";
 
-auto constexpr kLargeFontsScaleFactor = 1.6;
-auto constexpr kGuidesEnabledInBackgroundMaxHours = 8;
-size_t constexpr kMaxTrafficCacheSizeBytes = 64 /* Mb */ * 1024 * 1024;
+    auto constexpr kLargeFontsScaleFactor = 1.6;
+    auto constexpr kGuidesEnabledInBackgroundMaxHours = 8;
+    size_t constexpr kMaxTrafficCacheSizeBytes = 64 /* Mb */ * 1024 * 1024;
 
 // TODO!
 // To adjust GpsTrackFilter was added secret command "?gpstrackaccuracy:xxx;"
 // where xxx is a new value for horizontal accuracy.
 // This is temporary solution while we don't have a good filter.
-bool ParseSetGpsTrackMinAccuracyCommand(string const & query)
-{
-  const char kGpsAccuracy[] = "?gpstrackaccuracy:";
-  if (!strings::StartsWith(query, kGpsAccuracy))
-    return false;
+    bool ParseSetGpsTrackMinAccuracyCommand(string const &query) {
+        const char kGpsAccuracy[] = "?gpstrackaccuracy:";
+        if (!strings::StartsWith(query, kGpsAccuracy))
+            return false;
 
-  size_t const end = query.find(';', sizeof(kGpsAccuracy) - 1);
-  if (end == string::npos)
-    return false;
+        size_t const end = query.find(';', sizeof(kGpsAccuracy) - 1);
+        if (end == string::npos)
+            return false;
 
-  string s(query.begin() + sizeof(kGpsAccuracy) - 1, query.begin() + end);
-  double value;
-  if (!strings::to_double(s, value))
-    return false;
+        string s(query.begin() + sizeof(kGpsAccuracy) - 1, query.begin() + end);
+        double value;
+        if (!strings::to_double(s, value))
+            return false;
 
-  GpsTrackFilter::StoreMinHorizontalAccuracy(value);
-  return true;
-}
+        GpsTrackFilter::StoreMinHorizontalAccuracy(value);
+        return true;
+    }
 
 //string MakeSearchBookingUrl(booking::Api const & bookingApi, search::CityFinder & cityFinder,
 //                            FeatureType & ft)
@@ -198,13 +196,13 @@ bool ParseSetGpsTrackMinAccuracyCommand(string const & query)
 //  return bookingApi.GetSearchUrl(city, name);
 //}
 
-void OnRouteStartBuild(DataSource const & dataSource,
-                       std::vector<RouteMarkData> const & routePoints, m2::PointD const & userPos)
-{
-  using eye::MapObject;
+    void OnRouteStartBuild(DataSource const &dataSource,
+                           std::vector<RouteMarkData> const &routePoints,
+                           m2::PointD const &userPos) {
+        using eye::MapObject;
 
-  if (routePoints.size() < 2)
-    return;
+        if (routePoints.size() < 2)
+            return;
 
 //  for (auto const & pt : routePoints)
 //  {
@@ -227,78 +225,72 @@ void OnRouteStartBuild(DataSource const & dataSource,
 //    },
 //    rect, scales::GetUpperScale());
 //  }
-}
+    }
 }  // namespace
 
 pair<MwmSet::MwmId, MwmSet::RegResult> Framework::RegisterMap(
-    LocalCountryFile const & localFile)
-{
-  LOG(LINFO, ("Loading map:", localFile.GetCountryName()));
-  return m_featuresFetcher.RegisterMap(localFile);
+        LocalCountryFile const &localFile) {
+    LOG(LINFO, ("Loading map:", localFile.GetCountryName()));
+    return m_featuresFetcher.RegisterMap(localFile);
 }
 
-void Framework::OnLocationError(TLocationError /*error*/)
-{
+void Framework::OnLocationError(TLocationError /*error*/) {
 //  m_trafficManager.UpdateMyPosition(TrafficManager::MyPosition());
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->LoseLocation();
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->LoseLocation();
 }
 
-void Framework::OnLocationUpdate(GpsInfo const & info)
-{
+void Framework::OnLocationUpdate(GpsInfo const &info) {
 #ifdef FIXED_LOCATION
-  GpsInfo rInfo(info);
+    GpsInfo rInfo(info);
 
-  // get fixed coordinates
-  m_fixedPos.GetLon(rInfo.m_longitude);
-  m_fixedPos.GetLat(rInfo.m_latitude);
+    // get fixed coordinates
+    m_fixedPos.GetLon(rInfo.m_longitude);
+    m_fixedPos.GetLat(rInfo.m_latitude);
 
-  // pretend like GPS position
-  rInfo.m_horizontalAccuracy = 5.0;
+    // pretend like GPS position
+    rInfo.m_horizontalAccuracy = 5.0;
 
-  if (m_fixedPos.HasNorth())
-  {
-    // pass compass value (for devices without compass)
-    CompassInfo compass;
-    m_fixedPos.GetNorth(compass.m_bearing);
-    OnCompassUpdate(compass);
-  }
+    if (m_fixedPos.HasNorth())
+    {
+      // pass compass value (for devices without compass)
+      CompassInfo compass;
+      m_fixedPos.GetNorth(compass.m_bearing);
+      OnCompassUpdate(compass);
+    }
 
 #else
-  GpsInfo rInfo(info);
+    GpsInfo rInfo(info);
 #endif
 
-  m_routingManager.OnLocationUpdate(rInfo);
+    m_routingManager.OnLocationUpdate(rInfo);
 //  m_localAdsManager.OnLocationUpdate(rInfo, GetDrawScale());
 }
 
-void Framework::OnCompassUpdate(CompassInfo const & info)
-{
+void Framework::OnCompassUpdate(CompassInfo const &info) {
 #ifdef FIXED_LOCATION
-  CompassInfo rInfo(info);
-  m_fixedPos.GetNorth(rInfo.m_bearing);
+    CompassInfo rInfo(info);
+    m_fixedPos.GetNorth(rInfo.m_bearing);
 #else
-  CompassInfo const & rInfo = info;
+    CompassInfo const &rInfo = info;
 #endif
 
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->SetCompassInfo(rInfo);
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->SetCompassInfo(rInfo);
 }
 
-void Framework::SwitchMyPositionNextMode()
-{
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->SwitchMyPositionNextMode();
+void Framework::SwitchMyPositionNextMode() {
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->SwitchMyPositionNextMode();
 }
 
-void Framework::SetMyPositionModeListener(TMyPositionModeChanged && fn)
-{
-  m_myPositionListener = move(fn);
+void Framework::SetMyPositionModeListener(TMyPositionModeChanged &&fn) {
+    m_myPositionListener = move(fn);
 }
 
-void Framework::SetMyPositionPendingTimeoutListener(df::DrapeEngine::UserPositionPendingTimeoutHandler && fn)
-{
-  m_myPositionPendingTimeoutListener = move(fn);
+void Framework::SetMyPositionPendingTimeoutListener(
+        df::DrapeEngine::UserPositionPendingTimeoutHandler &&fn) {
+    m_myPositionPendingTimeoutListener = move(fn);
 }
 
 //TrafficManager & Framework::GetTrafficManager()
@@ -311,9 +303,8 @@ void Framework::SetMyPositionPendingTimeoutListener(df::DrapeEngine::UserPositio
 //  return m_localAdsManager;
 //}
 
-TransitReadManager & Framework::GetTransitManager()
-{
-  return m_transitManager;
+TransitReadManager &Framework::GetTransitManager() {
+    return m_transitManager;
 }
 
 //IsolinesManager & Framework::GetIsolinesManager()
@@ -331,54 +322,51 @@ TransitReadManager & Framework::GetTransitManager()
 //  return m_guidesManager;
 //}
 
-void Framework::OnUserPositionChanged(m2::PointD const & position, bool hasPosition)
-{
+void Framework::OnUserPositionChanged(m2::PointD const &position, bool hasPosition) {
 //  GetBookmarkManager().MyPositionMark().SetUserPosition(position, hasPosition);
 //  if (m_currentPlacePageInfo && m_currentPlacePageInfo->GetTrackId() != kml::kInvalidTrackId)
 //    GetBookmarkManager().UpdateElevationMyPosition(m_currentPlacePageInfo->GetTrackId());
 
-  m_routingManager.SetUserCurrentPosition(position);
+    m_routingManager.SetUserCurrentPosition(position);
 //  m_trafficManager.UpdateMyPosition(TrafficManager::MyPosition(position));
 }
 
-void Framework::OnViewportChanged(ScreenBase const & screen)
-{
-  // Drape engine may spuriously call OnViewportChanged. Filter out the calls that
-  // change the viewport from the drape engine's point of view but leave it almost
-  // the same from the point of view of the framework and all its subsystems such as search api.
-  // Additional filtering may be done by each subsystem.
-  auto const isSameViewport = m2::IsEqual(screen.ClipRect(), m_currentModelView.ClipRect(),
-                                          kMwmPointAccuracy, kMwmPointAccuracy);
-  if (isSameViewport)
-    return;
+void Framework::OnViewportChanged(ScreenBase const &screen) {
+    // Drape engine may spuriously call OnViewportChanged. Filter out the calls that
+    // change the viewport from the drape engine's point of view but leave it almost
+    // the same from the point of view of the framework and all its subsystems such as search api.
+    // Additional filtering may be done by each subsystem.
+    auto const isSameViewport = m2::IsEqual(screen.ClipRect(), m_currentModelView.ClipRect(),
+                                            kMwmPointAccuracy, kMwmPointAccuracy);
+    if (isSameViewport)
+        return;
 
-  m_currentModelView = screen;
+    m_currentModelView = screen;
 
-  GetSearchAPI().OnViewportChanged(GetCurrentViewport());
+    GetSearchAPI().OnViewportChanged(GetCurrentViewport());
 
 //  GetBookmarkManager().UpdateViewport(m_currentModelView);
 //  m_trafficManager.UpdateViewport(m_currentModelView);
 //  m_localAdsManager.UpdateViewport(m_currentModelView);
-  m_transitManager.UpdateViewport(m_currentModelView);
+    m_transitManager.UpdateViewport(m_currentModelView);
 //  m_isolinesManager.UpdateViewport(m_currentModelView);
 //  m_guidesManager.UpdateViewport(m_currentModelView);
 
-  if (m_viewportChangedFn != nullptr)
-    m_viewportChangedFn(screen);
+    if (m_viewportChangedFn != nullptr)
+        m_viewportChangedFn(screen);
 }
 
-Framework::Framework(FrameworkParams const & params)
+Framework::Framework(FrameworkParams const &params)
 //  : m_localAdsManager(bind(&Framework::GetMwmsByRect, this, _1, true /* rough */),
 //                      bind(&Framework::GetMwmIdByName, this, _1),
 //                      bind(&Framework::ReadFeatures, this, _1, _2),
 //                      bind(&Framework::GetMapObjectByID, this, _1))
-  :m_enabledDiffs(params.m_enableDiffs)
-  , m_isRenderingEnabled(true)
-  , m_transitManager(m_featuresFetcher.GetDataSource(),
-                     [this](FeatureCallback const & fn, vector<FeatureID> const & features) {
-                       return m_featuresFetcher.ReadFeatures(fn, features);
-                     },
-                     bind(&Framework::GetMwmsByRect, this, _1, false /* rough */))
+        : m_enabledDiffs(params.m_enableDiffs), m_isRenderingEnabled(true),
+          m_transitManager(m_featuresFetcher.GetDataSource(),
+                           [this](FeatureCallback const &fn, vector<FeatureID> const &features) {
+                               return m_featuresFetcher.ReadFeatures(fn, features);
+                           },
+                           bind(&Framework::GetMwmsByRect, this, _1, false /* rough */))
 //  , m_isolinesManager(m_featuresFetcher.GetDataSource(),
 //                      bind(&Framework::GetMwmsByRect, this, _1, false /* rough */))
 //  , m_guidesManager([this]()
@@ -386,76 +374,76 @@ Framework::Framework(FrameworkParams const & params)
 //                      if (m_currentPlacePageInfo && m_currentPlacePageInfo->IsGuide())
 //                        DeactivateMapSelection(true /* notifyUI */);
 //                    })
-  , m_routingManager(
-        RoutingManager::Callbacks(
-            [this]() -> DataSource & { return m_featuresFetcher.GetDataSource(); },
-            [this]() -> storage::CountryInfoGetter const & { return GetCountryInfoGetter(); },
-            [this](string const & id) -> string { return m_storage.GetParentIdFor(id); },
-            [this]() -> StringsBundle const & { return m_stringsBundle; },
-            [this]() -> power_management::PowerManager const & { return m_powerManager; }),
-        static_cast<RoutingManager::Delegate &>(*this))
+        , m_routingManager(
+                RoutingManager::Callbacks(
+                        [this]() -> DataSource & { return m_featuresFetcher.GetDataSource(); },
+                        [this]() -> storage::CountryInfoGetter const & { return GetCountryInfoGetter(); },
+                        [this](string const &id) -> string { return m_storage.GetParentIdFor(id); },
+                        [this]() -> StringsBundle const & { return m_stringsBundle; },
+                        [this]() -> power_management::PowerManager const & { return m_powerManager; }),
+                static_cast<RoutingManager::Delegate &>(*this))
 //  , m_trafficManager(bind(&Framework::GetMwmsByRect, this, _1, false /* rough */),
 //                     kMaxTrafficCacheSizeBytes, m_routingManager.RoutingSession())
 //  , m_bookingFilterProcessor(m_featuresFetcher.GetDataSource(), *m_bookingApi)
-  , m_displacementModeManager([this](bool show) {
-    int const mode = show ? dp::displacement::kHotelMode : dp::displacement::kDefaultMode;
-    if (m_drapeEngine != nullptr)
-      m_drapeEngine->SetDisplacementMode(mode);
-  })
-  , m_lastReportedCountry(kInvalidCountryId)
-  , m_popularityLoader(m_featuresFetcher.GetDataSource(), POPULARITY_RANKS_FILE_TAG)
-  , m_descriptionsLoader(std::make_unique<descriptions::Loader>(m_featuresFetcher.GetDataSource()))
+        , m_displacementModeManager([this](bool show) {
+            int const mode = show ? dp::displacement::kHotelMode : dp::displacement::kDefaultMode;
+            if (m_drapeEngine != nullptr)
+                m_drapeEngine->SetDisplacementMode(mode);
+        }), m_lastReportedCountry(kInvalidCountryId),
+          m_popularityLoader(m_featuresFetcher.GetDataSource(), POPULARITY_RANKS_FILE_TAG),
+          m_descriptionsLoader(
+                  std::make_unique<descriptions::Loader>(m_featuresFetcher.GetDataSource()))
 //  , m_purchase(std::make_unique<Purchase>([this] { m_user.ResetAccessToken(); }))
 //  , m_tipsApi(std::make_unique<TipsApiDelegate>(*this))
 {
-  CHECK(IsLittleEndian(), ("Only little-endian architectures are supported."));
+    CHECK(IsLittleEndian(), ("Only little-endian architectures are supported."));
 
-  // Editor should be initialized from the main thread to set its ThreadChecker.
-  // However, search calls editor upon initialization thus setting the lazy editor's ThreadChecker
-  // to a wrong thread. So editor should be initialiazed before serach.
+    // Editor should be initialized from the main thread to set its ThreadChecker.
+    // However, search calls editor upon initialization thus setting the lazy editor's ThreadChecker
+    // to a wrong thread. So editor should be initialiazed before serach.
 //  osm::Editor & editor = osm::Editor::Instance();
 
-  // Restore map style before classificator loading
-  MapStyle mapStyle = kDefaultMapStyle;
-  string mapStyleStr;
-  if (settings::Get(kMapStyleKey, mapStyleStr))
-    mapStyle = MapStyleFromSettings(mapStyleStr);
-  GetStyleReader().SetCurrentStyle(mapStyle);
-  df::LoadTransitColors();
+    // Restore map style before classificator loading
+    MapStyle mapStyle = kDefaultMapStyle;
+    string mapStyleStr;
+    if (settings::Get(kMapStyleKey, mapStyleStr))
+        mapStyle = MapStyleFromSettings(mapStyleStr);
+    GetStyleReader().SetCurrentStyle(mapStyle);
+    df::LoadTransitColors();
 
-  m_connectToGpsTrack = GpsTracker::Instance().IsEnabled();
-  
-  // Init strings bundle.
-  // @TODO. There are hardcoded strings below which are defined in strings.txt as well.
-  // It's better to use strings from strings.txt instead of hardcoding them here.
-  m_stringsBundle.SetDefaultString("core_entrance", "Entrance");
-  m_stringsBundle.SetDefaultString("core_exit", "Exit");
-  m_stringsBundle.SetDefaultString("core_placepage_unknown_place", "Unknown Place");
-  m_stringsBundle.SetDefaultString("core_my_places", "My Places");
-  m_stringsBundle.SetDefaultString("core_my_position", "My Position");
-  m_stringsBundle.SetDefaultString("postal_code", "Postal Code");
-  // Wi-Fi string is used in categories that's why does not have core_ prefix
-  m_stringsBundle.SetDefaultString("wifi", "WiFi");
+    m_connectToGpsTrack = GpsTracker::Instance().IsEnabled();
 
-  m_featuresFetcher.InitClassificator();
-  m_featuresFetcher.SetOnMapDeregisteredCallback(bind(&Framework::OnMapDeregistered, this, _1));
-  LOG(LDEBUG, ("Classificator initialized"));
+    // Init strings bundle.
+    // @TODO. There are hardcoded strings below which are defined in strings.txt as well.
+    // It's better to use strings from strings.txt instead of hardcoding them here.
+    m_stringsBundle.SetDefaultString("core_entrance", "Entrance");
+    m_stringsBundle.SetDefaultString("core_exit", "Exit");
+    m_stringsBundle.SetDefaultString("core_placepage_unknown_place", "Unknown Place");
+    m_stringsBundle.SetDefaultString("core_my_places", "My Places");
+    m_stringsBundle.SetDefaultString("core_my_position", "My Position");
+    m_stringsBundle.SetDefaultString("postal_code", "Postal Code");
+    // Wi-Fi string is used in categories that's why does not have core_ prefix
+    m_stringsBundle.SetDefaultString("wifi", "WiFi");
 
-  m_displayedCategories = make_unique<search::DisplayedCategories>(GetDefaultCategories());
+    m_featuresFetcher.InitClassificator();
+    m_featuresFetcher.SetOnMapDeregisteredCallback(bind(&Framework::OnMapDeregistered, this, _1));
+    LOG(LDEBUG, ("Classificator initialized"));
 
-  // To avoid possible races - init country info getter in constructor.
-  InitCountryInfoGetter();
-  LOG(LDEBUG, ("Country info getter initialized"));
+    m_displayedCategories = make_unique<search::DisplayedCategories>(GetDefaultCategories());
+
+    // To avoid possible races - init country info getter in constructor.
+    InitCountryInfoGetter();
+    LOG(LDEBUG, ("Country info getter initialized"));
 
 //  InitUGC();
 //  LOG(LDEBUG, ("UGC initialized"));
 
-  InitSearchAPI(params.m_numSearchAPIThreads);
-  LOG(LDEBUG, ("Search API initialized"));
+    InitSearchAPI(params.m_numSearchAPIThreads);
+    LOG(LDEBUG, ("Search API initialized"));
 
 //  auto const catalogHeadersProvider = make_shared<CatalogHeadersProvider>(*this, m_storage);
 
-  m_bmManager = make_unique<BookmarkManager>();
+    m_bmManager = make_unique<BookmarkManager>();
 //  m_bmManager = make_unique<BookmarkManager>(m_user, BookmarkManager::Callbacks(
 //      [this]() -> StringsBundle const & { return m_stringsBundle; },
 //      [this]() -> SearchAPI & { return GetSearchAPI(); },
@@ -470,40 +458,39 @@ Framework::Framework(FrameworkParams const & params)
 
 //  catalogHeadersProvider->SetBookmarkCatalog(&m_bmManager->GetCatalog());
 //  m_parsedMapApi.SetBookmarkManager(m_bmManager.get());
-  m_routingManager.SetBookmarkManager(m_bmManager.get());
+    m_routingManager.SetBookmarkManager(m_bmManager.get());
 ////  m_guidesManager.SetBookmarkManager(m_bmManager.get());
 //  m_searchMarks.SetBookmarkManager(m_bmManager.get());
 //
 //  m_user.AddSubscriber(m_bmManager->GetUserSubscriber());
 
-  m_routingManager.SetTransitManager(&m_transitManager);
-  m_routingManager.SetRouteStartBuildListener([this](std::vector<RouteMarkData> const & points)
-  {
-    auto const userPos = GetCurrentPosition();
-    if (userPos)
-      OnRouteStartBuild(m_featuresFetcher.GetDataSource(), points, *userPos);
-  });
+    m_routingManager.SetTransitManager(&m_transitManager);
+    m_routingManager.SetRouteStartBuildListener([this](std::vector<RouteMarkData> const &points) {
+        auto const userPos = GetCurrentPosition();
+        if (userPos)
+            OnRouteStartBuild(m_featuresFetcher.GetDataSource(), points, *userPos);
+    });
 
-  InitCityFinder();
+    InitCityFinder();
 //  InitDiscoveryManager();
 //  InitTaxiEngine();
 
-  RegisterAllMaps();
-  LOG(LDEBUG, ("Maps initialized"));
+    RegisterAllMaps();
+    LOG(LDEBUG, ("Maps initialized"));
 
-  // Need to reload cities boundaries because maps in indexer were updated.
-  GetSearchAPI().LoadCitiesBoundaries();
-  GetSearchAPI().CacheWorldLocalities();
+    // Need to reload cities boundaries because maps in indexer were updated.
+    GetSearchAPI().LoadCitiesBoundaries();
+    GetSearchAPI().CacheWorldLocalities();
 
-  // Init storage with needed callback.
-  m_storage.Init(
-                 bind(&Framework::OnCountryFileDownloaded, this, _1, _2),
-                 bind(&Framework::OnCountryFileDelete, this, _1, _2));
-  m_storage.SetDownloadingPolicy(&m_storageDownloadingPolicy);
+    // Init storage with needed callback.
+    m_storage.Init(
+            bind(&Framework::OnCountryFileDownloaded, this, _1, _2),
+            bind(&Framework::OnCountryFileDelete, this, _1, _2));
+    m_storage.SetDownloadingPolicy(&m_storageDownloadingPolicy);
 //  m_storage.SetStartDownloadingCallback([this]() { UpdatePlacePageInfoForCurrentSelection(); });
-  LOG(LDEBUG, ("Storage initialized"));
+    LOG(LDEBUG, ("Storage initialized"));
 
-  // Local ads manager should be initialized after storage initialization.
+    // Local ads manager should be initialized after storage initialization.
 //  if (params.m_enableLocalAds)
 //  {
 //    auto const isActive = m_purchase->IsSubscriptionActive(SubscriptionType::RemoveAds);
@@ -511,13 +498,13 @@ Framework::Framework(FrameworkParams const & params)
 //    m_purchase->RegisterSubscription(&m_localAdsManager);
 //  }
 
-  m_routingManager.SetRouterImpl(RouterType::Vehicle);
+    m_routingManager.SetRouterImpl(RouterType::Vehicle);
 
-  UpdateMinBuildingsTapZoom();
+    UpdateMinBuildingsTapZoom();
 
-  LOG(LDEBUG, ("Routing engine initialized"));
+    LOG(LDEBUG, ("Routing engine initialized"));
 
-  LOG(LINFO, ("System languages:", languages::GetPreferred()));
+    LOG(LINFO, ("System languages:", languages::GetPreferred()));
 
 //  editor.SetDelegate(make_unique<search::EditorDelegate>(m_featuresFetcher.GetDataSource()));
 //  editor.SetInvalidateFn([this](){ InvalidateRect(GetCurrentViewport()); });
@@ -539,44 +526,44 @@ Framework::Framework(FrameworkParams const & params)
 //  m_adsEngine = make_unique<ads::Engine>(
 //      make_unique<ads::DownloadOnMapDelegate>(*m_infoGetter, m_storage, *m_promoApi, *m_purchase));
 
-  InitTransliteration();
-  LOG(LDEBUG, ("Transliterators initialized"));
+    InitTransliteration();
+    LOG(LDEBUG, ("Transliterators initialized"));
 
-  m_notificationManager.SetDelegate(
-    std::make_unique<NotificationManagerDelegate>(m_featuresFetcher.GetDataSource(), *m_cityFinder,
-                                                  m_addressGetter, m_storage,
-                                                  *m_infoGetter));
-  m_notificationManager.Load();
-  m_notificationManager.TrimExpired();
+    m_notificationManager.SetDelegate(
+            std::make_unique<NotificationManagerDelegate>(m_featuresFetcher.GetDataSource(),
+                                                          *m_cityFinder,
+                                                          m_addressGetter, m_storage,
+                                                          *m_infoGetter));
+    m_notificationManager.Load();
+    m_notificationManager.TrimExpired();
 
 //  alohalytics::Stats::Instance().LogEvent("UGC_ReviewNotification_queue",
 //    {{"unshown", std::to_string(m_notificationManager.GetCandidatesCount())}});
 
-  eye::Eye::Instance().TrimExpired();
-  eye::Eye::Instance().Subscribe(&m_notificationManager);
+    eye::Eye::Instance().TrimExpired();
+    eye::Eye::Instance().Subscribe(&m_notificationManager);
 
-  GetPowerManager().Subscribe(this);
-  GetPowerManager().Load();
+    GetPowerManager().Subscribe(this);
+    GetPowerManager().Load();
 
 //  m_promoApi->SetDelegate(make_unique<PromoDelegate>(m_featuresFetcher.GetDataSource(),
 //                          *m_cityFinder, catalogHeadersProvider));
 //  eye::Eye::Instance().Subscribe(m_promoApi.get());
 
-  // Clean the no longer used key from old devices.
-  // Remove this line after April 2020 (assuming the majority of devices
-  // will have updated by then).
-  GetPlatform().RunTask(Platform::Thread::Gui, [] { settings::Delete("LastMigration"); });
+    // Clean the no longer used key from old devices.
+    // Remove this line after April 2020 (assuming the majority of devices
+    // will have updated by then).
+    GetPlatform().RunTask(Platform::Thread::Gui, [] { settings::Delete("LastMigration"); });
 }
 
-Framework::~Framework()
-{
-  eye::Eye::Instance().UnsubscribeAll();
-  GetPowerManager().UnsubscribeAll();
+Framework::~Framework() {
+    eye::Eye::Instance().UnsubscribeAll();
+    GetPowerManager().UnsubscribeAll();
 
-  m_threadRunner.reset();
+    m_threadRunner.reset();
 
-  // Must be destroyed implicitly at the start of destruction,
-  // since it stores raw pointers to other subsystems.
+    // Must be destroyed implicitly at the start of destruction,
+    // since it stores raw pointers to other subsystems.
 //  m_adsEngine.reset();
 //  m_purchase.reset();
 
@@ -587,11 +574,11 @@ Framework::~Framework()
 
 //  GetBookmarkManager().Teardown();
 //  m_trafficManager.Teardown();
-  DestroyDrapeEngine();
-  m_featuresFetcher.SetOnMapDeregisteredCallback(nullptr);
+    DestroyDrapeEngine();
+    m_featuresFetcher.SetOnMapDeregisteredCallback(nullptr);
 
 //  m_user.ClearSubscribers();
-  // Must be destroyed implicitly, since it stores reference to m_user.
+    // Must be destroyed implicitly, since it stores reference to m_user.
 //  m_bmManager.reset();
 }
 
@@ -640,82 +627,75 @@ Framework::~Framework()
 //  return nullptr;
 //}
 
-void Framework::ShowNode(storage::CountryId const & countryId)
-{
-  StopLocationFollow();
+void Framework::ShowNode(storage::CountryId const &countryId) {
+    StopLocationFollow();
 
-  ShowRect(CalcLimitRect(countryId, GetStorage(), GetCountryInfoGetter()));
+    ShowRect(CalcLimitRect(countryId, GetStorage(), GetCountryInfoGetter()));
 }
 
-void Framework::OnCountryFileDownloaded(storage::CountryId const & countryId,
-                                        storage::LocalFilePtr const localFile)
-{
-  // Soft reset to signal that mwm file may be out of date in routing caches.
-  m_routingManager.ResetRoutingSession();
+void Framework::OnCountryFileDownloaded(storage::CountryId const &countryId,
+                                        storage::LocalFilePtr const localFile) {
+    // Soft reset to signal that mwm file may be out of date in routing caches.
+    m_routingManager.ResetRoutingSession();
 
-  m2::RectD rect = mercator::Bounds::FullRect();
+    m2::RectD rect = mercator::Bounds::FullRect();
 
-  if (localFile && localFile->OnDisk(MapFileType::Map))
-  {
-    // Add downloaded map.
-    auto p = m_featuresFetcher.RegisterMap(*localFile);
-    MwmSet::MwmId const & id = p.first;
-    if (id.IsAlive())
-      rect = id.GetInfo()->m_bordersRect;
-  }
+    if (localFile && localFile->OnDisk(MapFileType::Map)) {
+        // Add downloaded map.
+        auto p = m_featuresFetcher.RegisterMap(*localFile);
+        MwmSet::MwmId const &id = p.first;
+        if (id.IsAlive())
+            rect = id.GetInfo()->m_bordersRect;
+    }
 //  m_trafficManager.Invalidate();
-  m_transitManager.Invalidate();
+    m_transitManager.Invalidate();
 //  m_isolinesManager.Invalidate();
 //  m_localAdsManager.OnDownloadCountry(countryId);
-  InvalidateRect(rect);
-  GetSearchAPI().ClearCaches();
+    InvalidateRect(rect);
+    GetSearchAPI().ClearCaches();
 }
 
-bool Framework::OnCountryFileDelete(storage::CountryId const & countryId,
-                                    storage::LocalFilePtr const localFile)
-{
-  // Soft reset to signal that mwm file may be out of date in routing caches.
-  m_routingManager.ResetRoutingSession();
+bool Framework::OnCountryFileDelete(storage::CountryId const &countryId,
+                                    storage::LocalFilePtr const localFile) {
+    // Soft reset to signal that mwm file may be out of date in routing caches.
+    m_routingManager.ResetRoutingSession();
 
-  if (countryId == m_lastReportedCountry)
-    m_lastReportedCountry = kInvalidCountryId;
+    if (countryId == m_lastReportedCountry)
+        m_lastReportedCountry = kInvalidCountryId;
 
-  GetSearchAPI().CancelAllSearches();
+    GetSearchAPI().CancelAllSearches();
 
-  m2::RectD rect = mercator::Bounds::FullRect();
+    m2::RectD rect = mercator::Bounds::FullRect();
 
-  bool deferredDelete = false;
-  if (localFile)
-  {
-    rect = m_infoGetter->GetLimitRectForLeaf(countryId);
-    m_featuresFetcher.DeregisterMap(platform::CountryFile(countryId));
-    deferredDelete = true;
-  }
-  InvalidateRect(rect);
+    bool deferredDelete = false;
+    if (localFile) {
+        rect = m_infoGetter->GetLimitRectForLeaf(countryId);
+        m_featuresFetcher.DeregisterMap(platform::CountryFile(countryId));
+        deferredDelete = true;
+    }
+    InvalidateRect(rect);
 
-  GetSearchAPI().ClearCaches();
-  return deferredDelete;
+    GetSearchAPI().ClearCaches();
+    return deferredDelete;
 }
 
-void Framework::OnMapDeregistered(platform::LocalCountryFile const & localFile)
-{
-  auto action = [this, localFile]
-  {
+void Framework::OnMapDeregistered(platform::LocalCountryFile const &localFile) {
+    auto action = [this, localFile] {
 //    m_localAdsManager.OnMwmDeregistered(localFile);
-    m_transitManager.OnMwmDeregistered(localFile);
+        m_transitManager.OnMwmDeregistered(localFile);
 //    m_isolinesManager.OnMwmDeregistered(localFile);
 //    m_trafficManager.OnMwmDeregistered(localFile);
-    m_popularityLoader.OnMwmDeregistered(localFile);
+        m_popularityLoader.OnMwmDeregistered(localFile);
 
-    m_storage.DeleteCustomCountryVersion(localFile);
-  };
+        m_storage.DeleteCustomCountryVersion(localFile);
+    };
 
-  // Call action on thread in which the framework was created
-  // For more information look at comment for Observer class in mwm_set.hpp
-  if (m_storage.GetThreadChecker().CalledOnOriginalThread())
-    action();
-  else
-    GetPlatform().RunTask(Platform::Thread::Gui, action);
+    // Call action on thread in which the framework was created
+    // For more information look at comment for Observer class in mwm_set.hpp
+    if (m_storage.GetThreadChecker().CalledOnOriginalThread())
+        action();
+    else
+        GetPlatform().RunTask(Platform::Thread::Gui, action);
 }
 
 //bool Framework::HasUnsavedEdits(storage::CountryId const & countryId)
@@ -732,56 +712,52 @@ void Framework::OnMapDeregistered(platform::LocalCountryFile const & localFile)
 //  return hasUnsavedChanges;
 //}
 
-void Framework::RegisterAllMaps()
-{
-  ASSERT(!m_storage.IsDownloadInProgress(),
-         ("Registering maps while map downloading leads to removing downloading maps from "
-          "ActiveMapsListener::m_items."));
+void Framework::RegisterAllMaps() {
+    ASSERT(!m_storage.IsDownloadInProgress(),
+           ("Registering maps while map downloading leads to removing downloading maps from "
+            "ActiveMapsListener::m_items."));
 
-  m_storage.RegisterAllLocalMaps(m_enabledDiffs);
+    m_storage.RegisterAllLocalMaps(m_enabledDiffs);
 
-  int minFormat = numeric_limits<int>::max();
+    int minFormat = numeric_limits<int>::max();
 
-  char const * kLastDownloadedMapsCheck = "LastDownloadedMapsCheck";
-  auto const updateInterval = hours(24 * 7); // One week.
-  uint32_t timestamp;
-  bool const rc = settings::Get(kLastDownloadedMapsCheck, timestamp);
-  auto const lastCheck = time_point<system_clock>(seconds(timestamp));
-  bool const needStatisticsUpdate = !rc || lastCheck < system_clock::now() - updateInterval;
-  stringstream listRegisteredMaps;
+    char const *kLastDownloadedMapsCheck = "LastDownloadedMapsCheck";
+    auto const updateInterval = hours(24 * 7); // One week.
+    uint32_t timestamp;
+    bool const rc = settings::Get(kLastDownloadedMapsCheck, timestamp);
+    auto const lastCheck = time_point<system_clock>(seconds(timestamp));
+    bool const needStatisticsUpdate = !rc || lastCheck < system_clock::now() - updateInterval;
+    stringstream listRegisteredMaps;
 
-  vector<shared_ptr<LocalCountryFile>> maps;
-  m_storage.GetLocalMaps(maps);
-  for (auto const & localFile : maps)
-  {
-    auto p = RegisterMap(*localFile);
-    if (p.second != MwmSet::RegResult::Success)
-      continue;
+    vector<shared_ptr<LocalCountryFile>> maps;
+    m_storage.GetLocalMaps(maps);
+    for (auto const &localFile: maps) {
+        auto p = RegisterMap(*localFile);
+        if (p.second != MwmSet::RegResult::Success)
+            continue;
 
-    MwmSet::MwmId const & id = p.first;
-    ASSERT(id.IsAlive(), ());
-    minFormat = min(minFormat, static_cast<int>(id.GetInfo()->m_version.GetFormat()));
-    if (needStatisticsUpdate)
-    {
-      listRegisteredMaps << localFile->GetCountryName() << ":" << id.GetInfo()->GetVersion() << ";";
+        MwmSet::MwmId const &id = p.first;
+        ASSERT(id.IsAlive(), ());
+        minFormat = min(minFormat, static_cast<int>(id.GetInfo()->m_version.GetFormat()));
+        if (needStatisticsUpdate) {
+            listRegisteredMaps << localFile->GetCountryName() << ":" << id.GetInfo()->GetVersion()
+                               << ";";
+        }
     }
-  }
 
-  if (needStatisticsUpdate)
-  {
+    if (needStatisticsUpdate) {
 //    alohalytics::Stats::Instance().LogEvent("Downloader_Map_list",
 //    {{"AvailableStorageSpace", strings::to_string(GetPlatform().GetWritableStorageSpace())},
 //      {"DownloadedMaps", listRegisteredMaps.str()}});
 //    settings::Set(kLastDownloadedMapsCheck,
 //                  static_cast<uint64_t>(duration_cast<seconds>(
 //                                          system_clock::now().time_since_epoch()).count()));
-  }
+    }
 }
 
-void Framework::DeregisterAllMaps()
-{
-  m_featuresFetcher.Clear();
-  m_storage.Clear();
+void Framework::DeregisterAllMaps() {
+    m_featuresFetcher.Clear();
+    m_storage.Clear();
 }
 
 //void Framework::LoadBookmarks()
@@ -825,9 +801,8 @@ void Framework::DeregisterAllMaps()
 //  info.SetMercator(trackPoint);
 //}
 
-search::ReverseGeocoder::Address Framework::GetAddressAtPoint(m2::PointD const & pt) const
-{
-  return m_addressGetter.GetAddressAtPoint(m_featuresFetcher.GetDataSource(), pt);
+search::ReverseGeocoder::Address Framework::GetAddressAtPoint(m2::PointD const &pt) const {
+    return m_addressGetter.GetAddressAtPoint(m_featuresFetcher.GetDataSource(), pt);
 }
 
 //void Framework::FillFeatureInfo(FeatureID const & fid, place_page::Info & info) const
@@ -1018,7 +993,7 @@ search::ReverseGeocoder::Address Framework::GetAddressAtPoint(m2::PointD const &
 //  info.SetReachableByTaxiProviders(m_taxiEngine->GetProvidersAtPos(latlon));
 //  info.SetPopularity(m_popularityLoader.Get(ft.GetID()));
 
-  // Fill countryId for place page info
+// Fill countryId for place page info
 //  uint32_t const placeContinentType = classif().GetTypeByPath({"place", "continent"});
 //  if (info.GetTypes().Has(placeContinentType))
 //    return;
@@ -1149,8 +1124,7 @@ search::ReverseGeocoder::Address Framework::GetAddressAtPoint(m2::PointD const &
 //  ActivateMapSelection(m_currentPlacePageInfo);
 //}
 
-void Framework::ShowTrack(kml::TrackId trackId)
-{
+void Framework::ShowTrack(kml::TrackId trackId) {
 //  auto & bm = GetBookmarkManager();
 //  auto const track = bm.GetTrack(trackId);
 //  if (track == nullptr)
@@ -1217,121 +1191,104 @@ void Framework::ShowTrack(kml::TrackId trackId)
 //  GetBookmarkManager().LoadBookmark(filePath, isTemporaryFile);
 //}
 
-void Framework::PrepareToShutdown()
-{
-  DestroyDrapeEngine();
+void Framework::PrepareToShutdown() {
+    DestroyDrapeEngine();
 }
 
-void Framework::SetDisplacementMode(DisplacementModeManager::Slot slot, bool show)
-{
-  m_displacementModeManager.Set(slot, show);
+void Framework::SetDisplacementMode(DisplacementModeManager::Slot slot, bool show) {
+    m_displacementModeManager.Set(slot, show);
 }
 
-void Framework::SaveViewport()
-{
-  m2::AnyRectD rect;
-  if (m_currentModelView.isPerspective())
-  {
-    ScreenBase modelView = m_currentModelView;
-    modelView.ResetPerspective();
-    rect = modelView.GlobalRect();
-  }
-  else
-  {
-    rect = m_currentModelView.GlobalRect();
-  }
-  settings::Set("ScreenClipRect", rect);
+void Framework::SaveViewport() {
+    m2::AnyRectD rect;
+    if (m_currentModelView.isPerspective()) {
+        ScreenBase modelView = m_currentModelView;
+        modelView.ResetPerspective();
+        rect = modelView.GlobalRect();
+    } else {
+        rect = m_currentModelView.GlobalRect();
+    }
+    settings::Set("ScreenClipRect", rect);
 }
 
-void Framework::LoadViewport()
-{
-  m2::AnyRectD rect;
-  if (settings::Get("ScreenClipRect", rect) && df::GetWorldRect().IsRectInside(rect.GetGlobalRect()))
-  {
+void Framework::LoadViewport() {
+    m2::AnyRectD rect;
+    if (settings::Get("ScreenClipRect", rect) &&
+        df::GetWorldRect().IsRectInside(rect.GetGlobalRect())) {
+        if (m_drapeEngine != nullptr)
+            m_drapeEngine->SetModelViewAnyRect(rect, false /* isAnim */,
+                                               false /* useVisibleViewport */);
+    } else {
+        ShowAll();
+    }
+}
+
+void Framework::ShowAll() {
+    if (m_drapeEngine == nullptr)
+        return;
+    m_drapeEngine->SetModelViewAnyRect(m2::AnyRectD(m_featuresFetcher.GetWorldRect()),
+                                       false /* isAnim */,
+                                       false /* useVisibleViewport */);
+}
+
+m2::PointD Framework::GetPixelCenter() const {
+    return m_currentModelView.PixelRectIn3d().Center();
+}
+
+m2::PointD Framework::GetVisiblePixelCenter() const {
+    return m_visibleViewport.Center();
+}
+
+m2::PointD const &Framework::GetViewportCenter() const {
+    return m_currentModelView.GetOrg();
+}
+
+void Framework::SetViewportCenter(m2::PointD const &pt, int zoomLevel /* = -1 */,
+                                  bool isAnim /* = true */) {
     if (m_drapeEngine != nullptr)
-      m_drapeEngine->SetModelViewAnyRect(rect, false /* isAnim */, false /* useVisibleViewport */);
-  }
-  else
-  {
-    ShowAll();
-  }
+        m_drapeEngine->SetModelViewCenter(pt, zoomLevel, isAnim, false /* trackVisibleViewport */);
 }
 
-void Framework::ShowAll()
-{
-  if (m_drapeEngine == nullptr)
-    return;
-  m_drapeEngine->SetModelViewAnyRect(m2::AnyRectD(m_featuresFetcher.GetWorldRect()), false /* isAnim */,
-                                     false /* useVisibleViewport */);
+m2::RectD Framework::GetCurrentViewport() const {
+    return m_currentModelView.ClipRect();
 }
 
-m2::PointD Framework::GetPixelCenter() const
-{
-  return m_currentModelView.PixelRectIn3d().Center();
+void Framework::SetVisibleViewport(m2::RectD const &rect) {
+    if (m_drapeEngine == nullptr)
+        return;
+
+    double constexpr kEps = 0.5;
+    if (m2::IsEqual(m_visibleViewport, rect, kEps, kEps))
+        return;
+
+    double constexpr kMinSize = 100.0;
+    if (rect.SizeX() < kMinSize || rect.SizeY() < kMinSize)
+        return;
+
+    m_visibleViewport = rect;
+    m_drapeEngine->SetVisibleViewport(rect);
 }
 
-m2::PointD Framework::GetVisiblePixelCenter() const
-{
-  return m_visibleViewport.Center();
+void
+Framework::ShowRect(m2::RectD const &rect, int maxScale, bool animation, bool useVisibleViewport) {
+    if (m_drapeEngine == nullptr)
+        return;
+
+    m_drapeEngine->SetModelViewRect(rect, true /* applyRotation */, maxScale /* zoom */, animation,
+                                    useVisibleViewport);
 }
 
-m2::PointD const & Framework::GetViewportCenter() const
-{
-  return m_currentModelView.GetOrg();
+void Framework::ShowRect(m2::AnyRectD const &rect, bool animation, bool useVisibleViewport) {
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->SetModelViewAnyRect(rect, animation, useVisibleViewport);
 }
 
-void Framework::SetViewportCenter(m2::PointD const & pt, int zoomLevel /* = -1 */,
-                                  bool isAnim /* = true */)
-{
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->SetModelViewCenter(pt, zoomLevel, isAnim, false /* trackVisibleViewport */);
+void Framework::GetTouchRect(m2::PointD const &center, uint32_t pxRadius, m2::AnyRectD &rect) {
+    m_currentModelView.GetTouchRect(center, static_cast<double>(pxRadius), rect);
 }
 
-m2::RectD Framework::GetCurrentViewport() const
-{
-  return m_currentModelView.ClipRect();
-}
-
-void Framework::SetVisibleViewport(m2::RectD const & rect)
-{
-  if (m_drapeEngine == nullptr)
-    return;
-
-  double constexpr kEps = 0.5;
-  if (m2::IsEqual(m_visibleViewport, rect, kEps, kEps))
-    return;
-
-  double constexpr kMinSize = 100.0;
-  if (rect.SizeX() < kMinSize || rect.SizeY() < kMinSize)
-    return;
-
-  m_visibleViewport = rect;
-  m_drapeEngine->SetVisibleViewport(rect);
-}
-
-void Framework::ShowRect(m2::RectD const & rect, int maxScale, bool animation, bool useVisibleViewport)
-{
-  if (m_drapeEngine == nullptr)
-    return;
-
-  m_drapeEngine->SetModelViewRect(rect, true /* applyRotation */, maxScale /* zoom */, animation,
-                                  useVisibleViewport);
-}
-
-void Framework::ShowRect(m2::AnyRectD const & rect, bool animation, bool useVisibleViewport)
-{
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->SetModelViewAnyRect(rect, animation, useVisibleViewport);
-}
-
-void Framework::GetTouchRect(m2::PointD const & center, uint32_t pxRadius, m2::AnyRectD & rect)
-{
-  m_currentModelView.GetTouchRect(center, static_cast<double>(pxRadius), rect);
-}
-
-void Framework::SetViewportListener(TViewportChangedFn const & fn)
-{
-  m_viewportChangedFn = fn;
+void Framework::SetViewportListener(TViewportChangedFn const &fn) {
+    m_viewportChangedFn = fn;
 }
 
 #if defined(OMIM_OS_MAC) || defined(OMIM_OS_LINUX)
@@ -1342,177 +1299,153 @@ void Framework::NotifyGraphicsReady(TGraphicsReadyFn const & fn, bool needInvali
 }
 #endif
 
-void Framework::StopLocationFollow()
-{
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->StopLocationFollow();
+void Framework::StopLocationFollow() {
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->StopLocationFollow();
 }
 
-void Framework::OnSize(int w, int h)
-{
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->Resize(std::max(w, 2), std::max(h, 2));
+void Framework::OnSize(int w, int h) {
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->Resize(std::max(w, 2), std::max(h, 2));
 }
 
-namespace
-{
+namespace {
 
-double ScaleModeToFactor(Framework::EScaleMode mode)
-{
-  double factors[] = { 2.0, 1.5, 0.5, 0.67 };
-  return factors[mode];
-}
+    double ScaleModeToFactor(Framework::EScaleMode mode) {
+        double factors[] = {2.0, 1.5, 0.5, 0.67};
+        return factors[mode];
+    }
 
 } // namespace
 
-void Framework::Scale(EScaleMode mode, bool isAnim)
-{
-  Scale(ScaleModeToFactor(mode), isAnim);
+void Framework::Scale(EScaleMode mode, bool isAnim) {
+    Scale(ScaleModeToFactor(mode), isAnim);
 }
 
-void Framework::Scale(Framework::EScaleMode mode, m2::PointD const & pxPoint, bool isAnim)
-{
-  Scale(ScaleModeToFactor(mode), pxPoint, isAnim);
+void Framework::Scale(Framework::EScaleMode mode, m2::PointD const &pxPoint, bool isAnim) {
+    Scale(ScaleModeToFactor(mode), pxPoint, isAnim);
 }
 
-void Framework::Scale(double factor, bool isAnim)
-{
-  Scale(factor, GetVisiblePixelCenter(), isAnim);
+void Framework::Scale(double factor, bool isAnim) {
+    Scale(factor, GetVisiblePixelCenter(), isAnim);
 }
 
-void Framework::Scale(double factor, m2::PointD const & pxPoint, bool isAnim)
-{
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->Scale(factor, pxPoint, isAnim);
+void Framework::Scale(double factor, m2::PointD const &pxPoint, bool isAnim) {
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->Scale(factor, pxPoint, isAnim);
 }
 
-void Framework::Move(double factorX, double factorY, bool isAnim)
-{
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->Move(factorX, factorY, isAnim);
+void Framework::Move(double factorX, double factorY, bool isAnim) {
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->Move(factorX, factorY, isAnim);
 }
 
-void Framework::Rotate(double azimuth, bool isAnim)
-{
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->Rotate(azimuth, isAnim);
+void Framework::Rotate(double azimuth, bool isAnim) {
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->Rotate(azimuth, isAnim);
 }
 
-void Framework::TouchEvent(df::TouchEvent const & touch)
-{
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->AddTouchEvent(touch);
+void Framework::TouchEvent(df::TouchEvent const &touch) {
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->AddTouchEvent(touch);
 }
 
-int Framework::GetDrawScale() const
-{
-  if (m_drapeEngine != nullptr)
-    return df::GetDrawTileScale(m_currentModelView);
-  
-  return 0;
+int Framework::GetDrawScale() const {
+    if (m_drapeEngine != nullptr)
+        return df::GetDrawTileScale(m_currentModelView);
+
+    return 0;
 }
 
-void Framework::RunFirstLaunchAnimation()
-{
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->RunFirstLaunchAnimation();
+void Framework::RunFirstLaunchAnimation() {
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->RunFirstLaunchAnimation();
 }
 
-bool Framework::IsCountryLoaded(m2::PointD const & pt) const
-{
-  // TODO (@gorshenin, @govako): the method's name is quite
-  // obfuscating and should be fixed.
+bool Framework::IsCountryLoaded(m2::PointD const &pt) const {
+    // TODO (@gorshenin, @govako): the method's name is quite
+    // obfuscating and should be fixed.
 
-  // Correct, but slow version (check country polygon).
-  string const fName = m_infoGetter->GetRegionCountryId(pt);
-  if (fName.empty())
-    return true;
+    // Correct, but slow version (check country polygon).
+    string const fName = m_infoGetter->GetRegionCountryId(pt);
+    if (fName.empty())
+        return true;
 
-  return m_featuresFetcher.IsLoaded(fName);
+    return m_featuresFetcher.IsLoaded(fName);
 }
 
-bool Framework::IsCountryLoadedByName(string const & name) const
-{
-  return m_featuresFetcher.IsLoaded(name);
+bool Framework::IsCountryLoadedByName(string const &name) const {
+    return m_featuresFetcher.IsLoaded(name);
 }
 
-void Framework::InvalidateRect(m2::RectD const & rect)
-{
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->InvalidateRect(rect);
+void Framework::InvalidateRect(m2::RectD const &rect) {
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->InvalidateRect(rect);
 }
 
-void Framework::ClearAllCaches()
-{
-  m_featuresFetcher.ClearCaches();
-  m_infoGetter->ClearCaches();
-  GetSearchAPI().ClearCaches();
+void Framework::ClearAllCaches() {
+    m_featuresFetcher.ClearCaches();
+    m_infoGetter->ClearCaches();
+    GetSearchAPI().ClearCaches();
 }
 
-void Framework::OnUpdateCurrentCountry(m2::PointD const & pt, int zoomLevel)
-{
-  storage::CountryId newCountryId;
-  if (zoomLevel > scales::GetUpperWorldScale())
-    newCountryId = m_infoGetter->GetRegionCountryId(pt);
+void Framework::OnUpdateCurrentCountry(m2::PointD const &pt, int zoomLevel) {
+    storage::CountryId newCountryId;
+    if (zoomLevel > scales::GetUpperWorldScale())
+        newCountryId = m_infoGetter->GetRegionCountryId(pt);
 
-  if (newCountryId == m_lastReportedCountry)
-    return;
+    if (newCountryId == m_lastReportedCountry)
+        return;
 
-  m_lastReportedCountry = newCountryId;
+    m_lastReportedCountry = newCountryId;
 
-  GetPlatform().RunTask(Platform::Thread::Gui, [this, newCountryId]()
-  {
-    if (m_currentCountryChanged != nullptr)
-      m_currentCountryChanged(newCountryId);
-  });
+    GetPlatform().RunTask(Platform::Thread::Gui, [this, newCountryId]() {
+        if (m_currentCountryChanged != nullptr)
+            m_currentCountryChanged(newCountryId);
+    });
 }
 
-void Framework::SetCurrentCountryChangedListener(TCurrentCountryChanged const & listener)
-{
-  m_currentCountryChanged = listener;
-  m_lastReportedCountry = kInvalidCountryId;
+void Framework::SetCurrentCountryChangedListener(TCurrentCountryChanged const &listener) {
+    m_currentCountryChanged = listener;
+    m_lastReportedCountry = kInvalidCountryId;
 }
 
-void Framework::MemoryWarning()
-{
-  LOG(LINFO, ("MemoryWarning"));
-  ClearAllCaches();
-  SharedBufferManager::instance().clearReserved();
+void Framework::MemoryWarning() {
+    LOG(LINFO, ("MemoryWarning"));
+    ClearAllCaches();
+    SharedBufferManager::instance().clearReserved();
 }
 
-void Framework::EnterBackground()
-{
-  m_startBackgroundTime = base::Timer::LocalTime();
-  settings::Set("LastEnterBackground", m_startBackgroundTime);
+void Framework::EnterBackground() {
+    m_startBackgroundTime = base::Timer::LocalTime();
+    settings::Set("LastEnterBackground", m_startBackgroundTime);
 
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->OnEnterBackground();
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->OnEnterBackground();
 
-  SaveViewport();
+    SaveViewport();
 
 //  m_trafficManager.OnEnterBackground();
-  m_routingManager.SetAllowSendingPoints(false);
+    m_routingManager.SetAllowSendingPoints(false);
 
 //  ms::LatLon const ll = mercator::ToLatLon(GetViewportCenter());
 //  alohalytics::Stats::Instance().LogEvent("Framework::EnterBackground", {{"zoom", strings::to_string(GetDrawScale())},
 //                                          {"foregroundSeconds", strings::to_string(
 //                                           static_cast<int>(m_startBackgroundTime - m_startForegroundTime))}},
 //                                          alohalytics::Location::FromLatLon(ll.m_lat, ll.m_lon));
-  // Do not clear caches for Android. This function is called when main activity is paused,
-  // but at the same time search activity (for example) is enabled.
-  // TODO(AlexZ): Use onStart/onStop on Android to correctly detect app background and remove #ifndef.
+    // Do not clear caches for Android. This function is called when main activity is paused,
+    // but at the same time search activity (for example) is enabled.
+    // TODO(AlexZ): Use onStart/onStop on Android to correctly detect app background and remove #ifndef.
 #ifndef OMIM_OS_ANDROID
-  ClearAllCaches();
+    ClearAllCaches();
 #endif
 }
 
-void Framework::EnterForeground()
-{
-  m_startForegroundTime = base::Timer::LocalTime();
-  if (m_drapeEngine != nullptr && m_startBackgroundTime != 0.0)
-  {
-    auto const secondsInBackground = m_startForegroundTime - m_startBackgroundTime;
-    m_drapeEngine->OnEnterForeground(secondsInBackground);
+void Framework::EnterForeground() {
+    m_startForegroundTime = base::Timer::LocalTime();
+    if (m_drapeEngine != nullptr && m_startBackgroundTime != 0.0) {
+        auto const secondsInBackground = m_startForegroundTime - m_startBackgroundTime;
+        m_drapeEngine->OnEnterForeground(secondsInBackground);
 
 //    if (m_guidesManager.IsEnabled() &&
 //      secondsInBackground / 60 / 60 > kGuidesEnabledInBackgroundMaxHours)
@@ -1524,19 +1457,18 @@ void Framework::EnterForeground()
 //      alohalytics::LogEvent("Map_Layers_deactivate",
 //                            {{"name", "guides"}, {"count", strings::to_string(shownCount)}});
 //    }
-  }
+    }
 //
 //  m_trafficManager.OnEnterForeground();
-  m_routingManager.SetAllowSendingPoints(true);
+    m_routingManager.SetAllowSendingPoints(true);
 }
 
-void Framework::InitCountryInfoGetter()
-{
-  ASSERT(!m_infoGetter.get(), ("InitCountryInfoGetter() must be called only once."));
+void Framework::InitCountryInfoGetter() {
+    ASSERT(!m_infoGetter.get(), ("InitCountryInfoGetter() must be called only once."));
 
-  auto const & platform = GetPlatform();
-  m_infoGetter = CountryInfoReader::CreateCountryInfoGetter(platform);
-  m_infoGetter->SetAffiliations(&m_storage.GetAffiliations());
+    auto const &platform = GetPlatform();
+    m_infoGetter = CountryInfoReader::CreateCountryInfoGetter(platform);
+    m_infoGetter->SetAffiliations(&m_storage.GetAffiliations());
 }
 
 //void Framework::InitUGC()
@@ -1562,20 +1494,17 @@ void Framework::InitCountryInfoGetter()
 //  }
 //}
 
-void Framework::InitSearchAPI(size_t numThreads)
-{
-  ASSERT(!m_searchAPI.get(), ("InitSearchAPI() must be called only once."));
-  ASSERT(m_infoGetter.get(), ());
-  try
-  {
-    m_searchAPI =
-        make_unique<SearchAPI>(m_featuresFetcher.GetDataSource(), m_storage, *m_infoGetter,
-                               numThreads, static_cast<SearchAPI::Delegate &>(*this));
-  }
-  catch (RootException const & e)
-  {
-    LOG(LCRITICAL, ("Can't load needed resources for SearchAPI:", e.Msg()));
-  }
+void Framework::InitSearchAPI(size_t numThreads) {
+    ASSERT(!m_searchAPI.get(), ("InitSearchAPI() must be called only once."));
+    ASSERT(m_infoGetter.get(), ());
+    try {
+        m_searchAPI =
+                make_unique<SearchAPI>(m_featuresFetcher.GetDataSource(), m_storage, *m_infoGetter,
+                                       numThreads, static_cast<SearchAPI::Delegate &>(*this));
+    }
+    catch (RootException const &e) {
+        LOG(LCRITICAL, ("Can't load needed resources for SearchAPI:", e.Msg()));
+    }
 }
 
 //void Framework::InitDiscoveryManager()
@@ -1587,73 +1516,67 @@ void Framework::InitSearchAPI(size_t numThreads)
 //  m_discoveryManager = make_unique<discovery::Manager>(m_featuresFetcher.GetDataSource(), apis);
 //}
 
-void Framework::InitTransliteration()
-{
-  InitTransliterationInstanceWithDefaultDirs();
+void Framework::InitTransliteration() {
+    InitTransliterationInstanceWithDefaultDirs();
 
-  if (!LoadTransliteration())
-    Transliteration::Instance().SetMode(Transliteration::Mode::Disabled);
+    if (!LoadTransliteration())
+        Transliteration::Instance().SetMode(Transliteration::Mode::Disabled);
 }
 
-storage::CountryId Framework::GetCountryIndex(m2::PointD const & pt) const
-{
-  return m_infoGetter->GetRegionCountryId(pt);
+storage::CountryId Framework::GetCountryIndex(m2::PointD const &pt) const {
+    return m_infoGetter->GetRegionCountryId(pt);
 }
 
-string Framework::GetCountryName(m2::PointD const & pt) const
-{
-  storage::CountryInfo info;
-  m_infoGetter->GetRegionInfo(pt, info);
-  return info.m_name;
+string Framework::GetCountryName(m2::PointD const &pt) const {
+    storage::CountryInfo info;
+    m_infoGetter->GetRegionInfo(pt, info);
+    return info.m_name;
 }
 
-Framework::DoAfterUpdate Framework::ToDoAfterUpdate() const
-{
-  auto const connectionStatus = Platform::ConnectionStatus();
-  if (connectionStatus == Platform::EConnectionType::CONNECTION_NONE)
-    return DoAfterUpdate::Nothing;
+Framework::DoAfterUpdate Framework::ToDoAfterUpdate() const {
+    auto const connectionStatus = Platform::ConnectionStatus();
+    if (connectionStatus == Platform::EConnectionType::CONNECTION_NONE)
+        return DoAfterUpdate::Nothing;
 
-  auto const & s = GetStorage();
-  auto const & rootId = s.GetRootId();
-  if (!IsEnoughSpaceForUpdate(rootId, s))
-    return DoAfterUpdate::Nothing;
+    auto const &s = GetStorage();
+    auto const &rootId = s.GetRootId();
+    if (!IsEnoughSpaceForUpdate(rootId, s))
+        return DoAfterUpdate::Nothing;
 
-  NodeAttrs attrs;
-  s.GetNodeAttrs(rootId, attrs);
-  MwmSize const countrySizeInBytes = attrs.m_localMwmSize;
+    NodeAttrs attrs;
+    s.GetNodeAttrs(rootId, attrs);
+    MwmSize const countrySizeInBytes = attrs.m_localMwmSize;
 
-  if (countrySizeInBytes == 0 || attrs.m_status != NodeStatus::OnDiskOutOfDate)
-    return DoAfterUpdate::Nothing;
+    if (countrySizeInBytes == 0 || attrs.m_status != NodeStatus::OnDiskOutOfDate)
+        return DoAfterUpdate::Nothing;
 
-  if (s.IsPossibleToAutoupdate() && connectionStatus == Platform::EConnectionType::CONNECTION_WIFI)
-    return DoAfterUpdate::AutoupdateMaps;
+    if (s.IsPossibleToAutoupdate() &&
+        connectionStatus == Platform::EConnectionType::CONNECTION_WIFI)
+        return DoAfterUpdate::AutoupdateMaps;
 
-  return DoAfterUpdate::AskForUpdateMaps;
+    return DoAfterUpdate::AskForUpdateMaps;
 }
 
-SearchAPI & Framework::GetSearchAPI()
-{
-  ASSERT(m_searchAPI != nullptr, ("Search API is not initialized."));
-  return *m_searchAPI;
+SearchAPI &Framework::GetSearchAPI() {
+    ASSERT(m_searchAPI != nullptr, ("Search API is not initialized."));
+    return *m_searchAPI;
 }
 
-SearchAPI const & Framework::GetSearchAPI() const
-{
-  ASSERT(m_searchAPI != nullptr, ("Search API is not initialized."));
-  return *m_searchAPI;
+SearchAPI const &Framework::GetSearchAPI() const {
+    ASSERT(m_searchAPI != nullptr, ("Search API is not initialized."));
+    return *m_searchAPI;
 }
 
-search::DisplayedCategories const & Framework::GetDisplayedCategories()
-{
-  ASSERT(m_displayedCategories, ());
-  ASSERT(m_cityFinder, ());
+search::DisplayedCategories const &Framework::GetDisplayedCategories() {
+    ASSERT(m_displayedCategories, ());
+    ASSERT(m_cityFinder, ());
 
-  string city;
+    string city;
 
-  if (auto const position = GetCurrentPosition())
-    city = m_cityFinder->GetCityName(*position, StringUtf8Multilang::kEnglishCode);
+    if (auto const position = GetCurrentPosition())
+        city = m_cityFinder->GetCityName(*position, StringUtf8Multilang::kEnglishCode);
 
-  // Apply sponsored modifiers.
+    // Apply sponsored modifiers.
 //  if (m_purchase && !m_purchase->IsSubscriptionActive(SubscriptionType::RemoveAds))
 //  {
     // Add Category modifiers here.
@@ -1664,12 +1587,11 @@ search::DisplayedCategories const & Framework::GetDisplayedCategories()
     //});
 //  }
 
-  return *m_displayedCategories;
+    return *m_displayedCategories;
 }
 
-void Framework::SelectSearchResult(search::Result const & result, bool animation)
-{
-  using namespace search;
+void Framework::SelectSearchResult(search::Result const &result, bool animation) {
+    using namespace search;
 //  place_page::BuildInfo info;
 //  info.m_source = place_page::BuildInfo::Source::Search;
 //  info.m_needAnimationOnSelection = false;
@@ -1724,100 +1646,88 @@ void Framework::SelectSearchResult(search::Result const & result, bool animation
 //  }
 }
 
-void Framework::ShowSearchResult(search::Result const & res, bool animation)
-{
-  GetSearchAPI().CancelAllSearches();
-  StopLocationFollow();
+void Framework::ShowSearchResult(search::Result const &res, bool animation) {
+    GetSearchAPI().CancelAllSearches();
+    StopLocationFollow();
 
 //  alohalytics::LogEvent("searchShowResult", {{"pos", strings::to_string(res.GetPositionInResults())},
 //                                             {"result", res.ToStringForStats()}});
-  SelectSearchResult(res, animation);
+    SelectSearchResult(res, animation);
 }
 
-size_t Framework::ShowSearchResults(search::Results const & results)
-{
-  using namespace search;
+size_t Framework::ShowSearchResults(search::Results const &results) {
+    using namespace search;
 
-  size_t count = results.GetCount();
-  if (count == 0)
-    return 0;
+    size_t count = results.GetCount();
+    if (count == 0)
+        return 0;
 
-  if (count == 1)
-  {
-    Result const & r = results[0];
-    if (!r.IsSuggest())
-      ShowSearchResult(r);
-    else
-      return 0;
-  }
-
-  FillSearchResultsMarks(true /* clear */, results);
-
-  // Setup viewport according to results.
-  m2::AnyRectD viewport = m_currentModelView.GlobalRect();
-  m2::PointD const center = viewport.Center();
-
-  double minDistance = numeric_limits<double>::max();
-  int minInd = -1;
-  for (size_t i = 0; i < count; ++i)
-  {
-    Result const & r = results[i];
-    if (r.HasPoint())
-    {
-      double const dist = center.SquaredLength(r.GetFeatureCenter());
-      if (dist < minDistance)
-      {
-        minDistance = dist;
-        minInd = static_cast<int>(i);
-      }
-    }
-  }
-
-  if (minInd != -1)
-  {
-    m2::PointD const pt = results[minInd].GetFeatureCenter();
-
-    if (m_currentModelView.isPerspective())
-    {
-      StopLocationFollow();
-      SetViewportCenter(pt);
-      return count;
+    if (count == 1) {
+        Result const &r = results[0];
+        if (!r.IsSuggest())
+            ShowSearchResult(r);
+        else
+            return 0;
     }
 
-    if (!viewport.IsPointInside(pt))
-    {
-      viewport.SetSizesToIncludePoint(pt);
-      StopLocationFollow();
+    FillSearchResultsMarks(true /* clear */, results);
+
+    // Setup viewport according to results.
+    m2::AnyRectD viewport = m_currentModelView.GlobalRect();
+    m2::PointD const center = viewport.Center();
+
+    double minDistance = numeric_limits<double>::max();
+    int minInd = -1;
+    for (size_t i = 0; i < count; ++i) {
+        Result const &r = results[i];
+        if (r.HasPoint()) {
+            double const dist = center.SquaredLength(r.GetFeatureCenter());
+            if (dist < minDistance) {
+                minDistance = dist;
+                minInd = static_cast<int>(i);
+            }
+        }
     }
-  }
 
-  // Graphics engine can be recreated (on Android), so we always set up viewport here.
-  ShowRect(viewport);
+    if (minInd != -1) {
+        m2::PointD const pt = results[minInd].GetFeatureCenter();
 
-  return count;
+        if (m_currentModelView.isPerspective()) {
+            StopLocationFollow();
+            SetViewportCenter(pt);
+            return count;
+        }
+
+        if (!viewport.IsPointInside(pt)) {
+            viewport.SetSizesToIncludePoint(pt);
+            StopLocationFollow();
+        }
+    }
+
+    // Graphics engine can be recreated (on Android), so we always set up viewport here.
+    ShowRect(viewport);
+
+    return count;
 }
 
-void Framework::FillSearchResultsMarks(bool clear, search::Results const & results)
-{
-  FillSearchResultsMarks(results.begin(), results.end(), clear,
-                         Framework::SearchMarkPostProcessing());
+void Framework::FillSearchResultsMarks(bool clear, search::Results const &results) {
+    FillSearchResultsMarks(results.begin(), results.end(), clear,
+                           Framework::SearchMarkPostProcessing());
 }
 
 void Framework::FillSearchResultsMarks(search::Results::ConstIter begin,
                                        search::Results::ConstIter end, bool clear,
-                                       SearchMarkPostProcessing fn)
-{
+                                       SearchMarkPostProcessing fn) {
 //  auto editSession = GetBookmarkManager().GetEditSession();
 //  if (clear)
 //    editSession.ClearGroup(UserMark::Type::SEARCH);
 //  editSession.SetIsVisible(UserMark::Type::SEARCH, true);
 
-  optional<string> reason;
-  for (auto it = begin; it != end; ++it)
-  {
-    auto const & r = *it;
-    if (!r.HasPoint())
-      continue;
+    optional<string> reason;
+    for (auto it = begin; it != end; ++it) {
+        auto const &r = *it;
+        if (!r.HasPoint())
+            continue;
 
 //    auto * mark = editSession.CreateUserMark<SearchMarkPoint>(r.GetFeatureCenter());
 //    auto const isFeature = r.GetResultType() == search::Result::Type::Feature;
@@ -1851,7 +1761,7 @@ void Framework::FillSearchResultsMarks(search::Results::ConstIter begin,
 //        mark->SetRating(product.m_ugcRating);
 //    }
 
-    // Case when place page is opened and new portion of results delivered.
+        // Case when place page is opened and new portion of results delivered.
 //    if (isFeature && m_currentPlacePageInfo && m_currentPlacePageInfo->IsFeature() &&
 //        m_currentPlacePageInfo->GetID() == mark->GetFeatureID())
 //    {
@@ -1863,76 +1773,71 @@ void Framework::FillSearchResultsMarks(search::Results::ConstIter begin,
 //
 //    if (fn)
 //      fn(*mark);
-  }
+    }
 }
 
-bool Framework::GetDistanceAndAzimut(m2::PointD const & point,
+bool Framework::GetDistanceAndAzimut(m2::PointD const &point,
                                      double lat, double lon, double north,
-                                     string & distance, double & azimut)
-{
+                                     string &distance, double &azimut) {
 #ifdef FIXED_LOCATION
-  m_fixedPos.GetLat(lat);
-  m_fixedPos.GetLon(lon);
-  m_fixedPos.GetNorth(north);
+    m_fixedPos.GetLat(lat);
+    m_fixedPos.GetLon(lon);
+    m_fixedPos.GetNorth(north);
 #endif
 
-  double const d = ms::DistanceOnEarth(lat, lon, mercator::YToLat(point.y), mercator::XToLon(point.x));
+    double const d = ms::DistanceOnEarth(lat, lon, mercator::YToLat(point.y),
+                                         mercator::XToLon(point.x));
 
-  // Distance may be less than 1.0
-  UNUSED_VALUE(measurement_utils::FormatDistance(d, distance));
+    // Distance may be less than 1.0
+    UNUSED_VALUE(measurement_utils::FormatDistance(d, distance));
 
-  // We calculate azimuth even when distance is very short (d ~ 0),
-  // because return value has 2 states (near me or far from me).
+    // We calculate azimuth even when distance is very short (d ~ 0),
+    // because return value has 2 states (near me or far from me).
 
-  azimut = ang::Azimuth(mercator::FromLatLon(lat, lon), point, north);
+    azimut = ang::Azimuth(mercator::FromLatLon(lat, lon), point, north);
 
-  double const pi2 = 2.0*math::pi;
-  if (azimut < 0.0)
-    azimut += pi2;
-  else if (azimut > pi2)
-    azimut -= pi2;
+    double const pi2 = 2.0 * math::pi;
+    if (azimut < 0.0)
+        azimut += pi2;
+    else if (azimut > pi2)
+        azimut -= pi2;
 
-  // This constant and return value is using for arrow/flag choice.
-  return (d < 25000.0);
+    // This constant and return value is using for arrow/flag choice.
+    return (d < 25000.0);
 }
 
-void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFactory, DrapeCreationParams && params)
-{
-  auto idReadFn = [this](df::MapDataProvider::TReadCallback<FeatureID const> const & fn,
-                         m2::RectD const & r,
-                         int scale) -> void { m_featuresFetcher.ForEachFeatureID(r, fn, scale); };
+void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFactory,
+                                  DrapeCreationParams &&params) {
+    auto idReadFn = [this](df::MapDataProvider::TReadCallback<FeatureID const> const &fn,
+                           m2::RectD const &r,
+                           int scale) -> void { m_featuresFetcher.ForEachFeatureID(r, fn, scale); };
 
-  auto featureReadFn = [this](df::MapDataProvider::TReadCallback<FeatureType> const & fn,
-                              vector<FeatureID> const & ids) -> void
-  {
-    m_featuresFetcher.ReadFeatures(fn, ids);
-  };
+    auto featureReadFn = [this](df::MapDataProvider::TReadCallback<FeatureType> const &fn,
+                                vector<FeatureID> const &ids) -> void {
+        m_featuresFetcher.ReadFeatures(fn, ids);
+    };
 
-  auto myPositionModeChangedFn = [this](location::EMyPositionMode mode, bool routingActive)
-  {
-    GetPlatform().RunTask(Platform::Thread::Gui, [this, mode, routingActive]()
-    {
-      // Deactivate selection (and hide place page) if we return to routing in F&R mode.
+    auto myPositionModeChangedFn = [this](location::EMyPositionMode mode, bool routingActive) {
+        GetPlatform().RunTask(Platform::Thread::Gui, [this, mode, routingActive]() {
+            // Deactivate selection (and hide place page) if we return to routing in F&R mode.
 //      if (routingActive && mode == location::FollowAndRotate)
 //        DeactivateMapSelection(true /* notifyUI */);
 
-      if (m_myPositionListener != nullptr)
-        m_myPositionListener(mode, routingActive);
-    });
-  };
+            if (m_myPositionListener != nullptr)
+                m_myPositionListener(mode, routingActive);
+        });
+    };
 
-  auto filterFeatureFn = [this](FeatureType & ft) -> bool
-  {
-      return false;
+    auto filterFeatureFn = [this](FeatureType &ft) -> bool {
+        return false;
 //    if (m_purchase && !m_purchase->IsSubscriptionActive(SubscriptionType::RemoveAds))
 //      return false;
 //    return PartnerChecker::Instance().IsFakeObject(ft);
-  };
+    };
 
-  auto overlaysShowStatsFn = [this](list<df::OverlayShowEvent> && events)
-  {
-    if (events.empty())
-      return;
+    auto overlaysShowStatsFn = [this](list<df::OverlayShowEvent> &&events) {
+        if (events.empty())
+            return;
 
 //    list<local_ads::Event> statEvents;
 //    for (auto const & event : events)
@@ -1949,92 +1854,89 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
 //                              static_cast<uint16_t>(event.m_gpsAccuracy));
 //    }
 //    m_localAdsManager.GetStatistics().RegisterEvents(std::move(statEvents));
-  };
+    };
 
-  auto onGraphicsContextInitialized = [this]()
-  {
-    GetPlatform().RunTask(Platform::Thread::Gui, [this]()
-    {
-      if (m_onGraphicsContextInitialized)
-        m_onGraphicsContextInitialized();
-    });
-  };
+    auto onGraphicsContextInitialized = [this]() {
+        GetPlatform().RunTask(Platform::Thread::Gui, [this]() {
+            if (m_onGraphicsContextInitialized)
+                m_onGraphicsContextInitialized();
+        });
+    };
 
 //  auto isUGCFn = [this](FeatureID const & id)
 //  {
 //    auto const ugc = m_ugcApi->GetLoader().GetUGC(id);
 //    return !ugc.IsEmpty();
 //  };
-  auto isCountryLoadedByNameFn = bind(&Framework::IsCountryLoadedByName, this, _1);
-  auto updateCurrentCountryFn = bind(&Framework::OnUpdateCurrentCountry, this, _1, _2);
+    auto isCountryLoadedByNameFn = bind(&Framework::IsCountryLoadedByName, this, _1);
+    auto updateCurrentCountryFn = bind(&Framework::OnUpdateCurrentCountry, this, _1, _2);
 
-  bool allow3d;
-  bool allow3dBuildings;
-  Load3dMode(allow3d, allow3dBuildings);
+    bool allow3d;
+    bool allow3dBuildings;
+    Load3dMode(allow3d, allow3dBuildings);
 
-  auto const isAutozoomEnabled = LoadAutoZoom();
+    auto const isAutozoomEnabled = LoadAutoZoom();
 //  auto const trafficEnabled = m_trafficManager.IsEnabled();
 //  auto const isolinesEnabled = m_isolinesManager.IsEnabled();
 //  auto const guidesEnabled = m_guidesManager.IsEnabled();
 //  auto const simplifiedTrafficColors = m_trafficManager.HasSimplifiedColorScheme();
-  auto const fontsScaleFactor = LoadLargeFontsSize() ? kLargeFontsScaleFactor : 1.0;
+    auto const fontsScaleFactor = LoadLargeFontsSize() ? kLargeFontsScaleFactor : 1.0;
 
-  df::DrapeEngine::Params p(
-      params.m_apiVersion, contextFactory,
-      dp::Viewport(0, 0, params.m_surfaceWidth, params.m_surfaceHeight),
-      df::MapDataProvider(move(idReadFn), move(featureReadFn), move(filterFeatureFn),
-                          move(isCountryLoadedByNameFn), move(updateCurrentCountryFn)),
-      params.m_hints, params.m_visualScale, fontsScaleFactor, move(params.m_widgetsInitInfo),
-      make_pair(params.m_initialMyPositionState, params.m_hasMyPositionState),
-      move(myPositionModeChangedFn), allow3dBuildings,
+    df::DrapeEngine::Params p(
+            params.m_apiVersion, contextFactory,
+            dp::Viewport(0, 0, params.m_surfaceWidth, params.m_surfaceHeight),
+            df::MapDataProvider(move(idReadFn), move(featureReadFn), move(filterFeatureFn),
+                                move(isCountryLoadedByNameFn), move(updateCurrentCountryFn)),
+            params.m_hints, params.m_visualScale, fontsScaleFactor, move(params.m_widgetsInitInfo),
+            make_pair(params.m_initialMyPositionState, params.m_hasMyPositionState),
+            move(myPositionModeChangedFn), allow3dBuildings,
 //      trafficEnabled, isolinesEnabled, guidesEnabled,
-      params.m_isChoosePositionMode, params.m_isChoosePositionMode, GetSelectedFeatureTriangles(),
-      m_routingManager.IsRoutingActive() && m_routingManager.IsRoutingFollowing(),
-      isAutozoomEnabled,
+            params.m_isChoosePositionMode, params.m_isChoosePositionMode,
+            GetSelectedFeatureTriangles(),
+            m_routingManager.IsRoutingActive() && m_routingManager.IsRoutingFollowing(),
+            isAutozoomEnabled,
 //      simplifiedTrafficColors,
-      move(overlaysShowStatsFn), //move(isUGCFn),
-      move(onGraphicsContextInitialized));
+            move(overlaysShowStatsFn), //move(isUGCFn),
+            move(onGraphicsContextInitialized));
 
-  m_drapeEngine = make_unique_dp<df::DrapeEngine>(move(p));
-  m_drapeEngine->SetModelViewListener([this](ScreenBase const & screen)
-  {
-    GetPlatform().RunTask(Platform::Thread::Gui, [this, screen](){ OnViewportChanged(screen); });
-  });
-  m_drapeEngine->SetTapEventInfoListener([this](df::TapInfo const & tapInfo)
-  {
-    GetPlatform().RunTask(Platform::Thread::Gui, [this, tapInfo]() {
+    m_drapeEngine = make_unique_dp<df::DrapeEngine>(move(p));
+    m_drapeEngine->SetModelViewListener([this](ScreenBase const &screen) {
+        GetPlatform().RunTask(Platform::Thread::Gui,
+                              [this, screen]() { OnViewportChanged(screen); });
+    });
+    m_drapeEngine->SetTapEventInfoListener([this](df::TapInfo const &tapInfo) {
+        GetPlatform().RunTask(Platform::Thread::Gui, [this, tapInfo]() {
 //      OnTapEvent(place_page::BuildInfo(tapInfo));
+        });
     });
-  });
-  m_drapeEngine->SetUserPositionListener([this](m2::PointD const & position, bool hasPosition)
-  {
-    GetPlatform().RunTask(Platform::Thread::Gui, [this, position, hasPosition](){
-      OnUserPositionChanged(position, hasPosition);
+    m_drapeEngine->SetUserPositionListener([this](m2::PointD const &position, bool hasPosition) {
+        GetPlatform().RunTask(Platform::Thread::Gui, [this, position, hasPosition]() {
+            OnUserPositionChanged(position, hasPosition);
+        });
     });
-  });
-  m_drapeEngine->SetUserPositionPendingTimeoutListener([this]()
-  {
-    GetPlatform().RunTask(Platform::Thread::Gui, [this](){
-      if (m_myPositionPendingTimeoutListener)
-        m_myPositionPendingTimeoutListener();
+    m_drapeEngine->SetUserPositionPendingTimeoutListener([this]() {
+        GetPlatform().RunTask(Platform::Thread::Gui, [this]() {
+            if (m_myPositionPendingTimeoutListener)
+                m_myPositionPendingTimeoutListener();
+        });
     });
-  });
 
-  OnSize(params.m_surfaceWidth, params.m_surfaceHeight);
+    OnSize(params.m_surfaceWidth, params.m_surfaceHeight);
 
-  Allow3dMode(allow3d, allow3dBuildings);
-  LoadViewport();
+    Allow3dMode(allow3d, allow3dBuildings);
+    LoadViewport();
 
-  SetVisibleViewport(m2::RectD(0, 0, params.m_surfaceWidth, params.m_surfaceHeight));
+    SetVisibleViewport(m2::RectD(0, 0, params.m_surfaceWidth, params.m_surfaceHeight));
 
-  if (m_connectToGpsTrack)
-    GpsTracker::Instance().Connect(bind(&Framework::OnUpdateGpsTrackPointsCallback, this, _1, _2));
+    if (m_connectToGpsTrack)
+        GpsTracker::Instance().Connect(
+                bind(&Framework::OnUpdateGpsTrackPointsCallback, this, _1, _2));
 
 //  GetBookmarkManager().SetDrapeEngine(make_ref(m_drapeEngine));
-  m_drapeApi.SetDrapeEngine(make_ref(m_drapeEngine));
-  m_routingManager.SetDrapeEngine(make_ref(m_drapeEngine), allow3d);
+    m_drapeApi.SetDrapeEngine(make_ref(m_drapeEngine));
+    m_routingManager.SetDrapeEngine(make_ref(m_drapeEngine), allow3d);
 //  m_trafficManager.SetDrapeEngine(make_ref(m_drapeEngine));
-  m_transitManager.SetDrapeEngine(make_ref(m_drapeEngine));
+    m_transitManager.SetDrapeEngine(make_ref(m_drapeEngine));
 //  m_isolinesManager.SetDrapeEngine(make_ref(m_drapeEngine));
 //  m_guidesManager.SetDrapeEngine(make_ref(m_drapeEngine));
 //  m_localAdsManager.SetDrapeEngine(make_ref(m_drapeEngine));
@@ -2042,68 +1944,60 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
 
 //  InvalidateUserMarks();
 
-  auto const transitSchemeEnabled = LoadTransitSchemeEnabled();
-  m_transitManager.EnableTransitSchemeMode(transitSchemeEnabled);
+    auto const transitSchemeEnabled = LoadTransitSchemeEnabled();
+    m_transitManager.EnableTransitSchemeMode(transitSchemeEnabled);
 
-  // Show debug info if it's enabled in the config.
-  bool showDebugInfo;
-  if (!settings::Get(kShowDebugInfo, showDebugInfo))
-    showDebugInfo = false;
-  if (showDebugInfo)
-    m_drapeEngine->ShowDebugInfo(showDebugInfo);
+    // Show debug info if it's enabled in the config.
+    bool showDebugInfo;
+    if (!settings::Get(kShowDebugInfo, showDebugInfo))
+        showDebugInfo = false;
+    if (showDebugInfo)
+        m_drapeEngine->ShowDebugInfo(showDebugInfo);
 
 //  benchmark::RunGraphicsBenchmark(this);
 }
 
-void Framework::OnRecoverSurface(int width, int height, bool recreateContextDependentResources)
-{
-  if (m_drapeEngine)
-  {
-    m_drapeEngine->RecoverSurface(width, height, recreateContextDependentResources);
+void Framework::OnRecoverSurface(int width, int height, bool recreateContextDependentResources) {
+    if (m_drapeEngine) {
+        m_drapeEngine->RecoverSurface(width, height, recreateContextDependentResources);
 
 //    InvalidateUserMarks();
 
 //    UpdatePlacePageInfoForCurrentSelection();
 
-    m_drapeApi.Invalidate();
-  }
+        m_drapeApi.Invalidate();
+    }
 
 //  m_trafficManager.OnRecoverSurface();
-  m_transitManager.Invalidate();
+    m_transitManager.Invalidate();
 //  m_isolinesManager.Invalidate();
 //  m_localAdsManager.Invalidate();
 }
 
-void Framework::OnDestroySurface()
-{
+void Framework::OnDestroySurface() {
 //  m_trafficManager.OnDestroySurface();
 }
 
-void Framework::UpdateVisualScale(double vs)
-{
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->UpdateVisualScale(vs, m_isRenderingEnabled);
+void Framework::UpdateVisualScale(double vs) {
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->UpdateVisualScale(vs, m_isRenderingEnabled);
 }
 
-void Framework::UpdateMyPositionRoutingOffset(bool useDefault, int offsetY)
-{
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->UpdateMyPositionRoutingOffset(useDefault, offsetY);
+void Framework::UpdateMyPositionRoutingOffset(bool useDefault, int offsetY) {
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->UpdateMyPositionRoutingOffset(useDefault, offsetY);
 }
 
-ref_ptr<df::DrapeEngine> Framework::GetDrapeEngine()
-{
-  return make_ref(m_drapeEngine);
+ref_ptr<df::DrapeEngine> Framework::GetDrapeEngine() {
+    return make_ref(m_drapeEngine);
 }
 
-void Framework::DestroyDrapeEngine()
-{
-  if (m_drapeEngine != nullptr)
-  {
-    m_drapeApi.SetDrapeEngine(nullptr);
-    m_routingManager.SetDrapeEngine(nullptr, false);
+void Framework::DestroyDrapeEngine() {
+    if (m_drapeEngine != nullptr) {
+        m_drapeApi.SetDrapeEngine(nullptr);
+        m_routingManager.SetDrapeEngine(nullptr, false);
 //    m_trafficManager.SetDrapeEngine(nullptr);
-    m_transitManager.SetDrapeEngine(nullptr);
+        m_transitManager.SetDrapeEngine(nullptr);
 //    m_isolinesManager.SetDrapeEngine(nullptr);
 //    m_guidesManager.SetDrapeEngine(nullptr);
 //    m_localAdsManager.SetDrapeEngine(nullptr);
@@ -2111,131 +2005,117 @@ void Framework::DestroyDrapeEngine()
 //    GetBookmarkManager().SetDrapeEngine(nullptr);
 
 //    m_trafficManager.Teardown();
+        GpsTracker::Instance().Disconnect();
+        m_drapeEngine.reset();
+    }
+}
+
+void Framework::SetRenderingEnabled(ref_ptr<dp::GraphicsContextFactory> contextFactory) {
+    m_isRenderingEnabled = true;
+    if (m_drapeEngine)
+        m_drapeEngine->SetRenderingEnabled(contextFactory);
+}
+
+void Framework::SetRenderingDisabled(bool destroySurface) {
+    m_isRenderingEnabled = false;
+    if (m_drapeEngine)
+        m_drapeEngine->SetRenderingDisabled(destroySurface);
+}
+
+void
+Framework::SetGraphicsContextInitializationHandler(df::OnGraphicsContextInitialized &&handler) {
+    m_onGraphicsContextInitialized = std::move(handler);
+}
+
+void Framework::EnableDebugRectRendering(bool enabled) {
+    if (m_drapeEngine)
+        m_drapeEngine->EnableDebugRectRendering(enabled);
+}
+
+void Framework::ConnectToGpsTracker() {
+    m_connectToGpsTrack = true;
+    if (m_drapeEngine) {
+        m_drapeEngine->ClearGpsTrackPoints();
+        GpsTracker::Instance().Connect(
+                bind(&Framework::OnUpdateGpsTrackPointsCallback, this, _1, _2));
+    }
+}
+
+void Framework::DisconnectFromGpsTracker() {
+    m_connectToGpsTrack = false;
     GpsTracker::Instance().Disconnect();
-    m_drapeEngine.reset();
-  }
+    if (m_drapeEngine)
+        m_drapeEngine->ClearGpsTrackPoints();
 }
 
-void Framework::SetRenderingEnabled(ref_ptr<dp::GraphicsContextFactory> contextFactory)
-{
-  m_isRenderingEnabled = true;
-  if (m_drapeEngine)
-    m_drapeEngine->SetRenderingEnabled(contextFactory);
+void Framework::OnUpdateGpsTrackPointsCallback(vector<pair<size_t, location::GpsTrackInfo>> &&toAdd,
+                                               pair<size_t, size_t> const &toRemove) {
+    ASSERT(m_drapeEngine.get() != nullptr, ());
+
+    vector<df::GpsTrackPoint> pointsAdd;
+    pointsAdd.reserve(toAdd.size());
+    for (auto const &ip: toAdd) {
+        df::GpsTrackPoint pt;
+        ASSERT_LESS(ip.first, static_cast<size_t>(numeric_limits<uint32_t>::max()), ());
+        pt.m_id = static_cast<uint32_t>(ip.first);
+        pt.m_speedMPS = ip.second.m_speed;
+        pt.m_timestamp = ip.second.m_timestamp;
+        pt.m_point = mercator::FromLatLon(ip.second.m_latitude, ip.second.m_longitude);
+        pointsAdd.emplace_back(pt);
+    }
+
+    vector<uint32_t> indicesRemove;
+    if (toRemove.first != GpsTrack::kInvalidId) {
+        ASSERT_LESS_OR_EQUAL(toRemove.first, toRemove.second, ());
+        indicesRemove.reserve(toRemove.second - toRemove.first + 1);
+        for (size_t i = toRemove.first; i <= toRemove.second; ++i)
+            indicesRemove.emplace_back(i);
+    }
+
+    m_drapeEngine->UpdateGpsTrackPoints(move(pointsAdd), move(indicesRemove));
 }
 
-void Framework::SetRenderingDisabled(bool destroySurface)
-{
-  m_isRenderingEnabled = false;
-  if (m_drapeEngine)
-    m_drapeEngine->SetRenderingDisabled(destroySurface);
-}
+void Framework::MarkMapStyle(MapStyle mapStyle) {
+    ASSERT_NOT_EQUAL(mapStyle, MapStyle::MapStyleMerged, ());
 
-void Framework::SetGraphicsContextInitializationHandler(df::OnGraphicsContextInitialized && handler)
-{
-  m_onGraphicsContextInitialized = std::move(handler);
-}
-
-void Framework::EnableDebugRectRendering(bool enabled)
-{
-  if (m_drapeEngine)
-    m_drapeEngine->EnableDebugRectRendering(enabled);
-}
-
-void Framework::ConnectToGpsTracker()
-{
-  m_connectToGpsTrack = true;
-  if (m_drapeEngine)
-  {
-    m_drapeEngine->ClearGpsTrackPoints();
-    GpsTracker::Instance().Connect(bind(&Framework::OnUpdateGpsTrackPointsCallback, this, _1, _2));
-  }
-}
-
-void Framework::DisconnectFromGpsTracker()
-{
-  m_connectToGpsTrack = false;
-  GpsTracker::Instance().Disconnect();
-  if (m_drapeEngine)
-    m_drapeEngine->ClearGpsTrackPoints();
-}
-
-void Framework::OnUpdateGpsTrackPointsCallback(vector<pair<size_t, location::GpsTrackInfo>> && toAdd,
-                                               pair<size_t, size_t> const & toRemove)
-{
-  ASSERT(m_drapeEngine.get() != nullptr, ());
-
-  vector<df::GpsTrackPoint> pointsAdd;
-  pointsAdd.reserve(toAdd.size());
-  for (auto const & ip : toAdd)
-  {
-    df::GpsTrackPoint pt;
-    ASSERT_LESS(ip.first, static_cast<size_t>(numeric_limits<uint32_t>::max()), ());
-    pt.m_id = static_cast<uint32_t>(ip.first);
-    pt.m_speedMPS = ip.second.m_speed;
-    pt.m_timestamp = ip.second.m_timestamp;
-    pt.m_point = mercator::FromLatLon(ip.second.m_latitude, ip.second.m_longitude);
-    pointsAdd.emplace_back(pt);
-  }
-
-  vector<uint32_t> indicesRemove;
-  if (toRemove.first != GpsTrack::kInvalidId)
-  {
-    ASSERT_LESS_OR_EQUAL(toRemove.first, toRemove.second, ());
-    indicesRemove.reserve(toRemove.second - toRemove.first + 1);
-    for (size_t i = toRemove.first; i <= toRemove.second; ++i)
-      indicesRemove.emplace_back(i);
-  }
-
-  m_drapeEngine->UpdateGpsTrackPoints(move(pointsAdd), move(indicesRemove));
-}
-
-void Framework::MarkMapStyle(MapStyle mapStyle)
-{
-  ASSERT_NOT_EQUAL(mapStyle, MapStyle::MapStyleMerged, ());
-
-  // Store current map style before classificator reloading
-  string mapStyleStr = MapStyleToString(mapStyle);
-  if (mapStyleStr.empty())
-  {
-    mapStyle = kDefaultMapStyle;
-    mapStyleStr = MapStyleToString(mapStyle);
-  }
-  settings::Set(kMapStyleKey, mapStyleStr);
-  GetStyleReader().SetCurrentStyle(mapStyle);
+    // Store current map style before classificator reloading
+    string mapStyleStr = MapStyleToString(mapStyle);
+    if (mapStyleStr.empty()) {
+        mapStyle = kDefaultMapStyle;
+        mapStyleStr = MapStyleToString(mapStyle);
+    }
+    settings::Set(kMapStyleKey, mapStyleStr);
+    GetStyleReader().SetCurrentStyle(mapStyle);
 
 //  alohalytics::TStringMap details {{"mapStyle", mapStyleStr}};
 //  alohalytics::Stats::Instance().LogEvent("MapStyle_Changed", details);
 }
 
-void Framework::SetMapStyle(MapStyle mapStyle)
-{
-  MarkMapStyle(mapStyle);
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->UpdateMapStyle();
+void Framework::SetMapStyle(MapStyle mapStyle) {
+    MarkMapStyle(mapStyle);
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->UpdateMapStyle();
 //  InvalidateUserMarks();
 //  m_localAdsManager.Invalidate();
-  UpdateMinBuildingsTapZoom();
+    UpdateMinBuildingsTapZoom();
 }
 
-MapStyle Framework::GetMapStyle() const
-{
-  return GetStyleReader().GetCurrentStyle();
+MapStyle Framework::GetMapStyle() const {
+    return GetStyleReader().GetCurrentStyle();
 }
 
-void Framework::SetupMeasurementSystem()
-{
-  GetPlatform().SetupMeasurementSystem();
+void Framework::SetupMeasurementSystem() {
+    GetPlatform().SetupMeasurementSystem();
 
-  auto units = measurement_utils::Units::Metric;
-  settings::TryGet(settings::kMeasurementUnits, units);
+    auto units = measurement_utils::Units::Metric;
+    settings::TryGet(settings::kMeasurementUnits, units);
 
-  m_routingManager.SetTurnNotificationsUnits(units);
+    m_routingManager.SetTurnNotificationsUnits(units);
 }
 
-void Framework::SetWidgetLayout(gui::TWidgetsLayoutInfo && layout)
-{
-  ASSERT(m_drapeEngine != nullptr, ());
-  m_drapeEngine->SetWidgetLayout(move(layout));
+void Framework::SetWidgetLayout(gui::TWidgetsLayoutInfo &&layout) {
+    ASSERT(m_drapeEngine != nullptr, ());
+    m_drapeEngine->SetWidgetLayout(move(layout));
 }
 
 //bool Framework::ShowMapForURL(string const & url)
@@ -2348,69 +2228,70 @@ void Framework::SetWidgetLayout(gui::TWidgetsLayoutInfo && layout)
 //  return m_parsedMapApi.GetSubscription();
 //}
 
-FeatureID Framework::GetFeatureAtPoint(m2::PointD const & mercator,
-                                       FeatureMatcher && matcher /* = nullptr */) const
-{
-  FeatureID fullMatch, poi, line, area;
-  auto haveBuilding = false;
-  auto closestDistanceToCenter = numeric_limits<double>::max();
-  auto currentDistance = numeric_limits<double>::max();
-  indexer::ForEachFeatureAtPoint(m_featuresFetcher.GetDataSource(), [&](FeatureType & ft)
-  {
-    if (fullMatch.IsValid())
-      return;
+FeatureID Framework::GetFeatureAtPoint(m2::PointD const &mercator,
+                                       FeatureMatcher &&matcher /* = nullptr */) const {
+    FeatureID fullMatch, poi, line, area;
+    auto haveBuilding = false;
+    auto closestDistanceToCenter = numeric_limits<double>::max();
+    auto currentDistance = numeric_limits<double>::max();
+    auto closestDistance = numeric_limits<double>::max();
+    indexer::ForEachFeatureAtPoint(m_featuresFetcher.GetDataSource(), [&](FeatureType &ft) {
+        if (fullMatch.IsValid())
+            return;
 
-    if (matcher && matcher(ft))
-    {
-      fullMatch = ft.GetID();
-      return;
-    }
+        if (matcher && matcher(ft)) {
+            fullMatch = ft.GetID();
+            return;
+        }
 
-    switch (ft.GetGeomType())
-    {
-    case feature::GeomType::Point:
-      poi = ft.GetID();
-      break;
-    case feature::GeomType::Line:
-      // Skip/ignore isolines.
-      if (ftypes::IsIsolineChecker::Instance()(ft))
-        return;
-      line = ft.GetID();
-      break;
-    case feature::GeomType::Area:
-      // Buildings have higher priority over other types.
-      if (haveBuilding)
-        return;
-      // Skip/ignore coastlines.
-      if (feature::TypesHolder(ft).Has(classif().GetCoastType()))
-        return;
-      haveBuilding = ftypes::IsBuildingChecker::Instance()(ft);
-      currentDistance = mercator::DistanceOnEarth(mercator, feature::GetCenter(ft));
-      // Choose the first matching building or, if no buildings are matched,
-      // the first among the closest matching non-buildings.
-      if (!haveBuilding && currentDistance >= closestDistanceToCenter)
-        return;
-      area = ft.GetID();
-      closestDistanceToCenter = currentDistance;
-      break;
-    case feature::GeomType::Undefined:
-      ASSERT(false, ("case feature::Undefined"));
-      break;
-    }
-  }, mercator);
 
-  return fullMatch.IsValid() ? fullMatch : (poi.IsValid() ? poi : (area.IsValid() ? area : line));
+        switch (ft.GetGeomType()) {
+            case feature::GeomType::Point:
+                currentDistance = mercator::DistanceOnEarth(mercator, feature::GetCenter(ft));
+                if (currentDistance < closestDistance) {
+                    poi = ft.GetID();
+                    closestDistance = currentDistance;
+                }
+                break;
+            case feature::GeomType::Line:
+                // Skip/ignore isolines.
+                if (ftypes::IsIsolineChecker::Instance()(ft))
+                    return;
+                line = ft.GetID();
+                break;
+            case feature::GeomType::Area:
+                // Buildings have higher priority over other types.
+                if (haveBuilding)
+                    return;
+                // Skip/ignore coastlines.
+                if (feature::TypesHolder(ft).Has(classif().GetCoastType()))
+                    return;
+                haveBuilding = ftypes::IsBuildingChecker::Instance()(ft);
+                currentDistance = mercator::DistanceOnEarth(mercator, feature::GetCenter(ft));
+                // Choose the first matching building or, if no buildings are matched,
+                // the first among the closest matching non-buildings.
+                if (!haveBuilding && currentDistance >= closestDistanceToCenter)
+                    return;
+                area = ft.GetID();
+                closestDistanceToCenter = currentDistance;
+                break;
+            case feature::GeomType::Undefined:
+                ASSERT(false, ("case feature::Undefined"));
+                break;
+        }
+    }, mercator);
+
+    return fullMatch.IsValid() ? fullMatch : (poi.IsValid() ? poi : (area.IsValid() ? area : line));
 }
 
-osm::MapObject Framework::GetMapObjectByID(FeatureID const & fid) const
-{
-  osm::MapObject res;
-  ASSERT(fid.IsValid(), ());
-  FeaturesLoaderGuard guard(m_featuresFetcher.GetDataSource(), fid.m_mwmId);
-  auto ft = guard.GetFeatureByIndex(fid.m_index);
-  if (ft)
-    res.SetFromFeatureType(*ft);
-  return res;
+osm::MapObject Framework::GetMapObjectByID(FeatureID const &fid) const {
+    osm::MapObject res;
+    ASSERT(fid.IsValid(), ());
+    FeaturesLoaderGuard guard(m_featuresFetcher.GetDataSource(), fid.m_mwmId);
+    auto ft = guard.GetFeatureByIndex(fid.m_index);
+    if (ft)
+        res.SetFromFeatureType(*ft);
+    return res;
 }
 
 //BookmarkManager & Framework::GetBookmarkManager()
@@ -2641,17 +2522,16 @@ osm::MapObject Framework::GetMapObjectByID(FeatureID const & fid) const
 //  }
 //}
 
-void Framework::InvalidateRendering()
-{
-  if (m_drapeEngine)
-    m_drapeEngine->Invalidate();
+void Framework::InvalidateRendering() {
+    if (m_drapeEngine)
+        m_drapeEngine->Invalidate();
 }
 
-void Framework::UpdateMinBuildingsTapZoom()
-{
-  constexpr int kMinTapZoom = 16;
-  m_minBuildingsTapZoom = max(kMinTapZoom,
-                              feature::GetDrawableScaleRange(classif().GetTypeByPath({"building"})).first);
+void Framework::UpdateMinBuildingsTapZoom() {
+    constexpr int kMinTapZoom = 16;
+    m_minBuildingsTapZoom = max(kMinTapZoom,
+                                feature::GetDrawableScaleRange(
+                                        classif().GetTypeByPath({"building"})).first);
 }
 
 //FeatureID Framework::FindBuildingAtPoint(m2::PointD const & mercator) const
@@ -2877,21 +2757,19 @@ void Framework::UpdateMinBuildingsTapZoom()
 //  return mark;
 //}
 
-void Framework::PredictLocation(double & lat, double & lon, double accuracy,
-                                double bearing, double speed, double elapsedSeconds)
-{
-  double offsetInM = speed * elapsedSeconds;
-  double angle = base::DegToRad(90.0 - bearing);
+void Framework::PredictLocation(double &lat, double &lon, double accuracy,
+                                double bearing, double speed, double elapsedSeconds) {
+    double offsetInM = speed * elapsedSeconds;
+    double angle = base::DegToRad(90.0 - bearing);
 
-  m2::PointD mercatorPt = mercator::MetersToXY(lon, lat, accuracy).Center();
-  mercatorPt = mercator::GetSmPoint(mercatorPt, offsetInM * cos(angle), offsetInM * sin(angle));
-  lon = mercator::XToLon(mercatorPt.x);
-  lat = mercator::YToLat(mercatorPt.y);
+    m2::PointD mercatorPt = mercator::MetersToXY(lon, lat, accuracy).Center();
+    mercatorPt = mercator::GetSmPoint(mercatorPt, offsetInM * cos(angle), offsetInM * sin(angle));
+    lon = mercator::XToLon(mercatorPt.x);
+    lat = mercator::YToLat(mercatorPt.y);
 }
 
-StringsBundle const & Framework::GetStringsBundle()
-{
-  return m_stringsBundle;
+StringsBundle const &Framework::GetStringsBundle() {
+    return m_stringsBundle;
 }
 
 // static
@@ -2903,9 +2781,8 @@ StringsBundle const & Framework::GetStringsBundle()
 //}
 
 // static
-string Framework::CodeGe0url(double lat, double lon, double zoomLevel, string const & name)
-{
-  return ge0::GenerateShortShowMapUrl(lat, lon, zoomLevel, name);
+string Framework::CodeGe0url(double lat, double lon, double zoomLevel, string const &name) {
+    return ge0::GenerateShortShowMapUrl(lat, lon, zoomLevel, name);
 }
 
 //string Framework::GenerateApiBackUrl(ApiMarkPoint const & point) const
@@ -2923,203 +2800,177 @@ string Framework::CodeGe0url(double lat, double lon, double zoomLevel, string co
 //  return res;
 //}
 
-bool Framework::IsDataVersionUpdated()
-{
-  int64_t storedVersion;
-  if (settings::Get("DataVersion", storedVersion))
-  {
-    return storedVersion < m_storage.GetCurrentDataVersion();
-  }
-  // no key in the settings, assume new version
-  return true;
+bool Framework::IsDataVersionUpdated() {
+    int64_t storedVersion;
+    if (settings::Get("DataVersion", storedVersion)) {
+        return storedVersion < m_storage.GetCurrentDataVersion();
+    }
+    // no key in the settings, assume new version
+    return true;
 }
 
-void Framework::UpdateSavedDataVersion()
-{
-  settings::Set("DataVersion", m_storage.GetCurrentDataVersion());
+void Framework::UpdateSavedDataVersion() {
+    settings::Set("DataVersion", m_storage.GetCurrentDataVersion());
 }
 
 int64_t Framework::GetCurrentDataVersion() const { return m_storage.GetCurrentDataVersion(); }
 
-dp::ApiVersion Framework::LoadPreferredGraphicsAPI()
-{
-  std::string apiStr;
-  if (settings::Get(kPreferredGraphicsAPI, apiStr))
-    return dp::ApiVersionFromString(apiStr);
-  return dp::ApiVersionFromString({});
+dp::ApiVersion Framework::LoadPreferredGraphicsAPI() {
+    std::string apiStr;
+    if (settings::Get(kPreferredGraphicsAPI, apiStr))
+        return dp::ApiVersionFromString(apiStr);
+    return dp::ApiVersionFromString({});
 }
 
-void Framework::SavePreferredGraphicsAPI(dp::ApiVersion apiVersion)
-{
-  settings::Set(kPreferredGraphicsAPI, DebugPrint(apiVersion));
+void Framework::SavePreferredGraphicsAPI(dp::ApiVersion apiVersion) {
+    settings::Set(kPreferredGraphicsAPI, DebugPrint(apiVersion));
 }
 
-void Framework::AllowTransliteration(bool allowTranslit)
-{
-  Transliteration::Instance().SetMode(allowTranslit ? Transliteration::Mode::Enabled
-                                                    : Transliteration::Mode::Disabled);
-  InvalidateRect(GetCurrentViewport());
+void Framework::AllowTransliteration(bool allowTranslit) {
+    Transliteration::Instance().SetMode(allowTranslit ? Transliteration::Mode::Enabled
+                                                      : Transliteration::Mode::Disabled);
+    InvalidateRect(GetCurrentViewport());
 }
 
-bool Framework::LoadTransliteration()
-{
-  Transliteration::Mode mode;
-  if (settings::Get(kTranslitMode, mode))
-    return mode == Transliteration::Mode::Enabled;
-  return true;
+bool Framework::LoadTransliteration() {
+    Transliteration::Mode mode;
+    if (settings::Get(kTranslitMode, mode))
+        return mode == Transliteration::Mode::Enabled;
+    return true;
 }
 
-void Framework::SaveTransliteration(bool allowTranslit)
-{
-  settings::Set(kTranslitMode, allowTranslit ? Transliteration::Mode::Enabled
-                                             : Transliteration::Mode::Disabled);
+void Framework::SaveTransliteration(bool allowTranslit) {
+    settings::Set(kTranslitMode, allowTranslit ? Transliteration::Mode::Enabled
+                                               : Transliteration::Mode::Disabled);
 }
 
-void Framework::Allow3dMode(bool allow3d, bool allow3dBuildings)
-{
-  if (m_drapeEngine == nullptr)
-    return;
+void Framework::Allow3dMode(bool allow3d, bool allow3dBuildings) {
+    if (m_drapeEngine == nullptr)
+        return;
 
-  if (!m_powerManager.IsFacilityEnabled(power_management::Facility::PerspectiveView))
-    allow3d = false;
+    if (!m_powerManager.IsFacilityEnabled(power_management::Facility::PerspectiveView))
+        allow3d = false;
 
-  if (!m_powerManager.IsFacilityEnabled(power_management::Facility::Buildings3d))
-    allow3dBuildings = false;
+    if (!m_powerManager.IsFacilityEnabled(power_management::Facility::Buildings3d))
+        allow3dBuildings = false;
 
-  m_drapeEngine->Allow3dMode(allow3d, allow3dBuildings);
+    m_drapeEngine->Allow3dMode(allow3d, allow3dBuildings);
 }
 
-void Framework::Save3dMode(bool allow3d, bool allow3dBuildings)
-{
-  settings::Set(kAllow3dKey, allow3d);
-  settings::Set(kAllow3dBuildingsKey, allow3dBuildings);
+void Framework::Save3dMode(bool allow3d, bool allow3dBuildings) {
+    settings::Set(kAllow3dKey, allow3d);
+    settings::Set(kAllow3dBuildingsKey, allow3dBuildings);
 }
 
-void Framework::Load3dMode(bool & allow3d, bool & allow3dBuildings)
-{
-  if (!settings::Get(kAllow3dKey, allow3d))
-    allow3d = true;
+void Framework::Load3dMode(bool &allow3d, bool &allow3dBuildings) {
+    if (!settings::Get(kAllow3dKey, allow3d))
+        allow3d = true;
 
-  if (!settings::Get(kAllow3dBuildingsKey, allow3dBuildings))
-    allow3dBuildings = true;
+    if (!settings::Get(kAllow3dBuildingsKey, allow3dBuildings))
+        allow3dBuildings = true;
 }
 
-void Framework::SaveLargeFontsSize(bool isLargeSize)
-{
-  settings::Set(kLargeFontsSize, isLargeSize);
+void Framework::SaveLargeFontsSize(bool isLargeSize) {
+    settings::Set(kLargeFontsSize, isLargeSize);
 }
 
-bool Framework::LoadLargeFontsSize()
-{
-  bool isLargeSize;
-  if (!settings::Get(kLargeFontsSize, isLargeSize))
-    isLargeSize = false;
-  return isLargeSize;
+bool Framework::LoadLargeFontsSize() {
+    bool isLargeSize;
+    if (!settings::Get(kLargeFontsSize, isLargeSize))
+        isLargeSize = false;
+    return isLargeSize;
 }
 
-void Framework::SetLargeFontsSize(bool isLargeSize)
-{
-  double const scaleFactor = isLargeSize ? kLargeFontsScaleFactor : 1.0;
+void Framework::SetLargeFontsSize(bool isLargeSize) {
+    double const scaleFactor = isLargeSize ? kLargeFontsScaleFactor : 1.0;
 
-  ASSERT(m_drapeEngine.get() != nullptr, ());
-  m_drapeEngine->SetFontScaleFactor(scaleFactor);
+    ASSERT(m_drapeEngine.get() != nullptr, ());
+    m_drapeEngine->SetFontScaleFactor(scaleFactor);
 
-  InvalidateRect(GetCurrentViewport());
+    InvalidateRect(GetCurrentViewport());
 }
 
-bool Framework::LoadTrafficEnabled()
-{
-  bool enabled;
-  if (!settings::Get(kTrafficEnabledKey, enabled))
-    enabled = false;
-  return enabled;
+bool Framework::LoadTrafficEnabled() {
+    bool enabled;
+    if (!settings::Get(kTrafficEnabledKey, enabled))
+        enabled = false;
+    return enabled;
 }
 
-void Framework::SaveTrafficEnabled(bool trafficEnabled)
-{
-  settings::Set(kTrafficEnabledKey, trafficEnabled);
+void Framework::SaveTrafficEnabled(bool trafficEnabled) {
+    settings::Set(kTrafficEnabledKey, trafficEnabled);
 }
 
-bool Framework::LoadTrafficSimplifiedColors()
-{
-  bool simplified;
-  if (!settings::Get(kTrafficSimplifiedColorsKey, simplified))
-    simplified = true;
-  return simplified;
+bool Framework::LoadTrafficSimplifiedColors() {
+    bool simplified;
+    if (!settings::Get(kTrafficSimplifiedColorsKey, simplified))
+        simplified = true;
+    return simplified;
 }
 
-void Framework::SaveTrafficSimplifiedColors(bool simplified)
-{
-  settings::Set(kTrafficSimplifiedColorsKey, simplified);
+void Framework::SaveTrafficSimplifiedColors(bool simplified) {
+    settings::Set(kTrafficSimplifiedColorsKey, simplified);
 }
 
-bool Framework::LoadAutoZoom()
-{
-  bool allowAutoZoom;
-  if (!settings::Get(kAllowAutoZoom, allowAutoZoom))
-    allowAutoZoom = true;
-  return allowAutoZoom;
+bool Framework::LoadAutoZoom() {
+    bool allowAutoZoom;
+    if (!settings::Get(kAllowAutoZoom, allowAutoZoom))
+        allowAutoZoom = true;
+    return allowAutoZoom;
 }
 
-void Framework::AllowAutoZoom(bool allowAutoZoom)
-{
-  routing::RouterType const type = m_routingManager.GetRouter();
-  bool const isPedestrianRoute = type == RouterType::Pedestrian;
-  bool const isTaxiRoute = type == RouterType::Taxi;
+void Framework::AllowAutoZoom(bool allowAutoZoom) {
+    routing::RouterType const type = m_routingManager.GetRouter();
+    bool const isPedestrianRoute = type == RouterType::Pedestrian;
+    bool const isTaxiRoute = type == RouterType::Taxi;
 
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->AllowAutoZoom(allowAutoZoom && !isPedestrianRoute && !isTaxiRoute);
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->AllowAutoZoom(allowAutoZoom && !isPedestrianRoute && !isTaxiRoute);
 }
 
-void Framework::SaveAutoZoom(bool allowAutoZoom)
-{
-  settings::Set(kAllowAutoZoom, allowAutoZoom);
+void Framework::SaveAutoZoom(bool allowAutoZoom) {
+    settings::Set(kAllowAutoZoom, allowAutoZoom);
 }
 
-bool Framework::LoadTransitSchemeEnabled()
-{
-  bool enabled;
-  if (!settings::Get(kTransitSchemeEnabledKey, enabled))
-    enabled = false;
-  return enabled;
+bool Framework::LoadTransitSchemeEnabled() {
+    bool enabled;
+    if (!settings::Get(kTransitSchemeEnabledKey, enabled))
+        enabled = false;
+    return enabled;
 }
 
-void Framework::SaveTransitSchemeEnabled(bool enabled)
-{
-  settings::Set(kTransitSchemeEnabledKey, enabled);
+void Framework::SaveTransitSchemeEnabled(bool enabled) {
+    settings::Set(kTransitSchemeEnabledKey, enabled);
 }
 
-bool Framework::LoadIsolinesEnabled()
-{
-  bool enabled;
-  if (!settings::Get(kIsolinesEnabledKey, enabled))
-    enabled = false;
-  return enabled;
+bool Framework::LoadIsolinesEnabled() {
+    bool enabled;
+    if (!settings::Get(kIsolinesEnabledKey, enabled))
+        enabled = false;
+    return enabled;
 }
 
-void Framework::SaveIsolinesEnabled(bool enabled)
-{
-  settings::Set(kIsolinesEnabledKey, enabled);
+void Framework::SaveIsolinesEnabled(bool enabled) {
+    settings::Set(kIsolinesEnabledKey, enabled);
 }
 
-bool Framework::LoadGuidesEnabled()
-{
-  bool enabled;
-  if (!settings::Get(kGuidesEnabledKey, enabled))
-    enabled = false;
-  return enabled;
+bool Framework::LoadGuidesEnabled() {
+    bool enabled;
+    if (!settings::Get(kGuidesEnabledKey, enabled))
+        enabled = false;
+    return enabled;
 }
 
 void Framework::SaveGuidesEnabled(bool enabled) { settings::Set(kGuidesEnabledKey, enabled); }
 
 void Framework::EnableChoosePositionMode(bool enable, bool enableBounds, bool applyPosition,
-                                         m2::PointD const & position)
-{
-  if (m_drapeEngine != nullptr)
-  {
-    m_drapeEngine->EnableChoosePositionMode(enable,
-      enableBounds ? GetSelectedFeatureTriangles() : vector<m2::TriangleD>(), applyPosition, position);
-  }
+                                         m2::PointD const &position) {
+    if (m_drapeEngine != nullptr) {
+        m_drapeEngine->EnableChoosePositionMode(enable,
+                                                enableBounds ? GetSelectedFeatureTriangles()
+                                                             : vector<m2::TriangleD>(),
+                                                applyPosition, position);
+    }
 }
 
 //discovery::Manager::Params Framework::GetDiscoveryParams(
@@ -3141,15 +2992,13 @@ void Framework::EnableChoosePositionMode(bool enable, bool enableBounds, bool ap
 //  return m_discoveryManager->GetLocalExpertsUrl(GetDiscoveryViewportCenter());
 //}
 
-m2::PointD Framework::GetDiscoveryViewportCenter() const
-{
-  auto const currentPosition = GetCurrentPosition();
-  return currentPosition ? *currentPosition : GetViewportCenter();
+m2::PointD Framework::GetDiscoveryViewportCenter() const {
+    auto const currentPosition = GetCurrentPosition();
+    return currentPosition ? *currentPosition : GetViewportCenter();
 }
 
-vector<m2::TriangleD> Framework::GetSelectedFeatureTriangles() const
-{
-  vector<m2::TriangleD> triangles;
+vector<m2::TriangleD> Framework::GetSelectedFeatureTriangles() const {
+    vector<m2::TriangleD> triangles;
 //  if (!m_currentPlacePageInfo || !m_currentPlacePageInfo->GetID().IsValid())
 //    return triangles;
 //
@@ -3167,75 +3016,66 @@ vector<m2::TriangleD> Framework::GetSelectedFeatureTriangles() const
 //    }, scales::GetUpperScale());
 //  }
 
-  return triangles;
+    return triangles;
 }
 
-void Framework::BlockTapEvents(bool block)
-{
-  if (m_drapeEngine != nullptr)
-    m_drapeEngine->BlockTapEvents(block);
+void Framework::BlockTapEvents(bool block) {
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->BlockTapEvents(block);
 }
 
-namespace feature
-{
-string GetPrintableTypes(FeatureType & ft) { return DebugPrint(feature::TypesHolder(ft)); }
-uint32_t GetBestType(FeatureType & ft) { return feature::TypesHolder(ft).GetBestType(); }
+namespace feature {
+    string GetPrintableTypes(FeatureType &ft) { return DebugPrint(feature::TypesHolder(ft)); }
+
+    uint32_t GetBestType(FeatureType &ft) { return feature::TypesHolder(ft).GetBestType(); }
 }
 
-bool Framework::ParseDrapeDebugCommand(string const & query)
-{
-  MapStyle desiredStyle = MapStyleCount;
-  if (query == "?dark" || query == "mapstyle:dark")
-    desiredStyle = MapStyleDark;
-  else if (query == "?light" || query == "mapstyle:light")
-    desiredStyle = MapStyleClear;
-  else if (query == "?vdark" || query == "mapstyle:vehicle_dark")
-    desiredStyle = MapStyleVehicleDark;
-  else if (query == "?vlight" || query == "mapstyle:vehicle_light")
-    desiredStyle = MapStyleVehicleClear;
+bool Framework::ParseDrapeDebugCommand(string const &query) {
+    MapStyle desiredStyle = MapStyleCount;
+    if (query == "?dark" || query == "mapstyle:dark")
+        desiredStyle = MapStyleDark;
+    else if (query == "?light" || query == "mapstyle:light")
+        desiredStyle = MapStyleClear;
+    else if (query == "?vdark" || query == "mapstyle:vehicle_dark")
+        desiredStyle = MapStyleVehicleDark;
+    else if (query == "?vlight" || query == "mapstyle:vehicle_light")
+        desiredStyle = MapStyleVehicleClear;
 
-  if (desiredStyle != MapStyleCount)
-  {
+    if (desiredStyle != MapStyleCount) {
 #if defined(OMIM_OS_ANDROID)
-    MarkMapStyle(desiredStyle);
+        MarkMapStyle(desiredStyle);
 #else
-    SetMapStyle(desiredStyle);
+        SetMapStyle(desiredStyle);
 #endif
-    return true;
-  }
+        return true;
+    }
 
-  if (query == "?aa" || query == "effect:antialiasing")
-  {
-    m_drapeEngine->SetPosteffectEnabled(df::PostprocessRenderer::Antialiasing,
-                                        true /* enabled */);
-    return true;
-  }
-  if (query == "?no-aa" || query == "effect:no-antialiasing")
-  {
-    m_drapeEngine->SetPosteffectEnabled(df::PostprocessRenderer::Antialiasing,
-                                        false /* enabled */);
-    return true;
-  }
-  if (query == "?ugc")
-  {
-    m_drapeEngine->EnableUGCRendering(true /* enabled */);
-    return true;
-  }
-  if (query == "?no-ugc")
-  {
-    m_drapeEngine->EnableUGCRendering(false /* enabled */);
-    return true;
-  }
-  if (query == "?scheme")
-  {
-    m_transitManager.EnableTransitSchemeMode(true /* enable */);
-    return true;
-  }
-  if (query == "?no-scheme")
-  {
-    m_transitManager.EnableTransitSchemeMode(false /* enable */);
-    return true;
-  }
+    if (query == "?aa" || query == "effect:antialiasing") {
+        m_drapeEngine->SetPosteffectEnabled(df::PostprocessRenderer::Antialiasing,
+                                            true /* enabled */);
+        return true;
+    }
+    if (query == "?no-aa" || query == "effect:no-antialiasing") {
+        m_drapeEngine->SetPosteffectEnabled(df::PostprocessRenderer::Antialiasing,
+                                            false /* enabled */);
+        return true;
+    }
+    if (query == "?ugc") {
+        m_drapeEngine->EnableUGCRendering(true /* enabled */);
+        return true;
+    }
+    if (query == "?no-ugc") {
+        m_drapeEngine->EnableUGCRendering(false /* enabled */);
+        return true;
+    }
+    if (query == "?scheme") {
+        m_transitManager.EnableTransitSchemeMode(true /* enable */);
+        return true;
+    }
+    if (query == "?no-scheme") {
+        m_transitManager.EnableTransitSchemeMode(false /* enable */);
+        return true;
+    }
 //  if (query == "?isolines")
 //  {
 //    m_isolinesManager.SetEnabled(true /* enable */);
@@ -3246,57 +3086,49 @@ bool Framework::ParseDrapeDebugCommand(string const & query)
 //    m_isolinesManager.SetEnabled(false /* enable */);
 //    return true;
 //  }
-  if (query == "?debug-info")
-  {
-    m_drapeEngine->ShowDebugInfo(true /* shown */);
-    return true;
-  }
-  if (query == "?debug-info-always")
-  {
-    m_drapeEngine->ShowDebugInfo(true /* shown */);
-    settings::Set(kShowDebugInfo, true);
-    return true;
-  }
-  if (query == "?no-debug-info")
-  {
-    m_drapeEngine->ShowDebugInfo(false /* shown */);
-    settings::Set(kShowDebugInfo, false);
-    return true;
-  }
-  if (query == "?debug-rect")
-  {
-    m_drapeEngine->EnableDebugRectRendering(true /* shown */);
-    return true;
-  }
-  if (query == "?no-debug-rect")
-  {
-    m_drapeEngine->EnableDebugRectRendering(false /* shown */);
-    return true;
-  }
+    if (query == "?debug-info") {
+        m_drapeEngine->ShowDebugInfo(true /* shown */);
+        return true;
+    }
+    if (query == "?debug-info-always") {
+        m_drapeEngine->ShowDebugInfo(true /* shown */);
+        settings::Set(kShowDebugInfo, true);
+        return true;
+    }
+    if (query == "?no-debug-info") {
+        m_drapeEngine->ShowDebugInfo(false /* shown */);
+        settings::Set(kShowDebugInfo, false);
+        return true;
+    }
+    if (query == "?debug-rect") {
+        m_drapeEngine->EnableDebugRectRendering(true /* shown */);
+        return true;
+    }
+    if (query == "?no-debug-rect") {
+        m_drapeEngine->EnableDebugRectRendering(false /* shown */);
+        return true;
+    }
 #if defined(OMIM_METAL_AVAILABLE)
-  if (query == "?metal")
-  {
-    SavePreferredGraphicsAPI(dp::ApiVersion::Metal);
-    return true;
-  }
+    if (query == "?metal")
+    {
+      SavePreferredGraphicsAPI(dp::ApiVersion::Metal);
+      return true;
+    }
 #endif
 #if defined(OMIM_OS_ANDROID)
-  if (query == "?vulkan")
-  {
+    if (query == "?vulkan") {
 //    SavePreferredGraphicsAPI(dp::ApiVersion::Vulkan);
-    return true;
-  }
+        return true;
+    }
 #endif
-  if (query == "?gl")
-  {
-    SavePreferredGraphicsAPI(dp::ApiVersion::OpenGLES3);
-    return true;
-  }
-  return false;
+    if (query == "?gl") {
+        SavePreferredGraphicsAPI(dp::ApiVersion::OpenGLES3);
+        return true;
+    }
+    return false;
 }
 
-bool Framework::ParseEditorDebugCommand(search::SearchParams const & params)
-{
+bool Framework::ParseEditorDebugCommand(search::SearchParams const &params) {
 //  if (params.m_query == "?edits")
 //  {
 //    osm::Editor::Stats const stats = osm::Editor::Instance().GetStats();
@@ -3333,208 +3165,185 @@ bool Framework::ParseEditorDebugCommand(search::SearchParams const & params)
 //    return true;
 //  }
 
-  static std::string const kFindFeatureDebugKey = "?fid ";
-  if (params.m_query.find(kFindFeatureDebugKey) == 0)
-  {
-    // Format: ?fid<space>index<space>.
-    auto fidStr = params.m_query.substr(kFindFeatureDebugKey.size());
-    bool const canSearch = !fidStr.empty() && fidStr.back() == ' ';
-    strings::Trim(fidStr);
-    uint32_t index = 0;
-    if (canSearch && strings::to_uint(fidStr, index))
-    {
-      bool isShown = false;
-      auto const features = FindFeaturesByIndex(index);
-      for (auto const & fid : features)
-      {
-        if (!fid.IsValid())
-          continue;
+    static std::string const kFindFeatureDebugKey = "?fid ";
+    if (params.m_query.find(kFindFeatureDebugKey) == 0) {
+        // Format: ?fid<space>index<space>.
+        auto fidStr = params.m_query.substr(kFindFeatureDebugKey.size());
+        bool const canSearch = !fidStr.empty() && fidStr.back() == ' ';
+        strings::Trim(fidStr);
+        uint32_t index = 0;
+        if (canSearch && strings::to_uint(fidStr, index)) {
+            bool isShown = false;
+            auto const features = FindFeaturesByIndex(index);
+            for (auto const &fid: features) {
+                if (!fid.IsValid())
+                    continue;
 
-        // Show the first feature on the map.
-        if (!isShown)
-        {
+                // Show the first feature on the map.
+                if (!isShown) {
 //          ShowFeature(fid);
-          isShown = true;
+                    isShown = true;
+                }
+
+                // Log found features.
+                LOG(LINFO, ("Feature found:", fid));
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+bool Framework::ParseRoutingDebugCommand(search::SearchParams const &) {
+    // This is an example.
+    /*
+      if (params.m_query == "?speedcams")
+      {
+        GetRoutingManager().RoutingSession().EnableMyFeature();
+        return true;
+      }
+    */
+    return false;
+}
+
+namespace {
+    WARN_UNUSED_RESULT bool LocalizeStreet(DataSource const &dataSource, FeatureID const &fid,
+                                           osm::LocalizedStreet &result) {
+        FeaturesLoaderGuard g(dataSource, fid.m_mwmId);
+        auto ft = g.GetFeatureByIndex(fid.m_index);
+        if (!ft)
+            return false;
+
+        ft->GetName(StringUtf8Multilang::kDefaultCode, result.m_defaultName);
+        ft->GetReadableName(result.m_localizedName);
+        if (result.m_localizedName == result.m_defaultName)
+            result.m_localizedName.clear();
+        return true;
+    }
+
+    vector<osm::LocalizedStreet> TakeSomeStreetsAndLocalize(
+            vector<search::ReverseGeocoder::Street> const &streets, DataSource const &dataSource) {
+        vector<osm::LocalizedStreet> results;
+        // Exact feature street always goes first in Editor UI street list.
+
+        // Reasonable number of different nearby street names to display in UI.
+        constexpr size_t kMaxNumberOfNearbyStreetsToDisplay = 8;
+        for (auto const &street: streets) {
+            auto const isDuplicate = find_if(begin(results), end(results),
+                                             [&street](osm::LocalizedStreet const &s) {
+                                                 return s.m_defaultName == street.m_name ||
+                                                        s.m_localizedName == street.m_name;
+                                             }) != results.end();
+            if (isDuplicate)
+                continue;
+
+            osm::LocalizedStreet ls;
+            if (!LocalizeStreet(dataSource, street.m_id, ls))
+                continue;
+
+            results.emplace_back(move(ls));
+            if (results.size() >= kMaxNumberOfNearbyStreetsToDisplay)
+                break;
+        }
+        return results;
+    }
+
+    void SetStreet(search::ReverseGeocoder const &coder, DataSource const &dataSource,
+                   FeatureType &ft, osm::EditableMapObject &emo) {
+        // Get exact feature's street address (if any) from mwm,
+        // together with all nearby streets.
+        vector<search::ReverseGeocoder::Street> streets;
+        coder.GetNearbyStreets(ft, streets);
+
+        string street = coder.GetFeatureStreetName(ft);
+
+        auto localizedStreets = TakeSomeStreetsAndLocalize(streets, dataSource);
+
+        if (!street.empty()) {
+            auto it = find_if(begin(streets), end(streets),
+                              [&street](search::ReverseGeocoder::Street const &s) {
+                                  return s.m_name == street;
+                              });
+
+            if (it != end(streets)) {
+                osm::LocalizedStreet ls;
+                if (!LocalizeStreet(dataSource, it->m_id, ls))
+                    ls.m_defaultName = street;
+
+                emo.SetStreet(ls);
+
+                // A street that a feature belongs to should always be in the first place in the list.
+                auto it =
+                        find_if(begin(localizedStreets), end(localizedStreets),
+                                [&ls](osm::LocalizedStreet const &rs) {
+                                    return ls.m_defaultName == rs.m_defaultName;
+                                });
+                if (it != end(localizedStreets))
+                    iter_swap(it, begin(localizedStreets));
+                else
+                    localizedStreets.insert(begin(localizedStreets), ls);
+            } else {
+                emo.SetStreet({street, ""});
+            }
+        } else {
+            emo.SetStreet({});
         }
 
-        // Log found features.
-        LOG(LINFO, ("Feature found:", fid));
-      }
+        emo.SetNearbyStreets(move(localizedStreets));
     }
-    return true;
-  }
-  return false;
-}
 
-bool Framework::ParseRoutingDebugCommand(search::SearchParams const &)
-{
-  // This is an example.
-  /*
-    if (params.m_query == "?speedcams")
-    {
-      GetRoutingManager().RoutingSession().EnableMyFeature();
-      return true;
+    void
+    SetHostingBuildingAddress(FeatureID const &hostingBuildingFid, DataSource const &dataSource,
+                              search::ReverseGeocoder const &coder, osm::EditableMapObject &emo) {
+        if (!hostingBuildingFid.IsValid())
+            return;
+
+        FeaturesLoaderGuard g(dataSource, hostingBuildingFid.m_mwmId);
+        auto hostingBuildingFeature = g.GetFeatureByIndex(hostingBuildingFid.m_index);
+        if (!hostingBuildingFeature)
+            return;
+
+        search::ReverseGeocoder::Address address;
+        if (coder.GetExactAddress(*hostingBuildingFeature, address)) {
+            if (emo.GetHouseNumber().empty())
+                emo.SetHouseNumber(address.GetHouseNumber());
+            if (emo.GetStreet().m_defaultName.empty())
+                // TODO(mgsergio): Localize if localization is required by UI.
+                emo.SetStreet({address.GetStreetName(), ""});
+        }
     }
-  */
-  return false;
-}
-
-namespace
-{
-WARN_UNUSED_RESULT bool LocalizeStreet(DataSource const & dataSource, FeatureID const & fid,
-                                       osm::LocalizedStreet & result)
-{
-  FeaturesLoaderGuard g(dataSource, fid.m_mwmId);
-  auto ft = g.GetFeatureByIndex(fid.m_index);
-  if (!ft)
-    return false;
-
-  ft->GetName(StringUtf8Multilang::kDefaultCode, result.m_defaultName);
-  ft->GetReadableName(result.m_localizedName);
-  if (result.m_localizedName == result.m_defaultName)
-    result.m_localizedName.clear();
-  return true;
-}
-
-vector<osm::LocalizedStreet> TakeSomeStreetsAndLocalize(
-    vector<search::ReverseGeocoder::Street> const & streets, DataSource const & dataSource)
-
-{
-  vector<osm::LocalizedStreet> results;
-  // Exact feature street always goes first in Editor UI street list.
-
-  // Reasonable number of different nearby street names to display in UI.
-  constexpr size_t kMaxNumberOfNearbyStreetsToDisplay = 8;
-  for (auto const & street : streets)
-  {
-    auto const isDuplicate = find_if(begin(results), end(results),
-                                     [&street](osm::LocalizedStreet const & s)
-                                     {
-                                       return s.m_defaultName == street.m_name ||
-                                              s.m_localizedName == street.m_name;
-                                     }) != results.end();
-    if (isDuplicate)
-      continue;
-
-    osm::LocalizedStreet ls;
-    if (!LocalizeStreet(dataSource, street.m_id, ls))
-      continue;
-
-    results.emplace_back(move(ls));
-    if (results.size() >= kMaxNumberOfNearbyStreetsToDisplay)
-      break;
-  }
-  return results;
-}
-
-void SetStreet(search::ReverseGeocoder const & coder, DataSource const & dataSource,
-               FeatureType & ft, osm::EditableMapObject & emo)
-{
-  // Get exact feature's street address (if any) from mwm,
-  // together with all nearby streets.
-  vector<search::ReverseGeocoder::Street> streets;
-  coder.GetNearbyStreets(ft, streets);
-
-  string street = coder.GetFeatureStreetName(ft);
-
-  auto localizedStreets = TakeSomeStreetsAndLocalize(streets, dataSource);
-
-  if (!street.empty())
-  {
-    auto it = find_if(begin(streets), end(streets),
-                      [&street](search::ReverseGeocoder::Street const & s)
-                      {
-                        return s.m_name == street;
-                      });
-
-    if (it != end(streets))
-    {
-      osm::LocalizedStreet ls;
-      if (!LocalizeStreet(dataSource, it->m_id, ls))
-        ls.m_defaultName = street;
-
-      emo.SetStreet(ls);
-
-      // A street that a feature belongs to should always be in the first place in the list.
-      auto it =
-          find_if(begin(localizedStreets), end(localizedStreets), [&ls](osm::LocalizedStreet const & rs)
-                  {
-                    return ls.m_defaultName == rs.m_defaultName;
-                  });
-      if (it != end(localizedStreets))
-        iter_swap(it, begin(localizedStreets));
-      else
-        localizedStreets.insert(begin(localizedStreets), ls);
-    }
-    else
-    {
-      emo.SetStreet({street, ""});
-    }
-  }
-  else
-  {
-    emo.SetStreet({});
-  }
-
-  emo.SetNearbyStreets(move(localizedStreets));
-}
-
-void SetHostingBuildingAddress(FeatureID const & hostingBuildingFid, DataSource const & dataSource,
-                               search::ReverseGeocoder const & coder, osm::EditableMapObject & emo)
-{
-  if (!hostingBuildingFid.IsValid())
-    return;
-
-  FeaturesLoaderGuard g(dataSource, hostingBuildingFid.m_mwmId);
-  auto hostingBuildingFeature = g.GetFeatureByIndex(hostingBuildingFid.m_index);
-  if (!hostingBuildingFeature)
-    return;
-
-  search::ReverseGeocoder::Address address;
-  if (coder.GetExactAddress(*hostingBuildingFeature, address))
-  {
-    if (emo.GetHouseNumber().empty())
-      emo.SetHouseNumber(address.GetHouseNumber());
-    if (emo.GetStreet().m_defaultName.empty())
-      // TODO(mgsergio): Localize if localization is required by UI.
-      emo.SetStreet({address.GetStreetName(), ""});
-  }
-}
 }  // namespace
 
-bool Framework::CanEditMap() const
-{
-  return !GetStorage().IsDownloadInProgress();
+bool Framework::CanEditMap() const {
+    return !GetStorage().IsDownloadInProgress();
 }
 
-bool Framework::CreateMapObject(m2::PointD const & mercator, uint32_t const featureType,
-                                osm::EditableMapObject & emo) const
-{
-  emo = {};
-  auto const & dataSource = m_featuresFetcher.GetDataSource();
-  MwmSet::MwmId const mwmId = dataSource.GetMwmIdByCountryFile(
-        platform::CountryFile(m_infoGetter->GetRegionCountryId(mercator)));
-  if (!mwmId.IsAlive())
-    return false;
+bool Framework::CreateMapObject(m2::PointD const &mercator, uint32_t const featureType,
+                                osm::EditableMapObject &emo) const {
+    emo = {};
+    auto const &dataSource = m_featuresFetcher.GetDataSource();
+    MwmSet::MwmId const mwmId = dataSource.GetMwmIdByCountryFile(
+            platform::CountryFile(m_infoGetter->GetRegionCountryId(mercator)));
+    if (!mwmId.IsAlive())
+        return false;
 
 //  GetPlatform().GetMarketingService().SendMarketingEvent(marketing::kEditorAddStart, {});
 
-  search::ReverseGeocoder const coder(m_featuresFetcher.GetDataSource());
-  vector<search::ReverseGeocoder::Street> streets;
+    search::ReverseGeocoder const coder(m_featuresFetcher.GetDataSource());
+    vector<search::ReverseGeocoder::Street> streets;
 
-  coder.GetNearbyStreets(mwmId, mercator, streets);
-  emo.SetNearbyStreets(TakeSomeStreetsAndLocalize(streets, m_featuresFetcher.GetDataSource()));
+    coder.GetNearbyStreets(mwmId, mercator, streets);
+    emo.SetNearbyStreets(TakeSomeStreetsAndLocalize(streets, m_featuresFetcher.GetDataSource()));
 
-  // TODO(mgsergio): Check emo is a poi. For now it is the only option.
+    // TODO(mgsergio): Check emo is a poi. For now it is the only option.
 //  SetHostingBuildingAddress(FindBuildingAtPoint(mercator), dataSource, coder, emo);
 
 //  return osm::Editor::Instance().CreatePoint(featureType, mercator, mwmId, emo);
-  return false;
+    return false;
 }
 
-bool Framework::GetEditableMapObject(FeatureID const & fid, osm::EditableMapObject & emo) const
-{
-  return false;
+bool Framework::GetEditableMapObject(FeatureID const &fid, osm::EditableMapObject &emo) const {
+    return false;
 //  if (!fid.IsValid())
 //    return false;
 //
@@ -3739,149 +3548,141 @@ bool Framework::GetEditableMapObject(FeatureID const & fid, osm::EditableMapObje
 //    DeactivateMapSelection(true /* notifyUI */);
 //}
 
-storage::CountriesVec Framework::GetTopmostCountries(ms::LatLon const & latlon) const
-{
-  m2::PointD const point = mercator::FromLatLon(latlon);
-  auto const countryId = m_infoGetter->GetRegionCountryId(point);
-  storage::CountriesVec topmostCountryIds;
-  GetStorage().GetTopmostNodesFor(countryId, topmostCountryIds);
-  return topmostCountryIds;
+storage::CountriesVec Framework::GetTopmostCountries(ms::LatLon const &latlon) const {
+    m2::PointD const point = mercator::FromLatLon(latlon);
+    auto const countryId = m_infoGetter->GetRegionCountryId(point);
+    storage::CountriesVec topmostCountryIds;
+    GetStorage().GetTopmostNodesFor(countryId, topmostCountryIds);
+    return topmostCountryIds;
 }
 
-namespace
-{
-vector<dp::Color> colorList = {
-    dp::Color(255, 0, 0, 255),   dp::Color(0, 255, 0, 255),   dp::Color(0, 0, 255, 255),
-    dp::Color(255, 255, 0, 255), dp::Color(0, 255, 255, 255), dp::Color(255, 0, 255, 255),
-    dp::Color(100, 0, 0, 255),   dp::Color(0, 100, 0, 255),   dp::Color(0, 0, 100, 255),
-    dp::Color(100, 100, 0, 255), dp::Color(0, 100, 100, 255), dp::Color(100, 0, 100, 255)};
+namespace {
+    vector<dp::Color> colorList = {
+            dp::Color(255, 0, 0, 255), dp::Color(0, 255, 0, 255), dp::Color(0, 0, 255, 255),
+            dp::Color(255, 255, 0, 255), dp::Color(0, 255, 255, 255), dp::Color(255, 0, 255, 255),
+            dp::Color(100, 0, 0, 255), dp::Color(0, 100, 0, 255), dp::Color(0, 0, 100, 255),
+            dp::Color(100, 100, 0, 255), dp::Color(0, 100, 100, 255), dp::Color(100, 0, 100, 255)};
 
-dp::Color const cityBoundaryBBColor = dp::Color(255, 0, 0, 255);
-dp::Color const cityBoundaryCBColor = dp::Color(0, 255, 0, 255);
-dp::Color const cityBoundaryDBColor = dp::Color(0, 0, 255, 255);
+    dp::Color const cityBoundaryBBColor = dp::Color(255, 0, 0, 255);
+    dp::Color const cityBoundaryCBColor = dp::Color(0, 255, 0, 255);
+    dp::Color const cityBoundaryDBColor = dp::Color(0, 0, 255, 255);
 
-template <class Box>
-void DrawLine(Box const & box, dp::Color const & color, df::DrapeApi & drapeApi, string const & id)
-{
-  auto points = box.Points();
-  CHECK(!points.empty(), ());
-  points.push_back(points.front());
+    template<class Box>
+    void
+    DrawLine(Box const &box, dp::Color const &color, df::DrapeApi &drapeApi, string const &id) {
+        auto points = box.Points();
+        CHECK(!points.empty(), ());
+        points.push_back(points.front());
 
-  points.erase(unique(points.begin(), points.end(), [](m2::PointD const & p1, m2::PointD const & p2) {
-    m2::PointD const delta = p2 - p1;
-    return delta.IsAlmostZero();
-  }), points.end());
+        points.erase(unique(points.begin(), points.end(),
+                            [](m2::PointD const &p1, m2::PointD const &p2) {
+                                m2::PointD const delta = p2 - p1;
+                                return delta.IsAlmostZero();
+                            }), points.end());
 
-  if (points.size() <= 1)
-    return;
-
-  drapeApi.AddLine(id, df::DrapeApiLineData(points, color).Width(3.0f).ShowPoints(true).ShowId());
-}
-
-void VisualizeFeatureInRect(m2::RectD const & rect, FeatureType & ft, df::DrapeApi & drapeApi)
-{
-  static uint64_t counter = 0;
-  bool allPointsOutside = true;
-  vector<m2::PointD> points;
-  ft.ForEachPoint([&points, &rect, &allPointsOutside](m2::PointD const & pt)
-                  {
-                    if (rect.IsPointInside(pt))
-                      allPointsOutside = false;
-                    points.push_back(pt);
-                  }, scales::GetUpperScale());
-
-  if (!allPointsOutside)
-  {
-    size_t const colorIndex = counter % colorList.size();
-    // Note. The first param at DrapeApi::AddLine() should be unique. Other way last added line
-    // replaces the previous added line with the same name.
-    // As a consequence VisualizeFeatureInRect() should be applied to single mwm. Other way
-    // feature ids will be dubbed.
-    drapeApi.AddLine(
-        strings::to_string(ft.GetID().m_index),
-        df::DrapeApiLineData(points, colorList[colorIndex]).Width(3.0f).ShowPoints(true).ShowId());
-    counter++;
-  }
-}
-}  // namespace
-
-std::vector<std::string> Framework::GetRegionsCountryIdByRect(m2::RectD const & rect, bool rough) const
-{
-  return m_infoGetter->GetRegionsCountryIdByRect(rect, rough);
-}
-
-void Framework::VisualizeRoadsInRect(m2::RectD const & rect)
-{
-  m_featuresFetcher.ForEachFeature(rect, [this, &rect](FeatureType & ft)
-  {
-    if (routing::IsRoad(feature::TypesHolder(ft)))
-      VisualizeFeatureInRect(rect, ft, m_drapeApi);
-  }, scales::GetUpperScale());
-}
-
-void Framework::VisualizeCityBoundariesInRect(m2::RectD const & rect)
-{
-  search::CitiesBoundariesTable table(GetDataSource());
-  table.Load();
-
-  vector<uint32_t> featureIds;
-  GetCityBoundariesInRectForTesting(table, rect, featureIds);
-
-  FeaturesLoaderGuard loader(GetDataSource(), GetDataSource().GetMwmIdByCountryFile(CountryFile("World")));
-  for (auto const fid : featureIds)
-  {
-    search::CitiesBoundariesTable::Boundaries boundaries;
-    table.Get(fid, boundaries);
-
-    string id = "fid:" + strings::to_string(fid);
-    auto ft = loader.GetFeatureByIndex(fid);
-    if (ft)
-    {
-      string name;
-      ft->GetName(StringUtf8Multilang::kDefaultCode, name);
-      id += ", name:" + name;
-    }
-
-    size_t const boundariesSize = boundaries.GetBoundariesForTesting().size();
-    for (size_t i = 0; i < boundariesSize; ++i)
-    {
-      string idWithIndex = id;
-      auto const & cityBoundary = boundaries.GetBoundariesForTesting()[i];
-      if (boundariesSize > 1)
-        idWithIndex = id + " , i:" + strings::to_string(i);
-
-      DrawLine(cityBoundary.m_bbox, cityBoundaryBBColor, m_drapeApi, idWithIndex + ", bb");
-      DrawLine(cityBoundary.m_cbox, cityBoundaryCBColor, m_drapeApi, idWithIndex + ", cb");
-      DrawLine(cityBoundary.m_dbox, cityBoundaryDBColor, m_drapeApi, idWithIndex + ", db");
-    }
-  }
-}
-
-void Framework::VisualizeCityRoadsInRect(m2::RectD const & rect)
-{
-  std::map<MwmSet::MwmId, unique_ptr<CityRoads>> cityRoads;
-  GetDataSource().ForEachInRect(
-      [this, &rect, &cityRoads](FeatureType & ft) {
-        if (ft.GetGeomType() != feature::GeomType::Line)
-          return;
-
-        auto const & mwmId = ft.GetID().m_mwmId;
-        auto const it = cityRoads.find(mwmId);
-        if (it == cityRoads.cend())
-        {
-          MwmSet::MwmHandle handle = m_featuresFetcher.GetDataSource().GetMwmHandleById(mwmId);
-          if (!handle.IsAlive())
+        if (points.size() <= 1)
             return;
 
-          cityRoads[mwmId] = LoadCityRoads(GetDataSource(), handle);
+        drapeApi.AddLine(id,
+                         df::DrapeApiLineData(points, color).Width(3.0f).ShowPoints(true).ShowId());
+    }
+
+    void VisualizeFeatureInRect(m2::RectD const &rect, FeatureType &ft, df::DrapeApi &drapeApi) {
+        static uint64_t counter = 0;
+        bool allPointsOutside = true;
+        vector<m2::PointD> points;
+        ft.ForEachPoint([&points, &rect, &allPointsOutside](m2::PointD const &pt) {
+            if (rect.IsPointInside(pt))
+                allPointsOutside = false;
+            points.push_back(pt);
+        }, scales::GetUpperScale());
+
+        if (!allPointsOutside) {
+            size_t const colorIndex = counter % colorList.size();
+            // Note. The first param at DrapeApi::AddLine() should be unique. Other way last added line
+            // replaces the previous added line with the same name.
+            // As a consequence VisualizeFeatureInRect() should be applied to single mwm. Other way
+            // feature ids will be dubbed.
+            drapeApi.AddLine(
+                    strings::to_string(ft.GetID().m_index),
+                    df::DrapeApiLineData(points, colorList[colorIndex]).Width(3.0f).ShowPoints(
+                            true).ShowId());
+            counter++;
+        }
+    }
+}  // namespace
+
+std::vector<std::string>
+Framework::GetRegionsCountryIdByRect(m2::RectD const &rect, bool rough) const {
+    return m_infoGetter->GetRegionsCountryIdByRect(rect, rough);
+}
+
+void Framework::VisualizeRoadsInRect(m2::RectD const &rect) {
+    m_featuresFetcher.ForEachFeature(rect, [this, &rect](FeatureType &ft) {
+        if (routing::IsRoad(feature::TypesHolder(ft)))
+            VisualizeFeatureInRect(rect, ft, m_drapeApi);
+    }, scales::GetUpperScale());
+}
+
+void Framework::VisualizeCityBoundariesInRect(m2::RectD const &rect) {
+    search::CitiesBoundariesTable table(GetDataSource());
+    table.Load();
+
+    vector<uint32_t> featureIds;
+    GetCityBoundariesInRectForTesting(table, rect, featureIds);
+
+    FeaturesLoaderGuard loader(GetDataSource(),
+                               GetDataSource().GetMwmIdByCountryFile(CountryFile("World")));
+    for (auto const fid: featureIds) {
+        search::CitiesBoundariesTable::Boundaries boundaries;
+        table.Get(fid, boundaries);
+
+        string id = "fid:" + strings::to_string(fid);
+        auto ft = loader.GetFeatureByIndex(fid);
+        if (ft) {
+            string name;
+            ft->GetName(StringUtf8Multilang::kDefaultCode, name);
+            id += ", name:" + name;
         }
 
-        if (!cityRoads[mwmId]->IsCityRoad(ft.GetID().m_index))
-          return;  // ft is not a city road.
+        size_t const boundariesSize = boundaries.GetBoundariesForTesting().size();
+        for (size_t i = 0; i < boundariesSize; ++i) {
+            string idWithIndex = id;
+            auto const &cityBoundary = boundaries.GetBoundariesForTesting()[i];
+            if (boundariesSize > 1)
+                idWithIndex = id + " , i:" + strings::to_string(i);
 
-        VisualizeFeatureInRect(rect, ft, m_drapeApi);
-      },
-      rect, scales::GetUpperScale());
+            DrawLine(cityBoundary.m_bbox, cityBoundaryBBColor, m_drapeApi, idWithIndex + ", bb");
+            DrawLine(cityBoundary.m_cbox, cityBoundaryCBColor, m_drapeApi, idWithIndex + ", cb");
+            DrawLine(cityBoundary.m_dbox, cityBoundaryDBColor, m_drapeApi, idWithIndex + ", db");
+        }
+    }
+}
+
+void Framework::VisualizeCityRoadsInRect(m2::RectD const &rect) {
+    std::map<MwmSet::MwmId, unique_ptr<CityRoads>> cityRoads;
+    GetDataSource().ForEachInRect(
+            [this, &rect, &cityRoads](FeatureType &ft) {
+                if (ft.GetGeomType() != feature::GeomType::Line)
+                    return;
+
+                auto const &mwmId = ft.GetID().m_mwmId;
+                auto const it = cityRoads.find(mwmId);
+                if (it == cityRoads.cend()) {
+                    MwmSet::MwmHandle handle = m_featuresFetcher.GetDataSource().GetMwmHandleById(
+                            mwmId);
+                    if (!handle.IsAlive())
+                        return;
+
+                    cityRoads[mwmId] = LoadCityRoads(GetDataSource(), handle);
+                }
+
+                if (!cityRoads[mwmId]->IsCityRoad(ft.GetID().m_index))
+                    return;  // ft is not a city road.
+
+                VisualizeFeatureInRect(rect, ft, m_drapeApi);
+            },
+            rect, scales::GetUpperScale());
 }
 
 //ads::Engine const & Framework::GetAdsEngine() const
@@ -3896,21 +3697,18 @@ void Framework::VisualizeCityRoadsInRect(m2::RectD const & rect)
 //  m_adsEngine.get()->DisableAdProvider(type, place);
 //}
 
-void Framework::RunUITask(function<void()> fn)
-{
-  GetPlatform().RunTask(Platform::Thread::Gui, move(fn));
+void Framework::RunUITask(function<void()> fn) {
+    GetPlatform().RunTask(Platform::Thread::Gui, move(fn));
 }
 
-void Framework::SetSearchDisplacementModeEnabled(bool enabled)
-{
-  SetDisplacementMode(DisplacementModeManager::SLOT_INTERACTIVE_SEARCH, enabled /* show */);
+void Framework::SetSearchDisplacementModeEnabled(bool enabled) {
+    SetDisplacementMode(DisplacementModeManager::SLOT_INTERACTIVE_SEARCH, enabled /* show */);
 }
 
 void Framework::ShowViewportSearchResults(search::Results::ConstIter begin,
-                                          search::Results::ConstIter end, bool clear)
-{
-  FillSearchResultsMarks(begin, end, clear,
-                         Framework::SearchMarkPostProcessing());
+                                          search::Results::ConstIter end, bool clear) {
+    FillSearchResultsMarks(begin, end, clear,
+                           Framework::SearchMarkPostProcessing());
 }
 
 //void Framework::ShowViewportSearchResults(search::Results::ConstIter begin,
@@ -3989,143 +3787,132 @@ void Framework::ShowViewportSearchResults(search::Results::ConstIter begin,
 //  m_bookingFilterProcessor.GetFeaturesFromCache(types, results, fillCallback);
 //}
 //
-void Framework::ClearViewportSearchResults()
-{
+void Framework::ClearViewportSearchResults() {
 //  m_searchMarks.ClearUsed();
 //  m_searchMarks.ClearUnavailable();
 //  GetBookmarkManager().GetEditSession().ClearGroup(UserMark::Type::SEARCH);
 }
 
-std::optional<m2::PointD> Framework::GetCurrentPosition() const
-{
-  return {};
+std::optional<m2::PointD> Framework::GetCurrentPosition() const {
+    return {};
 //  auto const & myPosMark = GetBookmarkManager().MyPositionMark();
 //  if (!myPosMark.HasPosition())
 //    return {};
 //  return myPosMark.GetPivot();
 }
 
-bool Framework::ParseSearchQueryCommand(search::SearchParams const & params)
-{
-  if (ParseDrapeDebugCommand(params.m_query))
-    return true;
-  if (ParseSetGpsTrackMinAccuracyCommand(params.m_query))
-    return true;
-  if (ParseEditorDebugCommand(params))
-    return true;
-  if (ParseRoutingDebugCommand(params))
-    return true;
-  return false;
+bool Framework::ParseSearchQueryCommand(search::SearchParams const &params) {
+    if (ParseDrapeDebugCommand(params.m_query))
+        return true;
+    if (ParseSetGpsTrackMinAccuracyCommand(params.m_query))
+        return true;
+    if (ParseEditorDebugCommand(params))
+        return true;
+    if (ParseRoutingDebugCommand(params))
+        return true;
+    return false;
 }
 
-search::ProductInfo Framework::GetProductInfo(search::Result const & result) const
-{
+search::ProductInfo Framework::GetProductInfo(search::Result const &result) const {
 //  ASSERT(m_ugcApi, ());
-  if (result.GetResultType() != search::Result::Type::Feature)
-    return {};
+    if (result.GetResultType() != search::Result::Type::Feature)
+        return {};
 
-  search::ProductInfo productInfo;
+    search::ProductInfo productInfo;
 
 //  productInfo.m_isLocalAdsCustomer = m_localAdsManager.HasVisualization(result.GetFeatureID());
 
 //  auto const ugc = m_ugcApi->GetLoader().GetUGC(result.GetFeatureID());
 //  productInfo.m_ugcRating = ugc.m_totalRating;
 
-  return productInfo;
+    return productInfo;
 }
 
-double Framework::GetMinDistanceBetweenResults() const
-{
-  return 0; //m_searchMarks.GetMaxDimension(m_currentModelView);
+double Framework::GetMinDistanceBetweenResults() const {
+    return 0; //m_searchMarks.GetMaxDimension(m_currentModelView);
 }
 
-vector<MwmSet::MwmId> Framework::GetMwmsByRect(m2::RectD const & rect, bool rough) const
-{
-  vector<MwmSet::MwmId> result;
-  if (!m_infoGetter)
+vector<MwmSet::MwmId> Framework::GetMwmsByRect(m2::RectD const &rect, bool rough) const {
+    vector<MwmSet::MwmId> result;
+    if (!m_infoGetter)
+        return result;
+
+    auto countryIds = m_infoGetter->GetRegionsCountryIdByRect(rect, rough);
+    for (auto const &countryId: countryIds)
+        result.push_back(GetMwmIdByName(countryId));
+
     return result;
-
-  auto countryIds = m_infoGetter->GetRegionsCountryIdByRect(rect, rough);
-  for (auto const & countryId : countryIds)
-    result.push_back(GetMwmIdByName(countryId));
-
-  return result;
 }
 
-MwmSet::MwmId Framework::GetMwmIdByName(string const & name) const
-{
-  return m_featuresFetcher.GetDataSource().GetMwmIdByCountryFile(platform::CountryFile(name));
+MwmSet::MwmId Framework::GetMwmIdByName(string const &name) const {
+    return m_featuresFetcher.GetDataSource().GetMwmIdByCountryFile(platform::CountryFile(name));
 }
 
-vector<FeatureID> Framework::FindFeaturesByIndex(uint32_t featureIndex) const
-{
-  vector<FeatureID> result;
-  auto mwms = GetMwmsByRect(m_currentModelView.ClipRect(), false /* rough */);
-  set<MwmSet::MwmId> s(mwms.begin(), mwms.end());
+vector<FeatureID> Framework::FindFeaturesByIndex(uint32_t featureIndex) const {
+    vector<FeatureID> result;
+    auto mwms = GetMwmsByRect(m_currentModelView.ClipRect(), false /* rough */);
+    set<MwmSet::MwmId> s(mwms.begin(), mwms.end());
 
-  vector<shared_ptr<LocalCountryFile>> maps;
-  m_storage.GetLocalMaps(maps);
-  for (auto const & localFile : maps)
-  {
-    auto mwmId = GetMwmIdByName(localFile->GetCountryName());
-    if (s.find(mwmId) != s.end())
-      continue;
+    vector<shared_ptr<LocalCountryFile>> maps;
+    m_storage.GetLocalMaps(maps);
+    for (auto const &localFile: maps) {
+        auto mwmId = GetMwmIdByName(localFile->GetCountryName());
+        if (s.find(mwmId) != s.end())
+            continue;
 
-    if (mwmId.IsAlive())
-      mwms.push_back(move(mwmId));
-  }
+        if (mwmId.IsAlive())
+            mwms.push_back(move(mwmId));
+    }
 
-  for (auto const & mwmId : mwms)
-  {
-    FeaturesLoaderGuard const guard(m_featuresFetcher.GetDataSource(), mwmId);
-    if (featureIndex < guard.GetNumFeatures() && guard.GetFeatureByIndex(featureIndex))
-      result.emplace_back(mwmId, featureIndex);
-  }
-  return result;
+    for (auto const &mwmId: mwms) {
+        FeaturesLoaderGuard const guard(m_featuresFetcher.GetDataSource(), mwmId);
+        if (featureIndex < guard.GetNumFeatures() && guard.GetFeatureByIndex(featureIndex))
+            result.emplace_back(mwmId, featureIndex);
+    }
+    return result;
 }
 
-void Framework::ReadFeatures(function<void(FeatureType &)> const & reader,
-                             vector<FeatureID> const & features)
-{
-  m_featuresFetcher.ReadFeatures(reader, features);
+void Framework::ReadFeatures(function<void(FeatureType &)> const &reader,
+                             vector<FeatureID> const &features) {
+    m_featuresFetcher.ReadFeatures(reader, features);
 }
 
 // RoutingManager::Delegate
-void Framework::OnRouteFollow(routing::RouterType type)
-{
-  bool const isPedestrianRoute = type == RouterType::Pedestrian;
-  bool const enableAutoZoom = isPedestrianRoute ? false : LoadAutoZoom();
-  int const scale =
-      isPedestrianRoute ? scales::GetPedestrianNavigationScale() : scales::GetNavigationScale();
-  int scale3d =
-      isPedestrianRoute ? scales::GetPedestrianNavigation3dScale() : scales::GetNavigation3dScale();
-  if (enableAutoZoom)
-    ++scale3d;
+void Framework::OnRouteFollow(routing::RouterType type) {
+    bool const isPedestrianRoute = type == RouterType::Pedestrian;
+    bool const enableAutoZoom = isPedestrianRoute ? false : LoadAutoZoom();
+    int const scale =
+            isPedestrianRoute ? scales::GetPedestrianNavigationScale()
+                              : scales::GetNavigationScale();
+    int scale3d =
+            isPedestrianRoute ? scales::GetPedestrianNavigation3dScale()
+                              : scales::GetNavigation3dScale();
+    if (enableAutoZoom)
+        ++scale3d;
 
-  bool const isBicycleRoute = type == RouterType::Bicycle;
+    bool const isBicycleRoute = type == RouterType::Bicycle;
 //  if ((isPedestrianRoute || isBicycleRoute) && LoadTrafficEnabled())
 //  {
 //    m_trafficManager.SetEnabled(false /* enabled */);
 //    SaveTrafficEnabled(false /* enabled */);
 //  }
-  // TODO. We need to sync two enums VehicleType and RouterType to be able to pass
-  // GetRoutingSettings(type).m_matchRoute to the FollowRoute() instead of |isPedestrianRoute|.
-  // |isArrowGlued| parameter fully corresponds to |m_matchRoute| in RoutingSettings.
-  m_drapeEngine->FollowRoute(scale, scale3d, enableAutoZoom, !isPedestrianRoute /* isArrowGlued */);
+    // TODO. We need to sync two enums VehicleType and RouterType to be able to pass
+    // GetRoutingSettings(type).m_matchRoute to the FollowRoute() instead of |isPedestrianRoute|.
+    // |isArrowGlued| parameter fully corresponds to |m_matchRoute| in RoutingSettings.
+    m_drapeEngine->FollowRoute(scale, scale3d, enableAutoZoom,
+                               !isPedestrianRoute /* isArrowGlued */);
 }
 
 // RoutingManager::Delegate
-void Framework::RegisterCountryFilesOnRoute(shared_ptr<routing::NumMwmIds> ptr) const
-{
-  m_storage.ForEachCountryFile(
-      [&ptr](platform::CountryFile const & file) { ptr->RegisterFile(file); });
+void Framework::RegisterCountryFilesOnRoute(shared_ptr<routing::NumMwmIds> ptr) const {
+    m_storage.ForEachCountryFile(
+            [&ptr](platform::CountryFile const &file) { ptr->RegisterFile(file); });
 }
 
-void Framework::InitCityFinder()
-{
-  ASSERT(!m_cityFinder, ());
+void Framework::InitCityFinder() {
+    ASSERT(!m_cityFinder, ());
 
-  m_cityFinder = make_unique<search::CityFinder>(m_featuresFetcher.GetDataSource());
+    m_cityFinder = make_unique<search::CityFinder>(m_featuresFetcher.GetDataSource());
 }
 
 //void Framework::InitTaxiEngine()
@@ -4285,22 +4072,21 @@ void Framework::InitCityFinder()
 //  return m_tipsApi;
 //}
 
-bool Framework::HaveTransit(m2::PointD const & pt) const
-{
-  auto const & dataSource = m_featuresFetcher.GetDataSource();
-  MwmSet::MwmId const mwmId =
-      dataSource.GetMwmIdByCountryFile(platform::CountryFile(m_infoGetter->GetRegionCountryId(pt)));
+bool Framework::HaveTransit(m2::PointD const &pt) const {
+    auto const &dataSource = m_featuresFetcher.GetDataSource();
+    MwmSet::MwmId const mwmId =
+            dataSource.GetMwmIdByCountryFile(
+                    platform::CountryFile(m_infoGetter->GetRegionCountryId(pt)));
 
-  MwmSet::MwmHandle handle = m_featuresFetcher.GetDataSource().GetMwmHandleById(mwmId);
-  if (!handle.IsAlive())
-    return false;
+    MwmSet::MwmHandle handle = m_featuresFetcher.GetDataSource().GetMwmHandleById(mwmId);
+    if (!handle.IsAlive())
+        return false;
 
-  return handle.GetValue()->m_cont.IsExist(TRANSIT_FILE_TAG);
+    return handle.GetValue()->m_cont.IsExist(TRANSIT_FILE_TAG);
 }
 
-double Framework::GetLastBackgroundTime() const
-{
-  return m_startBackgroundTime;
+double Framework::GetLastBackgroundTime() const {
+    return m_startBackgroundTime;
 }
 
 //bool Framework::MakePlacePageForNotification(NotificationCandidate const & notification)
@@ -4337,38 +4123,32 @@ double Framework::GetLastBackgroundTime() const
 //  return found;
 //}
 
-void Framework::OnPowerFacilityChanged(power_management::Facility const facility, bool enabled)
-{
-  if (facility == power_management::Facility::PerspectiveView ||
-      facility == power_management::Facility::Buildings3d)
-  {
-    bool allow3d = true, allow3dBuildings = true;
-    Load3dMode(allow3d, allow3dBuildings);
+void Framework::OnPowerFacilityChanged(power_management::Facility const facility, bool enabled) {
+    if (facility == power_management::Facility::PerspectiveView ||
+        facility == power_management::Facility::Buildings3d) {
+        bool allow3d = true, allow3dBuildings = true;
+        Load3dMode(allow3d, allow3dBuildings);
 
-    if (facility == power_management::Facility::PerspectiveView)
-      allow3d = allow3d && enabled;
-    else
-      allow3dBuildings = allow3dBuildings && enabled;
+        if (facility == power_management::Facility::PerspectiveView)
+            allow3d = allow3d && enabled;
+        else
+            allow3dBuildings = allow3dBuildings && enabled;
 
-    Allow3dMode(allow3d, allow3dBuildings);
-  }
-  else if (facility == power_management::Facility::TrafficJams)
-  {
+        Allow3dMode(allow3d, allow3dBuildings);
+    } else if (facility == power_management::Facility::TrafficJams) {
 //    auto trafficState = enabled && LoadTrafficEnabled();
 //    if (trafficState == GetTrafficManager().IsEnabled())
 //      return;
 //
 //    GetTrafficManager().SetEnabled(trafficState);
-  }
+    }
 }
 
-void Framework::OnPowerSchemeChanged(power_management::Scheme const actualScheme)
-{
+void Framework::OnPowerSchemeChanged(power_management::Scheme const actualScheme) {
 //  if (actualScheme == power_management::Scheme::EconomyMaximum && GetTrafficManager().IsEnabled())
 //    GetTrafficManager().SetEnabled(false);
 }
 
-notifications::NotificationManager & Framework::GetNotificationManager()
-{
-  return m_notificationManager;
+notifications::NotificationManager &Framework::GetNotificationManager() {
+    return m_notificationManager;
 }

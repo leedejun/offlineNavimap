@@ -96,7 +96,7 @@ public:
 
   /// For Type::Feature and Type::Building.
   RankerResult(FeatureType & f, m2::PointD const & center, m2::PointD const & pivot,
-               std::string const & displayName, std::string const & fileName);
+               std::string const & displayName,std::string const &address,std::string const & fileName);
 
   /// For Type::LatLon.
   RankerResult(double lat, double lon);
@@ -121,6 +121,8 @@ public:
   m2::PointD GetCenter() const { return m_region.m_point; }
   double GetDistance() const { return m_distance; }
   feature::GeomType GetGeomType() const { return m_geomType; }
+    std::string GetAddress() const {return m_address;}
+
   Result::Details GetDetails() const { return m_details; }
 
   double GetDistanceToPivot() const { return m_info.m_distanceToPivot; }
@@ -157,6 +159,7 @@ private:
   FeatureID m_id;
   feature::TypesHolder m_types;
   std::string m_str;
+  std::string m_address;
   double m_distance = 0.0;
   Type m_resultType;
   RankingInfo m_info = {};

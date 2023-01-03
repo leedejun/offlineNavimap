@@ -8,8 +8,26 @@
       android:id="@+id/map_view_container"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:background="#E32D2D" >
-  </FrameLayout>
+      android:background="#E32D2D"></FrameLayout>
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:orientation="horizontal"
+      android:background="#ffffff"
+      android:gravity="center"
+      android:visibility="gone"
+      android:layout_height="44dp">
+    <TextView android:id="@+id/map_zoom_tv"
+        android:layout_width="fill_parent"
+        android:text="地图层级："
+        android:layout_height="wrap_content"></TextView>
+    <Spinner android:id="@+id/map_zoom_sp"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"></Spinner>
+  </LinearLayout>
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:visibility="visible"
+      android:layout_height="wrap_content">
   <Button
       android:id="@+id/btnLocate"
       android:layout_width="wrap_content"
@@ -40,6 +58,7 @@
       android:layout_marginLeft="10dp"
       android:layout_marginTop="60dp"
       android:text="放大" />
+
   <Button
       android:id="@+id/btnZoomOut"
       android:layout_width="wrap_content"
@@ -85,11 +104,13 @@
       android:layout_marginLeft="120dp"
       android:layout_marginTop="160dp"
       android:text="隐藏路线1" />
-  <Button
-      android:id="@+id/btFollowRoute"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginLeft="240dp"
-      android:layout_marginTop="160dp"
-      android:text="导航" />
+
+    <Button
+        android:id="@+id/btFollowRoute"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="240dp"
+        android:layout_marginTop="160dp"
+        android:text="导航" />
+  </RelativeLayout>
 </RelativeLayout>

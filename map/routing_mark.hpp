@@ -10,13 +10,16 @@ enum class RouteMarkType : uint8_t
   // Do not change the order!
   Start = 0,
   Intermediate = 1,
-  Finish = 2
+  Finish = 2,
+  Green = 3
+
 };
 
 struct RouteMarkData
 {
   std::string m_title;
   std::string m_subTitle;
+    std::string _icon;
   RouteMarkType m_pointType = RouteMarkType::Start;
   size_t m_intermediateIndex = 0;
   bool m_isVisible = true;

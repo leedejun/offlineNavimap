@@ -30,6 +30,8 @@
 
 #include "std/target_os.hpp"
 
+#include "routing_common/ft_car_model_factory.hpp"
+
 #include <chrono>
 #include <functional>
 #include <map>
@@ -132,7 +134,13 @@ public:
   void SetTransitManager(TransitReadManager * transitManager);
 
   routing::RoutingSession const & RoutingSession() const { return m_routingSession; }
-  routing::RoutingSession & RoutingSession() { return m_routingSession; }
+  routing::RoutingSession & RoutingSession() {
+    return m_routingSession; }
+  routing::RoutingSession & RoutingSession(routing::FtStrategy strategy) {
+
+    m_routingSession.SetFtStrategy(strategy);
+//    m_router->SetRouter(move(router), move(fetcher));
+    return m_routingSession; }
   void SetRouter(routing::RouterType type);
   void SetRouter(routing::RouterType type, const int k);
   routing::RouterType GetRouter() const { return m_currentRouterType; }

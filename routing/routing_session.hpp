@@ -25,6 +25,8 @@
 
 #include "base/thread_checker.hpp"
 
+#include "routing_common/ft_car_model_factory.hpp"
+
 #include <cstdint>
 #include <functional>
 #include <limits>
@@ -229,9 +231,15 @@ public:
 
   double GetCompletionPercent() const;
   void PassCheckpoints();
+  void SetFtStrategy(routing::FtStrategy strategy);
+
+    void SetVecRouter(std::vector<std::unique_ptr<IRouter>> &&vec_router,
+                                      std::vector<std::unique_ptr<OnlineAbsentCountriesFetcher>> &&vec_fetcher);
 
 private:
-  std::unique_ptr<AsyncRouter> m_router;
+    std::shared_ptr<AsyncRouter> m_vec_router[3];
+  std::shared_ptr<AsyncRouter> m_router;
+//    std::unique_ptr<AsyncRouter> m_router;
   std::shared_ptr<Route> m_route;
   SessionState m_state;
   bool m_isFollowing;

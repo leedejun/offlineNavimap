@@ -69,7 +69,9 @@ void RouteMarkPoint::SetIsVisible(bool isVisible)
   SetDirty();
   m_markData.m_isVisible = isVisible;
 }
-
+//void setIcon(std::string icon) {
+//  _icon = icon;
+//}
 void RouteMarkPoint::SetRoutePointType(RouteMarkType type)
 {
   SetDirty();
@@ -113,6 +115,7 @@ uint16_t RouteMarkPoint::GetPriority() const
   {
     case RouteMarkType::Start: return static_cast<uint16_t>(Priority::RouteStart);
     case RouteMarkType::Finish: return static_cast<uint16_t>(Priority::RouteFinish);
+//    case RouteMarkType::Green: return static_cast<uint16_t>(Priority::Green);
     case RouteMarkType::Intermediate:
     {
       switch (m_markData.m_intermediateIndex)
@@ -132,6 +135,7 @@ uint32_t RouteMarkPoint::GetIndex() const
   {
     case RouteMarkType::Start: return 0;
     case RouteMarkType::Finish: return 1;
+    case RouteMarkType::Green: return 3;
     case RouteMarkType::Intermediate: return static_cast<uint32_t >(m_markData.m_intermediateIndex + 2);
   }
   UNREACHABLE();
@@ -185,6 +189,7 @@ drape_ptr<df::UserPointMark::SymbolNameZoomInfo> RouteMarkPoint::GetSymbolNames(
   {
     case RouteMarkType::Start: name = "route-point-start";  break;
     case RouteMarkType::Finish: name = "route-point-finish"; break;
+    case RouteMarkType::Green: name = "partner18-l"; break;
     case RouteMarkType::Intermediate:
     {
       switch (m_markData.m_intermediateIndex)

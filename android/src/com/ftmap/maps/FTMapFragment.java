@@ -183,7 +183,9 @@ public class FTMapFragment extends Fragment
         mRequireResize = false;
 
         final DisplayMetrics metrics = new DisplayMetrics();
-        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+//        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        //适配低版本
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
         final float exactDensityDpi = metrics.densityDpi;
 
         final boolean firstStart = true;//MwmApplication.from(requireActivity()).isFirstLaunch();
@@ -240,7 +242,9 @@ public class FTMapFragment extends Fragment
         if (!mSurfaceCreated || !mSurfaceAttached || !isAdded())
             return;
 
-        nativeDetachSurface(!requireActivity().isChangingConfigurations());
+//        nativeDetachSurface(!requireActivity().isChangingConfigurations());
+        //适配低版本
+        nativeDetachSurface(!getActivity().isChangingConfigurations());
         mSurfaceCreated = !nativeDestroySurfaceOnDetach();
         mSurfaceAttached = false;
     }

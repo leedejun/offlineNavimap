@@ -1,6 +1,7 @@
 #include "route_mgr.hpp"
 #include "map_engine.hpp"
 #include "search/result.hpp"
+#include "routing_common/ft_car_model_factory.hpp"
 //#include "services/json.hpp"
 #define json JsonHelper::getIns()
 
@@ -21,11 +22,11 @@ namespace fd{
 
     void RouteMgr::buildRoute(std::vector<m2::PointD>& points,BuildRouteCallback callback)
     {
-        auto &routingSession = engine->getFramework()->GetRoutingManager().RoutingSession();
+        auto &routingSession = engine->getFramework()->GetRoutingManager().RoutingSession(routing::FtStrategy::MotorwayFirst);
         routing::ReadyCallbackKsp onReady;
         onReady = [&, callback, this](const std::vector<std::shared_ptr<routing::Route>> &routes,
                                       routing::RouterResultCode code) {
-            int i = 0;
+//            int i = 0;
             if (code == routing::RouterResultCode::NoError) {
                 std::vector<std::string> routeIds;
                 for (int i = 0; i < routes.size(); i++) {
@@ -268,14 +269,21 @@ namespace fd{
         RouteWrapperPtr RouteMgr = getRoute(routeId);
         routing::Route  route = RouteMgr.get()->getRoute();
         std::vector<routing::RouteSegment> segment = route.GetRouteSegments();
+        std::vector<m2::ParametrizedSegment<m2::PointD>> point = route.GetFollowedPolyline().GetSegProjMeters();
+        std::vector<m2::ParametrizedSegment<m2::PointD>>::const_iterator pItor, pLast = point.end();
         std::vector<routing::RouteSegment>::const_iterator sItor, sLast = segment.end();
         std::stringstream stream;
         int i = 0;
+
+        std::string strRouteLatlon;
+
+
         //{"routeDistance":[{"index":0,"m_street":"无名路","turnString":"None","targetName":"无名路","sourceName":"无名路"}]}
 //        using  nlohmann::json;
 
 //        JsonObject& data = json.createNestedObject("data");
         stream << "[";
+        double pre =0.0;
         for (sItor = segment.begin(); sItor != sLast; ++sItor) {
             stream << "{";
             stream << "\"index\":" << "\"" << i << "\",";
@@ -283,6 +291,12 @@ namespace fd{
             std::string turnStr = GetTurnString(sItor->GetTurn().m_turn);
             std::string targetName = sItor->GetTurn().m_targetName;
             std::string sourceName = sItor->GetTurn().m_sourceName;
+
+            double strLon = sItor->GetJunction().GetPoint().x;
+            double strLat =  sItor->GetJunction().GetPoint().y;
+           double cur= sItor->GetDistFromBeginningMeters();
+            double distMeters =  cur - pre;
+            pre = cur;
             if(street==""){
                 street = "无名路";
             }
@@ -292,11 +306,29 @@ namespace fd{
             if(sourceName==""){
                 sourceName = "无名路";
             }
+
             stream << "\"m_street\":" << "\"" << street << "\",";
+            stream << "\"distance\":" << "\"" << distMeters << "\",";
             stream << "\"turnString\":" << "\"" << turnStr << "\",";
             stream << "\"targetName\":" << "\"" << targetName << "\",";
-            stream << "\"sourceName\":" << "\"" << sourceName << "\"";
-
+            stream << "\"sourceName\":" << "\"" << sourceName << "\",";
+//            stream << "\"strLon\":" << "\"" << strLon << "\"";
+//            stream << "\"strLat\":" << "\"" << strLat << "\"";
+            int j = 0;
+            for(pItor = point.begin(); pItor != pLast; ++pItor){
+                if(i!=j){
+                    ++j;
+                    continue;
+                }
+                double strLon = pItor->GetP0().x;
+                double strLat =  pItor->GetP0().y;
+                m2::PointD tmpMercator = m2::PointD(strLon, strLat);
+                ms::LatLon latLon = mercator::ToLatLon(tmpMercator);
+                stream << "\"lon\":" << "\"" << std::to_string(latLon.m_lon) << "\",";
+                stream << "\"lat\":" << "\"" << std::to_string(latLon.m_lat) << "\"";
+//                stream << "\"length\":" << "\"" << pItor->GetLength() << "\"";
+                break;
+            }
             stream << "}";
             if(sItor != sLast -1) {
                 stream << ",";

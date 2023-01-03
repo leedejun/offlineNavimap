@@ -404,7 +404,10 @@ public abstract class FMap {
 
         public void destroy();
 
-        public void update();
+        public long update();
+
+        public long uppoidate();
+        public long uplinedate();
     }
 
     /**
@@ -422,6 +425,11 @@ public abstract class FMap {
         public void shape(String v);
 
         public String shape();
+        public void title(String v);
+
+        public String title();
+
+        public long uppoidate();
     }
 
     /**
@@ -435,6 +443,7 @@ public abstract class FMap {
         public void width(double v);
 
         public double width();
+        public long uplinedate();
     }
 
     /**
@@ -499,6 +508,7 @@ public abstract class FMap {
     public abstract void PtoG(double screenX, double screenY, MapUtilsResultsCallback callback);
 
     public abstract void ScreenToMapObject(double screenX, double screenY, MapUtilsResultsCallback callback);
+    public abstract void LatLonToMapObject(double lat, double lon, MapUtilsResultsCallback callback);
 
     public abstract void ToLatLon(double mercatorX, double mercatorY, MapUtilsResultsCallback callback);
 
@@ -523,6 +533,16 @@ public abstract class FMap {
      */
     public abstract void zoom(boolean isIn);
 
+
+
+    public abstract void removeDrawItem(long id);
+
+
+    public abstract void removeLineItem(long id);
+    public abstract void removeLineItem(List<Long> id);
+    public abstract void removeMarkItem(long id);
+    public abstract void removeMarkItem(List<Long> id);
+
     /**
      * 定位到指定坐标
      *
@@ -534,9 +554,10 @@ public abstract class FMap {
 
     public abstract void showRoute(String routeId, String fillColor, String outlineColor);
     public abstract void hideRoute(String routeId);
-    public abstract void getRouteTime(String type, RoutingResultsCallback callback);
-    public abstract void getRouteDistance(String type, RoutingResultsCallback callback);
-    public abstract void getRouteInfo(String type, RoutingResultsCallback callback);
+    public abstract void getRouteTime(String routeId, RoutingResultsCallback callback);
+    public abstract void getRouteDistance(String routeId, RoutingResultsCallback callback);
+    public abstract void getRouteInfo(String routeId, RoutingResultsCallback callback);
+    public abstract void getAllRouteInfo(JSONArray routeIdArr, RoutingResultsCallback callback);
 
     public abstract void nativeSetupWidget(int widget, float x, float y, int anchor, SearchResultsCallback callback);
 
@@ -559,7 +580,7 @@ public abstract class FMap {
      *开始导航，视角跟随
      */
 
-    public abstract void followRoute();
+    public abstract void followRoute( String routeId);
     /**
      *结束导航
      */

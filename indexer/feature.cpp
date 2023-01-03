@@ -287,13 +287,7 @@ void FeatureType::ParseCommon() {
     m_params.Read(source, h);
 
     if (GetGeomType() == GeomType::Point) {
-        m2::PointD m_center;
-        //116.30959463350172, 43.69950312152136
-        m_center.x = 116.30959463350172;
-        m_center.y = 43.69950312152136;
-//            center = m_center;
-
-//        m_center = serial::LoadPoint(source, m_loadInfo->GetDefGeometryCodingParams());
+        m_center = serial::LoadPoint(source, m_loadInfo->GetDefGeometryCodingParams());
         m_limitRect.Add(m_center);
     }
 

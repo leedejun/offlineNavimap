@@ -65,6 +65,9 @@ namespace routing {
         CHECK_THREAD_CHECKER(m_threadChecker, ());
         CHECK(!m_router, ());
         m_router = make_unique<AsyncRouter>(routingStatisticsFn, pointCheckCallback);
+        m_vec_router[0] = make_shared<AsyncRouter>(routingStatisticsFn, pointCheckCallback);
+        m_vec_router[1] = make_shared<AsyncRouter>(routingStatisticsFn, pointCheckCallback);
+        m_vec_router[2] = make_shared<AsyncRouter>(routingStatisticsFn, pointCheckCallback);
 
 //  alohalytics::TStringMap params = {
 //      {"speed_cameras", SpeedCameraManagerModeForStat(m_speedCameraManager.GetMode())},
@@ -524,6 +527,23 @@ namespace routing {
         m_router->SetRouter(move(router), move(fetcher));
     }
 
+
+    void RoutingSession::SetVecRouter(vector<unique_ptr<IRouter>> &&vec_router,
+                                   vector<unique_ptr<OnlineAbsentCountriesFetcher>> &&vec_fetcher) {
+        CHECK_THREAD_CHECKER(m_threadChecker, ());
+        ASSERT(m_router != nullptr, ());
+        Reset();
+        for(size_t i=0; i<3; i++){
+            m_vec_router[i]->SetRouter(move(vec_router[i]), move(vec_fetcher[i]));
+        }
+    }
+
+    void RoutingSession::SetFtStrategy(routing::FtStrategy strategy) {
+        CHECK_THREAD_CHECKER(m_threadChecker, ());
+        ASSERT(m_router != nullptr, ());
+        Reset();
+        m_router = m_vec_router[strategy];
+    }
     void RoutingSession::MatchLocationToRoadGraph(location::GpsInfo &location) {
         auto const locationMerc = mercator::FromLatLon(location.m_latitude, location.m_longitude);
         double const radius = m_route->GetCurrentRoutingSettings().m_matchingThresholdM;

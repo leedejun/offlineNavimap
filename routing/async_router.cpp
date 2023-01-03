@@ -459,9 +459,9 @@ namespace routing {
         vector<shared_ptr<Route>> vec_route;
         for (int i = 0; i < m_requireRountCount; i++) {
             std::ostringstream stringStream;
-            auto str =routeId+i;
+//            auto str =routeId+i;
             stringStream << "route-" << routeId+i;
-            auto str1 =stringStream.str();
+//            auto str1 =stringStream.str();
             vec_route.push_back(make_shared<Route>(stringStream.str(), routeId));
         }
         RouterResultCode code;
