@@ -562,7 +562,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
                 stream << "\"lon\":" << "\"" << lon << "\",";
                 stream << "\"distance\":" << "\"" << distance << "\"";
                 stream << "}";
-                if(it != results.end()) {
+                if(it != results.end()-1) {
                     stream << ",";
                 }
 /*
@@ -1040,6 +1040,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         double y = cmd.getDouble(msg, "y");
 //        long  long id = cmd.getLong(msg, "markId");//mark->GetId();
         std::string  id = cmd.getStr(msg, "markId");
+        std::string icon = cmd.getStr(msg, "icon");
         long long markId;
         std::stringstream sstr;
         sstr.clear();
@@ -1049,6 +1050,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         cmd.set(msg, "result", markId);
         m2::PointD mercatorPoint = mercator::FromLatLon(y, x);
         mark->setPos(mercatorPoint);
+        mark->setIcon(icon);
         userMarks.UpdateUserPointMark(markId);
     }
     return nullptr;

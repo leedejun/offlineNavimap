@@ -408,6 +408,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
                 if (_title.equals("")) {
                     this._markId = (long) FTMap.cmd("updateMarkItem")
                             .set("type", "point")
+                            .set("icon", this.icon())
                             .set("markId", this.markId() + "")
                             .set("x", this._pos.x)
                             .set("y", this._pos.y)
@@ -416,6 +417,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
                     this._markId = (long) FTMap.cmd("updateMarkItem")
                             .set("type", "textPoint")
                             .set("title", this._title)
+                            .set("icon", this.icon())
                             .set("markId", this.markId() + "")
                             .set("x", this._pos.x)
                             .set("y", this._pos.y)
