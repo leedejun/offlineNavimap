@@ -8,3 +8,16 @@ tools/
 
 data/
 build/
+build-release/
+data-bak/
+data-server/
+ftdat/
+geojson_file/
+readme.txt
+replenish-ftdat/
+replenish-generate/
+replenish-geojson/
+road-info/
+tmp/
+using-ftdat.json
+

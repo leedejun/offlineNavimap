@@ -38,7 +38,14 @@ struct Full_Edge
 
   Full_Edge() = default;
   Full_Edge(const Vertex & from, const Vertex & to) : from(from), to(to) {}
-  bool operator<(const Full_Edge & other) const { return from < other.from ? true : to < other.to; }
+  bool operator<(const Full_Edge & other) const
+  {
+    if (from == other.from)
+    {
+      return to < other.to;
+    }
+    return from < other.from;
+  }
   bool operator==(const Full_Edge & other) const { return from == other.from && to == other.to; }
 };
 
