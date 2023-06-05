@@ -14,14 +14,14 @@
       android:orientation="horizontal"
       android:background="#ffffff"
       android:gravity="center"
-      android:visibility="gone"
+      android:visibility="visible"
       android:layout_height="44dp">
     <TextView android:id="@+id/map_zoom_tv"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:text="地图层级："
         android:layout_height="wrap_content"></TextView>
     <Spinner android:id="@+id/map_zoom_sp"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"></Spinner>
   </LinearLayout>
   <RelativeLayout
@@ -35,13 +35,14 @@
       android:layout_marginLeft="10dp"
       android:layout_marginTop="10dp"
       android:text="定位" />
-  <Button
-      android:id="@+id/btnSearchPoi"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginLeft="120dp"
-      android:layout_marginTop="10dp"
-      android:text="搜索" />
+
+    <Button
+        android:id="@+id/btnSearchPoi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="120dp"
+        android:layout_marginTop="10dp"
+        android:text="搜索" />
 
   <Button
       android:id="@+id/btnRoute"
@@ -51,13 +52,13 @@
       android:layout_marginTop="10dp"
       android:text="路线" />
 
-  <Button
-      android:id="@+id/btnZoomIn"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginLeft="10dp"
-      android:layout_marginTop="60dp"
-      android:text="放大" />
+    <Button
+        android:id="@+id/btnZoomIn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="60dp"
+        android:text="放大" />
 
   <Button
       android:id="@+id/btnZoomOut"
@@ -75,21 +76,22 @@
       android:layout_marginTop="60dp"
       android:text="亮主题" />
 
-  <Button
-      android:id="@+id/btnStyleDark"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginLeft="10dp"
-      android:layout_marginTop="110dp"
-      android:text="暗主题" />
-  <EditText
-      android:layout_width="match_parent"
-      android:id="@+id/etSearchPoi"
-      android:text="北京大学"
-      android:layout_marginLeft="120dp"
-      android:layout_marginTop="110dp"
-      android:layout_marginRight="80dp"
-      android:layout_height="wrap_content"/>
+    <Button
+        android:id="@+id/btnStyleDark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="110dp"
+        android:text="暗主题" />
+
+    <EditText
+        android:id="@+id/etSearchPoi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="120dp"
+        android:layout_marginTop="110dp"
+        android:layout_marginRight="80dp"
+        android:text="医院" />
   <Button
       android:id="@+id/btShowRoute"
       android:layout_width="wrap_content"
@@ -113,4 +115,10 @@
         android:layout_marginTop="160dp"
         android:text="导航" />
   </RelativeLayout>
+<!--  <include-->
+<!--      layout="@layout/map_buttons_myposition"-->
+<!--      android:layout_width="wrap_content"-->
+<!--      android:layout_height="wrap_content"-->
+<!--      android:layout_alignParentBottom="true"-->
+<!-- />-->
 </RelativeLayout>
