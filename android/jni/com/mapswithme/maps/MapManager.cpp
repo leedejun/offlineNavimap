@@ -71,7 +71,7 @@ void PrepareClassRefs(JNIEnv * env)
 
   jclass listClass = env->FindClass("java/util/List");
   g_listAddMethod = env->GetMethodID(listClass, "add", "(Ljava/lang/Object;)Z");
-  g_countryItemClass = jni::GetGlobalClassRef(env, "com/mapswithme/maps/downloader/CountryItem");
+  g_countryItemClass = jni::GetGlobalClassRef(env,  "com/mapswithme/maps/downloader/CountryItem");
 }
 
 static CountryId const GetRootId(JNIEnv * env, jstring root)

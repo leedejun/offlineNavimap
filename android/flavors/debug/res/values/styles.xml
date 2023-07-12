@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+
+
+<!--  <style name="MwmWidget.MapButton" parent="Theme.AppCompat.DayNight">-->
+<!--    <item name="android:layout_width">wrap_content</item>-->
+<!--    <item name="android:layout_height">wrap_content</item>-->
+<!--    <item name="elevation">0dp</item>-->
+<!--    <item name="hoveredFocusedTranslationZ">0dp</item>-->
+<!--    <item name="pressedTranslationZ">0dp</item>-->
+<!--    <item name="android:tint">?iconTint</item>-->
+<!--    <item name="fabCustomSize">48dp</item>-->
+<!--    <item name="maxImageSize">28dp</item>-->
+<!--    <item name="borderWidth">0dp</item>-->
+<!--  </style>-->
+  <style name="MwmWidget"/>
+  <style name="MwmWidget.Button">
+    <item name="android:layout_width">wrap_content</item>
+    <item name="android:layout_height">wrap_content</item>
+    <item name="android:background">?buttonBackground</item>
+<!--    <item name="android:stateListAnimator">@null</item>-->
+    <item name="android:fontFamily">@string/robotoMedium</item>
+    <item name="android:textAllCaps">true</item>
+<!--    <item name="android:letterSpacing">0.04</item>-->
+  </style>
+  <style name="MwmWidget.Button.StackedButtonsDialog">
+    <item name="android:layout_width">match_parent</item>
+    <item name="android:layout_height">@dimen/margin_double_plus</item>
+    <item name="android:paddingEnd">@dimen/margin_base</item>
+    <item name="android:paddingStart">@dimen/margin_base</item>
+    <item name="android:background">?clickableBackground</item>
+<!--    <item name="android:textSize">@dimen/text_size_button</item>-->
+    <item name="android:textColor">?buttonDialogTextColor</item>
+    <item name="android:textAllCaps">true</item>
+    <item name="android:fontFamily">@string/robotoMedium</item>
+    <item name="android:lines">1</item>
+    <item name="android:gravity">center_vertical|end</item>
+  </style>
+  <style name="MwmWidget.StackedButtonsDialogTitle">
+    <item name="android:layout_width">match_parent</item>
+    <item name="android:layout_height">wrap_content</item>
+    <item name="android:layout_marginBottom">@dimen/margin_dialog_title</item>
+<!--    <item name="android:textAppearance">@style/MwmTextAppearance.Body1</item>-->
+    <item name="android:fontFamily">@string/robotoMedium</item>
+  </style>
+  <style name="MwmWidget.StackedButtonsDialogMessage">
+    <item name="android:layout_width">match_parent</item>
+    <item name="android:layout_height">wrap_content</item>
+    <item name="android:layout_marginBottom">@dimen/margin_base_plus</item>
+<!--    <item name="android:textAppearance">@style/MwmTextAppearance.Body3</item>-->
+  </style>
+  <style name="MwmTextAppearance" parent="TextAppearance.AppCompat">
+    <item name="android:fontFamily" tools:ignore="NewApi">@string/robotoRegular</item>
+    <!-- Force normal textStyle. Some devices (eg Lenovo P70), uses non-normal textStyle by default. -->
+    <item name="android:textStyle">normal</item>
+  </style>
+  <style name="MwmTextAppearance.Button">
+    <item name="android:textSize">@dimen/text_size_button</item>
+    <item name="android:textColor">?colorAccent</item>
+    <item name="android:textAllCaps">true</item>
+  </style>
+</resources>

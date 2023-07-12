@@ -32,7 +32,7 @@ struct SearchParams
 {
   inline static size_t const kDefaultNumBookmarksResults = 1000;
   inline static size_t const kDefaultBatchSizeEverywhere = 10;
-  inline static size_t const kDefaultNumResultsEverywhere = 3000;
+  inline static size_t const kDefaultNumResultsEverywhere = 100;
   inline static size_t const kDefaultNumResultsInViewport = 200;
   inline static size_t const kPreResultsCount = 200;
   inline static double const kDefaultStreetSearchRadiusM = 8e4;

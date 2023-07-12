@@ -180,7 +180,8 @@ bool SearchAPI::SearchEverywhere(EverywhereSearchParams const &params) {
 //    m2::PointD(116.39126521640469, 43.59062286906408);
 
     if (params.m_lat != 0 && params.m_lon != 0) {
-        p.m_position = m2::PointD(params.m_lat, params.m_lon);
+//        p.m_position = m2::PointD(params.m_lat, params.m_lon);
+        p.m_position = m2::PointD(params.m_lon, params.m_lat);
     } else {
         p.m_position = m_delegate.GetCurrentPosition();
     }

@@ -10,7 +10,7 @@ enum MapStyle
   MapStyleVehicleClear = 3,
   MapStyleVehicleDark = 4,
   // Add new map style here
-
+  MapStyleCamouflage =5,
   // Specifies number of MapStyle enum values, must be last
   MapStyleCount
 };

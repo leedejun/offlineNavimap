@@ -664,13 +664,13 @@ void RoutingManager::RemoveRoute(bool deactivateFollowing)
   GetPlatform().RunTask(Platform::Thread::Gui, [this, deactivateFollowing]()
   {
     {
-//      auto es = m_bmManager->GetEditSession();
-//      es.ClearGroup(UserMark::Type::TRANSIT);
-//      es.ClearGroup(UserMark::Type::SPEED_CAM);
-//      es.ClearGroup(UserMark::Type::ROAD_WARNING);
+      auto es = m_bmManager->GetEditSession();
+      es.ClearGroup(UserMark::Type::TRANSIT);
+      es.ClearGroup(UserMark::Type::SPEED_CAM);
+      es.ClearGroup(UserMark::Type::ROAD_WARNING);
     }
-//    if (deactivateFollowing)
-//      SetPointsFollowingMode(false /* enabled */);
+    if (deactivateFollowing)
+      SetPointsFollowingMode(false /* enabled */);
   });
 
   if (deactivateFollowing)

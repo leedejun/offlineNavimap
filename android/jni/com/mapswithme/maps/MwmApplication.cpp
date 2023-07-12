@@ -12,7 +12,7 @@ extern "C"
   // void nativeInitPlatform(String apkPath, String storagePath, String privatePath, String tmpPath,
   // String obbGooglePath, String flavorName, String buildType, boolean isTablet);
   JNIEXPORT void JNICALL
-  Java_com_mapswithme_maps_MwmApplication_nativeInitPlatform(JNIEnv * env, jobject thiz,
+    Java_com_ftmap_app_MapTestApplication_nativeInitPlatform(JNIEnv * env, jobject thiz,
                                                              jstring apkPath, jstring storagePath,
                                                              jstring privatePath, jstring tmpPath,
                                                              jstring obbGooglePath,
@@ -25,29 +25,30 @@ extern "C"
 
   // static void nativeInitFramework();
   JNIEXPORT void JNICALL
-  Java_com_mapswithme_maps_MwmApplication_nativeInitFramework(JNIEnv * env, jclass clazz)
+    Java_com_ftmap_app_MapTestApplication_nativeInitFramework(JNIEnv * env, jclass clazz)
   {
     if (!g_framework)
-      g_framework = std::make_unique<android::Framework>();
+//      g_framework = std::make_unique<android::Framework>();
   }
 
   // static void nativeProcessTask(long taskPointer);
+//  com.ftmap.app
   JNIEXPORT void JNICALL
-  Java_com_mapswithme_maps_MwmApplication_nativeProcessTask(JNIEnv * env, jclass clazz, jlong taskPointer)
+  Java_com_ftmap_app_MapTestApplication_nativeProcessTask(JNIEnv * env, jclass clazz, jlong taskPointer)
   {
-    android::GuiThread::ProcessTask(taskPointer);
+//    android::GuiThread::ProcessTask(taskPointer);
   }
 
   // static void nativeAddLocalization(String name, String value);
   JNIEXPORT void JNICALL
-  Java_com_mapswithme_maps_MwmApplication_nativeAddLocalization(JNIEnv * env, jclass clazz, jstring name, jstring value)
+    Java_com_ftmap_app_MapTestApplication_nativeAddLocalization(JNIEnv * env, jclass clazz, jstring name, jstring value)
   {
     g_framework->AddString(jni::ToNativeString(env, name),
                            jni::ToNativeString(env, value));
   }
 
   JNIEXPORT void JNICALL
-  Java_com_mapswithme_maps_MwmApplication_nativeOnTransit(JNIEnv *, jclass, jboolean foreground)
+    Java_com_ftmap_app_MapTestApplication_nativeOnTransit(JNIEnv *, jclass, jboolean foreground)
   {
     if (static_cast<bool>(foreground))
       g_framework->NativeFramework()->EnterForeground();

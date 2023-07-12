@@ -48,7 +48,7 @@ HttpUploader::Result HttpUploader::Upload() const
   jni::ScopedLocalRef<jobject> const uploaderRef(env, uploader);
 
   static jmethodID const uploadId = jni::GetMethodID(env, uploaderRef.get(), "upload",
-                                                     "()Lcom/mapswithme/util/HttpUploader$Result;");
+                                                     "()Lcom/ftmap/util/HttpUploader$Result;");
 
   jni::ScopedLocalRef<jobject> const result(env,
                                             env->CallObjectMethod(uploaderRef.get(), uploadId));

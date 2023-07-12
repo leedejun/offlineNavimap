@@ -21,6 +21,8 @@
 
 #include "3party/skarupke/bytell_hash_map.hpp"
 
+extern int change_0531;
+
 namespace routing
 {
 namespace astar
@@ -548,12 +550,20 @@ AStarAlgorithm<Vertex, Edge, Weight>::FindPath(P & params, RoutingResult<Vertex,
   return resultCode;
 }
 
+ class change_guard
+ {
+ public:
+     ~change_guard(){change_0531=0;}
+ };
+
 template <typename Vertex, typename Edge, typename Weight>
 template <typename P>
 typename AStarAlgorithm<Vertex, Edge, Weight>::Result
 AStarAlgorithm<Vertex, Edge, Weight>::FindPathBidirectional(P & params,
                                                             RoutingResult<Vertex, Weight> & result) const
 {
+  change_guard chg;
+
   auto const epsilon = params.m_weightEpsilon;
   auto & graph = params.m_graph;
   auto const & finalVertex = params.m_finalVertex;
@@ -598,6 +608,13 @@ AStarAlgorithm<Vertex, Edge, Weight>::FindPathBidirectional(P & params,
 
   std::vector<Edge> adj;
 
+  int cur_searchClass = 5;
+  int nxt_searchClass = 5;
+
+  graph.SetSearchClass(cur_searchClass);
+
+  int nxt_change_0531 = 0;
+
   // It is not necessary to check emptiness for both queues here
   // because if we have not found a path by the time one of the
   // queues is exhausted, we never will.
@@ -611,8 +628,18 @@ AStarAlgorithm<Vertex, Edge, Weight>::FindPathBidirectional(P & params,
     if (periodicCancellable.IsCancelled())
       return Result::Cancelled;
 
-    if (steps % kQueueSwitchPeriod == 0)
+//    if (steps % kQueueSwitchPeriod == 0)
+//      std::swap(cur, nxt);
+    if (steps % kQueueSwitchPeriod == 0){
       std::swap(cur, nxt);
+      std::swap(change_0531, nxt_change_0531);
+
+      if (cur_searchClass != nxt_searchClass)
+      {
+        std::swap(cur_searchClass, nxt_searchClass);
+        graph.SetSearchClass(cur_searchClass);
+      }
+    }
 
     if (foundAnyPath)
     {
@@ -644,6 +671,17 @@ AStarAlgorithm<Vertex, Edge, Weight>::FindPathBidirectional(P & params,
                                      cur->forward ? cur->finalVertex : cur->startVertex);
 
     cur->GetAdjacencyList(stateV, adj);
+
+    if (change_0531 != 0)
+    {
+      change_0531++;
+      if(change_0531 == 100)
+      {
+        cur_searchClass = 4;
+        graph.SetSearchClass(cur_searchClass);
+      }
+    }
+
     auto const & pV = stateV.heuristic;
     for (auto const & edge : adj)
     {

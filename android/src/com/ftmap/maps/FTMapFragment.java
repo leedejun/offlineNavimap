@@ -157,7 +157,7 @@ public class FTMapFragment extends Fragment
     private SurfaceView mSurfaceView;
 //  private FMap.ClickListenerCallback callback;
 //  @Nullable
-//  private MapRenderingListener mMapRenderingListener;
+  private MapRenderingListener mMapRenderingListener;
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
@@ -206,8 +206,8 @@ public class FTMapFragment extends Fragment
         mSurfaceCreated = true;
         mSurfaceAttached = true;
         nativeResumeSurfaceRendering();
-//    if (mMapRenderingListener != null)
-//      mMapRenderingListener.onRenderingCreated();
+    if (mMapRenderingListener != null)
+      mMapRenderingListener.onRenderingCreated();
     }
 
     @Override
@@ -226,8 +226,8 @@ public class FTMapFragment extends Fragment
         nativeSurfaceChanged(surface, width, height);
 
         mRequireResize = false;
-//    if (mMapRenderingListener != null)
-//      mMapRenderingListener.onRenderingRestored();
+    if (mMapRenderingListener != null)
+      mMapRenderingListener.onRenderingRestored();
     }
 
     @Override
@@ -252,13 +252,13 @@ public class FTMapFragment extends Fragment
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-//    mMapRenderingListener = (MapRenderingListener) context;
+    mMapRenderingListener = (MapRenderingListener) context;
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-//    mMapRenderingListener = null;
+    mMapRenderingListener = null;
     }
 
     @Override
@@ -599,8 +599,6 @@ public class FTMapFragment extends Fragment
     }
 
 
-//  private static void nativeSetRenderingInitializationFinishedListener(
-//      @Nullable MapRenderingListener listener){
-//    FTMap.cmd("attachRenderingListener").set("listener",listener).run();
-//  }
+//  private static native void nativeSetRenderingInitializationFinishedListener(
+//      @Nullable MapRenderingListener listener);
 }

@@ -1,0 +1,67 @@
+<!DOCTYPE skin>
+<root>
+ <file width="2048" height="2048">
+  		<symbol minX="10" maxX="169" minY="10" maxY="167" name="1d16e91c9c6"/>
+		<symbol minX="1075" maxX="1153" minY="363" maxY="441" name="26266ceec19"/>
+
+		<symbol minX="1075" maxX="1153" minY="460" maxY="538" name="a748bde8300"/>
+		<symbol minX="1075" maxX="1153" minY="558" maxY="636" name="40817b7d8e8"/>
+
+		<symbol minX="1075" maxX="1153" minY="658" maxY="736" name="2f443b93aed"/>
+		<symbol minX="1075" maxX="1153" minY="754" maxY="832" name="6d2729fc980"/>
+
+		<symbol minX="1075" maxX="1153" minY="852" maxY="930" name="6922291dc28"/>
+
+		<symbol minX="1075" maxX="1153" minY="949" maxY="1026" name="8dfa2659900"/>
+		<symbol minX="10" maxX="169" minY="366" maxY="524" name="1d16e91c9c6"/>
+			<symbol minX="356" maxX="525" minY="188" maxY="346" name="4d9ddea9721"/>
+				<symbol minX="10" maxX="169" minY="10" maxY="346" name="eb7821e957a"/>
+		<symbol minX="188" maxX="346" minY="188" maxY="346" name="042358c0f00"/>
+		<symbol minX="365" maxX="525" minY="10" maxY="167" name="c69b53f5920"/>
+		<symbol minX="188" maxX="346" minY="366" maxY="524" name="f6c4b440b33"/>
+		<symbol minX="188" maxX="346" minY="736" maxY="869" name="ic_plot_1_red"/>
+		<symbol minX="365" maxX="525" minY="736" maxY="869" name="ic_plot_2_red"/>
+		<symbol minX="188" maxX="346" minY="10" maxY="167" name="f6c4b440b33"/>
+		<symbol minX="722" maxX="880" minY="736" maxY="869" name="ic_plot_4_red"/>
+		<symbol minX="909" maxX="1051" minY="10" maxY="167" name="ic_plot_5_red"/>
+		<symbol minX="909" maxX="1051" minY="188" maxY="346" name="ic_plot_6_red"/>
+		<symbol minX="909" maxX="1051" minY="366" maxY="524" name="ic_plot_7_red"/>
+		<symbol minX="909" maxX="1051" minY="544" maxY="702" name="ic_plot_8_red"/>
+		<symbol minX="909" maxX="1051" minY="736" maxY="869" name="ic_plot_9_red"/>
+		<symbol minX="365" maxX="525" minY="736" maxY="869" name="ic_plot_10_red"/>
+		<symbol minX="188" maxX="346" minY="915" maxY="1050" name="ic_plot_11_red"/>
+		<symbol minX="365" maxX="525" minY="915" maxY="1050" name="ic_plot_12_red"/>
+		<symbol minX="544" maxX="702" minY="915" maxY="1050" name="ic_plot_12_red_qi"/>
+		<symbol minX="722" maxX="880" minY="915" maxY="1050" name="ic_plot_13_red"/>
+        <symbol minX="990" maxX="1051" minY="915" maxY="1050" name="ic_plot_14_red"/>
+		<symbol minX="1075" maxX="1232" minY="10" maxY="167" name="ic_plot_line_red"/>
+		<symbol minX="1075" maxX="1232" minY="188" maxY="346" name="ic_plot_side_red"/>
+		<symbol minX="365" maxX="525" minY="366" maxY="524" name="b4de034ec40"/>
+		<symbol minX="10" maxX="88" minY="1076" maxY="1154" name="5ce47c4fb23"/>
+		<symbol minX="108" maxX="186" minY="1076" maxY="1154" name="3d9da83f5fd"/>
+        <symbol minX="206" maxX="284" minY="1076" maxY="1154" name="785a1eeee0b"/>
+		<symbol minX="304" maxX="382" minY="1076" maxY="1154" name="f2a15281799"/>
+		<symbol minX="402" maxX="480" minY="1076" maxY="1154" name="ff8cece1078"/>
+		<symbol minX="500" maxX="578" minY="1076" maxY="1154" name="dcfe3fff1ef"/>
+		<symbol minX="599" maxX="677" minY="1076" maxY="1154" name="6888ad3e088"/>
+		<symbol minX="696" maxX="774" minY="1076" maxY="1154" name="7152cf330a5"/>
+		<symbol minX="794" maxX="872" minY="1076" maxY="1154" name="ec86e5d21fe"/>
+		<symbol minX="892" maxX="970" minY="1076" maxY="1154" name="d31bb688d76"/>
+		<symbol minX="990" maxX="1068" minY="1076" maxY="1154" name="c7cf0a832c0"/>
+		<symbol minX="1166" maxX="1261" minY="1076" maxY="1154" name="118756c5d92"/>
+		<symbol minX="544" maxX="702" minY="736" maxY="869" name="ic_plot_3_red"/>
+		<symbol minX="544" maxX="702" minY="10" maxY="167" name="0b3bd548970"/>
+		<symbol minX="544" maxX="702" minY="188" maxY="346" name="03300356c92"/>
+		<symbol minX="544" maxX="702" minY="366" maxY="524" name="1c9452714cb"/>
+		<symbol minX="188" maxX="346" minY="544" maxY="702" name="c10f2d47715"/>
+		<symbol minX="365" maxX="525" minY="544" maxY="702" name="ab42ebb1738"/>
+		<symbol minX="544" maxX="702" minY="544" maxY="702" name="6b201bb97a3"/>
+		<symbol minX="722" maxX="880" minY="10" maxY="167" name="8f5195b58f5"/>
+		<symbol minX="722" maxX="880" minY="188" maxY="346" name="dddd3cb59ef"/>
+        <symbol minX="722" maxX="880" minY="366" maxY="524" name="5b0bd6a6153"/>
+		<symbol minX="722" maxX="880" minY="544" maxY="702" name="f605baeed85"/>
+		<symbol minX="10" maxX="169" minY="736" maxY="869" name="4121d73d667"/>
+		<symbol minX="1252" maxX="1330" minY="10" maxY="88" name="af56a7e67a0"/>
+		<symbol minX="1252" maxX="1330" minY="112" maxY="181" name="2ad21f33d2c"/>
+ </file>
+</root>

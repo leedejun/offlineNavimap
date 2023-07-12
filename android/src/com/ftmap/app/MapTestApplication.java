@@ -2,18 +2,9 @@ package com.ftmap.app;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Handler;
-import android.os.Message;
 
 import androidx.annotation.NonNull;
-import androidx.multidex.MultiDex;
-import java.util.HashMap;
-import java.util.List;
 
-import com.ftmap.maps.FMap;
-import com.ftmap.maps.BuildConfig;
-import com.ftmap.maps.R;
 
 public class MapTestApplication extends Application
 {
@@ -48,6 +39,7 @@ public class MapTestApplication extends Application
   public void onCreate()
   {
     super.onCreate();
+
   }
 
   public void setFirstLaunch(boolean isFirstLaunch)
@@ -59,5 +51,35 @@ public class MapTestApplication extends Application
   {
     return mFirstLaunch;
   }
+  private void initNativeFramework()
+  {
+//    if (mFrameworkInitialized)
+//      return;
+//
+//    nativeInitFramework();
+//
+//    MapManager.nativeSubscribe(mStorageCallbacks);
+//
+//    initNativeStrings();
+//    ThemeSwitcher.INSTANCE.initialize(this);
+//    SearchEngine.INSTANCE.initialize(null);
+//    BookmarkManager.loadBookmarks();
+//    TtsPlayer.INSTANCE.initialize(this);
+//    ThemeSwitcher.INSTANCE.restart(false);
 
+//    RoutingController.get().initialize(null);
+//    TrafficManager.INSTANCE.initialize(null);
+//    SubwayManager.from(this).initialize(null);
+//    IsolinesManager.from(this).initialize(null);
+//    mBackgroundTracker.addListener(this);
+
+  }
+
+  private static Context context;
+
+
+
+  public static Context getContext() {
+    return context;
+  }
 }

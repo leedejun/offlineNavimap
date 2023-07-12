@@ -729,6 +729,15 @@ void Framework::RegisterAllMaps() {
     bool const needStatisticsUpdate = !rc || lastCheck < system_clock::now() - updateInterval;
     stringstream listRegisteredMaps;
 
+    //init local rect;
+    m2::RectD localRect;
+    m2::AnyRectD rect;
+    bool useHistoryRect = false;
+    if (settings::Get("ScreenClipRect", rect) &&
+        df::GetWorldRect().IsRectInside(rect.GetGlobalRect())) {
+        useHistoryRect = true;
+    }
+
     vector<shared_ptr<LocalCountryFile>> maps;
     m_storage.GetLocalMaps(maps);
     for (auto const &localFile: maps) {
@@ -738,6 +747,11 @@ void Framework::RegisterAllMaps() {
 
         MwmSet::MwmId const &id = p.first;
         ASSERT(id.IsAlive(), ());
+
+        if (!useHistoryRect && id.GetInfo()->GetType()==MwmInfo::COUNTRY)
+        {
+            localRect.Add(id.GetInfo()->m_bordersRect);
+        }
         minFormat = min(minFormat, static_cast<int>(id.GetInfo()->m_version.GetFormat()));
         if (needStatisticsUpdate) {
             listRegisteredMaps << localFile->GetCountryName() << ":" << id.GetInfo()->GetVersion()
@@ -752,6 +766,12 @@ void Framework::RegisterAllMaps() {
 //    settings::Set(kLastDownloadedMapsCheck,
 //                  static_cast<uint64_t>(duration_cast<seconds>(
 //                                          system_clock::now().time_since_epoch()).count()));
+    }
+
+    if (!useHistoryRect)
+    {
+        m2::AnyRectD dataRect = m2::AnyRectD(localRect);
+        settings::Set("ScreenClipRect", dataRect);
     }
 }
 

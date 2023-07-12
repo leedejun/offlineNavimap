@@ -8,6 +8,7 @@
 #include "indexer/altitude_loader.hpp"
 #include "indexer/data_source.hpp"
 #include "indexer/ftypes_matcher.hpp"
+#include "indexer/classificator.hpp"
 
 #include "geometry/distance_on_sphere.hpp"
 #include "geometry/mercator.hpp"
@@ -198,6 +199,15 @@ void RoadGeometry::Load(VehicleModelInterface const & vehicleModel, FeatureType 
   {
     if (auto const it = optionsClassfier.Get(type))
       m_routingOptions.Add(*it);
+  }
+  Classificator const & c = classif();
+  for (uint32_t type : types)
+  {
+    auto co = c.GetObject(type);
+    auto const & co_name = co->GetName();
+    if(co_name.size()==12&&co_name.substr(0,11)=="func_class_"){
+      m_funcclass=co_name[11]-'0';
+    }
   }
 
   m_junctions.clear();

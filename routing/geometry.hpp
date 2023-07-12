@@ -50,6 +50,7 @@ public:
     return m_junctions[junctionId];
   }
 
+  int GetFuncClass() const {return m_funcclass;}
   ms::LatLon const & GetPoint(uint32_t pointId) const { return GetJunction(pointId).GetLatLon(); }
 
   uint32_t GetPointsCount() const { return static_cast<uint32_t>(m_junctions.size()); }
@@ -90,6 +91,7 @@ private:
   bool m_valid = false;
   bool m_isPassThroughAllowed = false;
   RoutingOptions m_routingOptions;
+  int m_funcclass = 5;
 };
 
 struct AttrLoader

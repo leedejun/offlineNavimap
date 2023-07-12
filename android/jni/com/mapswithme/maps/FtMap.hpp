@@ -3,6 +3,17 @@
 //#include "routing_common/ft_car_model_factory.hpp"
 
 
+namespace android
+{
+    enum CoordinatesFormat // See Java enum app.organicmaps.widget.placepage.CoordinatesFormat for all possible values.
+    {
+        LatLonDMS = 0,     // Latitude, Longitude in degrees minutes seconds format, comma separated
+        LatLonDecimal = 1, // Latitude, Longitude in decimal format, comma separated
+        OLCFull = 2,       // Open location code, full format
+        OSMLink = 3        // Link to the OSM. E.g. https://osm.org/go/xcXjyqQlq-?m=
+    };
+}
+
 class CommandHelper{
     jclass      _commandClass;
     JNIEnv*     _env;
@@ -121,7 +132,8 @@ public:
     void asyncCall(jobject obj, jobject value){
         jmethodID mid = _env->GetMethodID(_commandClass, "asyncResult", "(Ljava/lang/Object;)V");
         _env->CallVoidMethod(obj,mid,value);
-        _env->DeleteGlobalRef(obj);
+//        _env->DeleteGlobalRef(obj);
+//        _env->DeleteGlobalRef(value);
     }
 
     static CommandHelper& getIns(){

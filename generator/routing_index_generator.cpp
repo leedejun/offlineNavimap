@@ -179,6 +179,8 @@ public:
     return routing::GetAStarWeightZero<routing::RouteWeight>();
   }
 
+    void SetSearchClass(const int searchClass){}
+
   bool AreWavesConnectible(
       routing::IndexGraph::Parents<routing::JointSegment> const & /* forwardParents */,
       routing::JointSegment const & /* commonVertex */,

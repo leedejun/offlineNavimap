@@ -10,7 +10,7 @@ namespace
 extern "C"
 {
   JNIEXPORT jboolean JNICALL
-  Java_com_mapswithme_util_Config_nativeGetBoolean(JNIEnv * env, jclass thiz, jstring name, jboolean defaultVal)
+  Java_com_ftmap_util_Config_nativeGetBoolean(JNIEnv * env, jclass thiz, jstring name, jboolean defaultVal)
   {
     bool val;
     if (settings::Get(jni::ToNativeString(env, name), val))
@@ -20,13 +20,13 @@ extern "C"
   }
 
   JNIEXPORT void JNICALL
-  Java_com_mapswithme_util_Config_nativeSetBoolean(JNIEnv * env, jclass thiz, jstring name, jboolean val)
+  Java_com_ftmap_util_Config_nativeSetBoolean(JNIEnv * env, jclass thiz, jstring name, jboolean val)
   {
     (void)settings::Set(jni::ToNativeString(env, name), static_cast<bool>(val));
   }
 
   JNIEXPORT jint JNICALL
-  Java_com_mapswithme_util_Config_nativeGetInt(JNIEnv * env, jclass thiz, jstring name, jint defaultValue)
+  Java_com_ftmap_util_Config_nativeGetInt(JNIEnv * env, jclass thiz, jstring name, jint defaultValue)
   {
     int32_t value;
     if (settings::Get(jni::ToNativeString(env, name), value))
@@ -36,13 +36,13 @@ extern "C"
   }
 
   JNIEXPORT void JNICALL
-  Java_com_mapswithme_util_Config_nativeSetInt(JNIEnv * env, jclass thiz, jstring name, jint value)
+  Java_com_ftmap_util_Config_nativeSetInt(JNIEnv * env, jclass thiz, jstring name, jint value)
   {
     (void)settings::Set(jni::ToNativeString(env, name), static_cast<int32_t>(value));
   }
 
   JNIEXPORT jlong JNICALL
-  Java_com_mapswithme_util_Config_nativeGetLong(JNIEnv * env, jclass thiz, jstring name, jlong defaultValue)
+  Java_com_ftmap_util_Config_nativeGetLong(JNIEnv * env, jclass thiz, jstring name, jlong defaultValue)
   {
     int64_t value;
     if (settings::Get(jni::ToNativeString(env, name), value))
@@ -52,13 +52,13 @@ extern "C"
   }
 
   JNIEXPORT void JNICALL
-  Java_com_mapswithme_util_Config_nativeSetLong(JNIEnv * env, jclass thiz, jstring name, jlong value)
+  Java_com_ftmap_util_Config_nativeSetLong(JNIEnv * env, jclass thiz, jstring name, jlong value)
   {
     (void)settings::Set(jni::ToNativeString(env, name), static_cast<int64_t>(value));
   }
 
   JNIEXPORT jdouble JNICALL
-  Java_com_mapswithme_util_Config_nativeGetDouble(JNIEnv * env, jclass thiz, jstring name, jdouble defaultValue)
+  Java_com_ftmap_util_Config_nativeGetDouble(JNIEnv * env, jclass thiz, jstring name, jdouble defaultValue)
   {
     double value;
     if (settings::Get(jni::ToNativeString(env, name), value))
@@ -68,13 +68,13 @@ extern "C"
   }
 
   JNIEXPORT void JNICALL
-  Java_com_mapswithme_util_Config_nativeSetDouble(JNIEnv * env, jclass thiz, jstring name, jdouble value)
+  Java_com_ftmap_util_Config_nativeSetDouble(JNIEnv * env, jclass thiz, jstring name, jdouble value)
   {
     (void)settings::Set(jni::ToNativeString(env, name), static_cast<double>(value));
   }
 
   JNIEXPORT jstring JNICALL
-  Java_com_mapswithme_util_Config_nativeGetString(JNIEnv * env, jclass thiz, jstring name, jstring defaultValue)
+  Java_com_ftmap_util_Config_nativeGetString(JNIEnv * env, jclass thiz, jstring name, jstring defaultValue)
   {
     std::string value;
     if (settings::Get(jni::ToNativeString(env, name), value))
@@ -84,19 +84,19 @@ extern "C"
   }
 
     JNIEXPORT void JNICALL
-    Java_com_mapswithme_util_Config_nativeSetString(JNIEnv * env, jclass thiz, jstring name, jstring value)
+    Java_com_ftmap_util_Config_nativeSetString(JNIEnv * env, jclass thiz, jstring name, jstring value)
     {
       (void)settings::Set(jni::ToNativeString(env, name), jni::ToNativeString(env, value));
     }
 
     JNIEXPORT jboolean JNICALL
-    Java_com_mapswithme_util_Config_nativeGetLargeFontsSize(JNIEnv * env, jclass thiz)
+    Java_com_ftmap_util_Config_nativeGetLargeFontsSize(JNIEnv * env, jclass thiz)
     {
       return frm()->LoadLargeFontsSize();
     }
 
     JNIEXPORT void JNICALL
-    Java_com_mapswithme_util_Config_nativeSetLargeFontsSize(JNIEnv * env, jclass thiz,
+    Java_com_ftmap_util_Config_nativeSetLargeFontsSize(JNIEnv * env, jclass thiz,
                                                             jboolean value)
     {
       frm()->SaveLargeFontsSize(value);
@@ -104,13 +104,13 @@ extern "C"
     }
 
     JNIEXPORT jboolean JNICALL
-    Java_com_mapswithme_util_Config_nativeGetTransliteration(JNIEnv * env, jclass thiz)
+    Java_com_ftmap_util_Config_nativeGetTransliteration(JNIEnv * env, jclass thiz)
     {
       return frm()->LoadTransliteration();
     }
 
     JNIEXPORT void JNICALL
-    Java_com_mapswithme_util_Config_nativeSetTransliteration(JNIEnv * env, jclass thiz,
+    Java_com_ftmap_util_Config_nativeSetTransliteration(JNIEnv * env, jclass thiz,
                                                              jboolean value)
     {
       frm()->SaveTransliteration(value);

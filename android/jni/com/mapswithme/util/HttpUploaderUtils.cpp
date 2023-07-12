@@ -13,8 +13,8 @@ jobject ToJavaHttpPayload(JNIEnv *env, const platform::HttpPayload payload)
   static jmethodID const constructor =
       jni::GetConstructorID(env, g_httpPayloadClazz,
                             "(Ljava/lang/String;Ljava/lang/String;"
-                            "[Lcom/mapswithme/util/KeyValue;"
-                            "[Lcom/mapswithme/util/KeyValue;"
+                            "[Lcom/ftmap/util/KeyValue;"
+                            "[Lcom/ftmap/util/KeyValue;"
                             "Ljava/lang/String;Ljava/lang/String;Z)V");
 
   jni::ScopedLocalRef<jstring> const method(env, jni::ToJavaString(env, payload.m_method));
@@ -33,7 +33,7 @@ jobject ToJavaHttpPayload(JNIEnv *env, const platform::HttpPayload payload)
 jobject MakeHttpUploader(JNIEnv * env, const platform::HttpPayload payload, jclass uploaderClass)
 {
   static jmethodID const httpUploaderConstructor =
-      jni::GetConstructorID(env, uploaderClass, "(Lcom/mapswithme/util/HttpPayload;)V");
+      jni::GetConstructorID(env, uploaderClass, "(Lcom/ftmap/util/HttpPayload;)V");
 
   jni::TScopedLocalRef javaPayloadRef(env, ToJavaHttpPayload(env, payload));
 

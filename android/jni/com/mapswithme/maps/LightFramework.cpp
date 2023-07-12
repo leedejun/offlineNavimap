@@ -7,18 +7,22 @@
 #include "com/mapswithme/maps/Framework.hpp"
 
 #include "com/mapswithme/core/jni_helper.hpp"
+#include <jni.h>
+
 
 extern "C"
 {
 JNIEXPORT jboolean JNICALL
-Java_com_mapswithme_maps_LightFramework_nativeIsAuthenticated(JNIEnv * env, jclass clazz)
+
+  //      com.ftmap.maps
+Java_com_ftmap_maps_LightFramework_nativeIsAuthenticated(JNIEnv * env, jclass clazz)
 {
   lightweight::Framework const framework(lightweight::REQUEST_TYPE_USER_AUTH_STATUS);
   return static_cast<jboolean>(framework.IsUserAuthenticated());
 }
 
 JNIEXPORT jint JNICALL
-Java_com_mapswithme_maps_LightFramework_nativeGetNumberUnsentUGC(JNIEnv * env, jclass clazz)
+Java_com_ftmap_maps_LightFramework_nativeGetNumberUnsentUGC(JNIEnv * env, jclass clazz)
 {
   lightweight::Framework const framework(lightweight::REQUEST_TYPE_NUMBER_OF_UNSENT_UGC);
   return static_cast<jint>(framework.GetNumberOfUnsentUGC());
@@ -36,7 +40,7 @@ jobject CreateFeatureId(JNIEnv * env, CampaignFeature const & data)
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_mapswithme_maps_LightFramework_nativeMakeFeatureId(JNIEnv * env, jclass clazz,
+Java_com_ftmap_maps_LightFramework_nativeMakeFeatureId(JNIEnv * env, jclass clazz,
                                                             jstring mwmName, jlong mwmVersion,
                                                             jint featureIndex)
 {
@@ -48,7 +52,7 @@ Java_com_mapswithme_maps_LightFramework_nativeMakeFeatureId(JNIEnv * env, jclass
 }
 
 JNIEXPORT jobjectArray JNICALL
-Java_com_mapswithme_maps_LightFramework_nativeGetLocalAdsFeatures(JNIEnv * env, jclass clazz,
+Java_com_ftmap_maps_LightFramework_nativeGetLocalAdsFeatures(JNIEnv * env, jclass clazz,
                                                                   jdouble lat, jdouble lon,
                                                                   jdouble radiusInMeters,
                                                                   jint maxCount)
@@ -57,11 +61,11 @@ Java_com_mapswithme_maps_LightFramework_nativeGetLocalAdsFeatures(JNIEnv * env, 
   auto const features = framework.GetLocalAdsFeatures(lat, lon, radiusInMeters, maxCount);
 
   static jclass const geoFenceFeatureClazz =
-          jni::GetGlobalClassRef(env, "com/mapswithme/maps/geofence/GeoFenceFeature");
+          jni::GetGlobalClassRef(env, "com/ftmap/maps/GeoFenceFeature");
   // Java signature : GeoFenceFeature(FeatureId featureId,
   //                                  double latitude, double longitude)
   static jmethodID const geoFenceFeatureConstructor =
-          jni::GetConstructorID(env, geoFenceFeatureClazz, "(Lcom/mapswithme/maps/data/FeatureId;DD)V");
+          jni::GetConstructorID(env, geoFenceFeatureClazz, "(Lcom/ftmap/maps/FeatureId;DD)V");
 
   return jni::ToJavaArray(env, geoFenceFeatureClazz, features, [&](JNIEnv * jEnv,
                                                                    CampaignFeature const & data)
@@ -75,7 +79,7 @@ Java_com_mapswithme_maps_LightFramework_nativeGetLocalAdsFeatures(JNIEnv * env, 
 }
 
 JNIEXPORT void JNICALL
-Java_com_mapswithme_maps_LightFramework_nativeLogLocalAdsEvent(JNIEnv * env, jclass clazz,
+Java_com_ftmap_maps_LightFramework_nativeLogLocalAdsEvent(JNIEnv * env, jclass clazz,
                                                                jint type, jdouble lat, jdouble lon,
                                                                jint accuracyInMeters,
                                                                jlong mwmVersion, jstring countryId,
@@ -91,7 +95,7 @@ Java_com_mapswithme_maps_LightFramework_nativeLogLocalAdsEvent(JNIEnv * env, jcl
 }
 
 JNIEXPORT jobject JNICALL
-Java_com_mapswithme_maps_LightFramework_nativeGetNotification(JNIEnv * env, jclass clazz)
+Java_com_ftmap_maps_LightFramework_nativeGetNotification(JNIEnv * env, jclass clazz)
 {
   lightweight::Framework framework(lightweight::REQUEST_TYPE_NOTIFICATION);
   if (g_framework)
@@ -106,7 +110,7 @@ Java_com_mapswithme_maps_LightFramework_nativeGetNotification(JNIEnv * env, jcla
   CHECK_EQUAL(n.GetType(), notifications::NotificationCandidate::Type::UgcReview, ());
 
   static jclass const candidateId =
-      jni::GetGlobalClassRef(env, "com/mapswithme/maps/background/NotificationCandidate$UgcReview");
+      jni::GetGlobalClassRef(env, "com/ftmap/maps/NotificationCandidate$UgcReview");
   static jmethodID const candidateCtor = jni::GetConstructorID(
       env, candidateId,
       "(DDLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
@@ -118,4 +122,8 @@ Java_com_mapswithme_maps_LightFramework_nativeGetNotification(JNIEnv * env, jcla
   return env->NewObject(candidateId, candidateCtor, n.GetPos().x, n.GetPos().y, readableName,
                         defaultName, type, address);
 }
-}  // extern "C"
+}
+
+
+
+

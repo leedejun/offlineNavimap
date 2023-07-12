@@ -2,7 +2,7 @@
 
 #include <jni.h>
 
-#include "com/mapswithme/core/jni_helper.hpp"
+//#include "com/mapswithme/core/jni_helper.hpp"
 #include "com/mapswithme/maps/Framework.hpp"
 
 #include <vector>

@@ -3,14 +3,12 @@ package com.ftmap.maps.location;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 
-import com.ftmap.maps.FTMap;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 public final class LocationState
 {
-  interface ModeChangeListener
+  public interface ModeChangeListener
   {
     @SuppressWarnings("unused")
     void onMyPositionModeChanged(int newMode);
@@ -33,27 +31,16 @@ public final class LocationState
   public static final int FOLLOW = 3;
   public static final int FOLLOW_AND_ROTATE = 4;
 
-  static void nativeSwitchToNextMode(){
-    FTMap.cmd("locationState_switchToNextMode").run();
-  }
-  static int nativeGetMode(){
-    return ((Integer)FTMap.cmd("locationState_getMode").run().get("result")).intValue();
-  }
+ public static native void nativeSwitchToNextMode();
+  @Value
+  static native int nativeGetMode();
 
-  static void nativeSetListener(ModeChangeListener listener){
-    FTMap.cmd("locationState_setListener").set("listener",listener).run();
-  }
-  static void nativeRemoveListener(){
-    FTMap.cmd("locationState_removeListener").run();
-  }
+  static native void nativeSetListener(ModeChangeListener listener);
+  static native void nativeRemoveListener();
 
-  static void nativeSetLocationPendingTimeoutListener(
-      @NonNull LocationPendingTimeoutListener listener){
-    FTMap.cmd("locationState_setPendingTimeoutListener").set("listener",listener).run();
-  }
-  static void nativeRemoveLocationPendingTimeoutListener(){
-    FTMap.cmd("locationState_removePendingTimeoutListener").run();
-  }
+  static native void nativeSetLocationPendingTimeoutListener(
+          @NonNull LocationPendingTimeoutListener listener);
+  static native void nativeRemoveLocationPendingTimeoutListener();
 
   private LocationState() {}
 

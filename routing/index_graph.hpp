@@ -79,7 +79,11 @@ public:
     return type;
   }
 
-  uint32_t GetNumRoads() const { return m_roadIndex.GetSize(); }
+    void SetSearchClass(const int searchClass){
+      m_searchClass=searchClass;
+    }
+
+    uint32_t GetNumRoads() const { return m_roadIndex.GetSize(); }
   uint32_t GetNumJoints() const { return m_jointIndex.GetNumJoints(); }
   uint32_t GetNumPoints() const { return m_jointIndex.GetNumPoints(); }
 
@@ -196,6 +200,8 @@ private:
 
   Restrictions m_restrictionsForward;
   Restrictions m_restrictionsBackward;
+
+    int m_searchClass=5;
 
   // u_turn can be in both sides of feature.
   struct UTurnEnding

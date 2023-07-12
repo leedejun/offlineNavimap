@@ -12,20 +12,20 @@ namespace usermark_helper
 {
 using feature::Metadata;
 
-void InjectMetadata(JNIEnv * env, jclass const clazz, jobject const mapObject, feature::Metadata const & metadata)
-{
-  static jmethodID const addId = env->GetMethodID(clazz, "addMetadata", "(ILjava/lang/String;)V");
-  ASSERT(addId, ());
-
-  for (auto const t : metadata.GetPresentTypes())
-  {
-    // TODO: It is not a good idea to pass raw strings to UI. Calling separate getters should be a better way.
-    jni::TScopedLocalRef metaString(env, t == feature::Metadata::FMD_WIKIPEDIA ?
-                                              jni::ToJavaString(env, metadata.GetWikiURL()) :
-                                              jni::ToJavaString(env, metadata.Get(t)));
-    env->CallVoidMethod(mapObject, addId, t, metaString.get());
-  }
-}
+//void InjectMetadata(JNIEnv * env, jclass const clazz, jobject const mapObject, feature::Metadata const & metadata)
+//{
+//  static jmethodID const addId = env->GetMethodID(clazz, "addMetadata", "(ILjava/lang/String;)V");
+//  ASSERT(addId, ());
+//
+//  for (auto const t : metadata.GetPresentTypes())
+//  {
+//    // TODO: It is not a good idea to pass raw strings to UI. Calling separate getters should be a better way.
+//    jni::TScopedLocalRef metaString(env, t == feature::Metadata::FMD_WIKIPEDIA ?
+//                                              jni::ToJavaString(env, metadata.GetWikiURL()) :
+//                                              jni::ToJavaString(env, metadata.Get(t)));
+//    env->CallVoidMethod(mapObject, addId, t, metaString.get());
+//  }
+//}
 
 //jobject CreateBanner(JNIEnv * env, std::string const & id, jint type)
 //{
@@ -275,26 +275,26 @@ void InjectMetadata(JNIEnv * env, jclass const clazz, jobject const mapObject, f
 //  return env->NewObject(clazz, ctorId, markType, info.GetIntermediateIndex());
 //}
 
-jobject CreateFeatureId(JNIEnv * env, FeatureID const & fid)
-{
-  static jmethodID const featureCtorId =
-    jni::GetConstructorID(env, g_featureIdClazz, "(Ljava/lang/String;JI)V");
+//jobject CreateFeatureId(JNIEnv * env, FeatureID const & fid)
+//{
+//  static jmethodID const featureCtorId =
+//    jni::GetConstructorID(env, g_featureIdClazz, "(Ljava/lang/String;JI)V");
+//
+//  auto const & info = fid.m_mwmId.GetInfo();
+//  jni::TScopedLocalRef jMwmName(env, jni::ToJavaString(env, info ? info->GetCountryName() : ""));
+//  return env->NewObject(g_featureIdClazz, featureCtorId, jMwmName.get(),
+//                        info ? static_cast<jlong>(info->GetVersion()) : 0,
+//                        static_cast<jint>(fid.m_index));
+//}
 
-  auto const & info = fid.m_mwmId.GetInfo();
-  jni::TScopedLocalRef jMwmName(env, jni::ToJavaString(env, info ? info->GetCountryName() : ""));
-  return env->NewObject(g_featureIdClazz, featureCtorId, jMwmName.get(),
-                        info ? static_cast<jlong>(info->GetVersion()) : 0,
-                        static_cast<jint>(fid.m_index));
-}
-
-jobjectArray ToFeatureIdArray(JNIEnv * env, std::vector<FeatureID> const & ids)
-{
-  if (ids.empty())
-    return nullptr;
-
-  return jni::ToJavaArray(env, g_featureIdClazz, ids,
-                          [](JNIEnv * env, FeatureID const & fid) {
-                            return CreateFeatureId(env, fid);
-                          });
-}
+//jobjectArray ToFeatureIdArray(JNIEnv * env, std::vector<FeatureID> const & ids)
+//{
+//  if (ids.empty())
+//    return nullptr;
+//
+//  return jni::ToJavaArray(env, g_featureIdClazz, ids,
+//                          [](JNIEnv * env, FeatureID const & fid) {
+//                            return CreateFeatureId(env, fid);
+//                          });
+//}
 }  // namespace usermark_helper

@@ -53,6 +53,22 @@ namespace fd{
     {
         routeMgr.exitFollowRoute();
     }
+    void MapEngine::updatePreviewModeAll()
+    {
+        routeMgr.updatePreviewModeAll();
+    }
+    void MapEngine::updatePreviewMode(const std::string& routeId)
+    {
+        routeMgr.updatePreviewMode(routeId);
+    }
+    void MapEngine::removeRoute(bool deactivateFollowing)
+    {
+        routeMgr.removeRoute(deactivateFollowing);
+    }
+    void MapEngine::closeRouting(bool removeRoutePoints)
+    {
+        routeMgr.closeRouting(removeRoutePoints);
+    }
 
     void MapEngine::clearRoutes()
     {

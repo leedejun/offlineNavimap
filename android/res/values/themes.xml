@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <style name="MwmTheme" parent="Base.Theme.AppCompat">  </style>
+  <style name="MwmTheme.Night" parent="Theme.AppCompat.Light">  </style>
+  <style name="MwmTheme.CardBg">
+    <item name="android:windowBackground">@color/bg_cards</item>
+  </style>
+
+  <style name="MwmTheme.Night.CardBg">
+    <item name="android:windowBackground">@color/bg_cards_night</item>
+  </style>
+
+  <style name="MwmTheme.WindowBg">
+    <item name="android:windowBackground">@color/bg_window</item>
+  </style>
+
+  <style name="MwmTheme.Night.WindowBg">
+    <item name="android:windowBackground">@color/bg_window_night</item>
+  </style>
+
+</resources>

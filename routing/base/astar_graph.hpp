@@ -34,6 +34,8 @@ public:
 
   virtual Weight GetAStarWeightEpsilon();
 
+  virtual void SetSearchClass(const int searchClass){}
+
   virtual ~AStarGraph() = default;
 };
 

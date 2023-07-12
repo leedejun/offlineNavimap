@@ -1,4 +1,4 @@
-#include "Platform.hpp"
+//#include "Platform.hpp"
 #include "com/mapswithme/core/jni_helper.hpp"
 
 #include "base/logging.hpp"
@@ -26,7 +26,7 @@ public:
     static jmethodID const startMethodId = env->GetMethodID(klass, "start", "()V");
 
     // User id is always the same, so do not waste time on every chunk call
-    static std::string const uniqueUserId = GetPlatform().UniqueClientId();
+//    static std::string const uniqueUserId = GetPlatform().UniqueClientId();
 
     jni::TScopedLocalByteArrayRef postBody(env, nullptr);
     jsize const postBodySize = static_cast<jsize>(pb.size());
@@ -37,7 +37,8 @@ public:
     }
 
     jni::TScopedLocalRef jUrl(env, jni::ToJavaString(env, url.c_str()));
-    jni::TScopedLocalRef jUserId(env, jni::ToJavaString(env, uniqueUserId.c_str()));
+//    jni::TScopedLocalRef jUserId(env, jni::ToJavaString(env, uniqueUserId.c_str()));
+    jni::TScopedLocalRef jUserId(env, jni::ToJavaString(env, "uniqueUserId.c_str()"));
     jni::TScopedLocalRef localSelf(env, env->NewObject(klass,
                                                        initMethodId,
                                                        reinterpret_cast<jlong>(&cb),

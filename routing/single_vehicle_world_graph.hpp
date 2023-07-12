@@ -104,6 +104,8 @@ public:
 
   CrossMwmGraph & GetCrossMwmGraph() override { return *m_crossMwmGraph; }
 
+    void SetSearchClass(const int searchClass){m_loader->SetSearchClass(searchClass);}
+
 private:
   /// \brief Get parents' featureIds of |commonVertex| from forward AStar wave and join them with
   ///        parents' featureIds from backward wave.

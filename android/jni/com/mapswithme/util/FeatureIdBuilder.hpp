@@ -9,7 +9,7 @@ class FeatureIdBuilder
 public:
   FeatureIdBuilder(JNIEnv * env)
   {
-    m_class = jni::GetGlobalClassRef(env, "com/mapswithme/maps/data/FeatureId");
+    m_class = jni::GetGlobalClassRef(env, "com/ftmap/maps/FeatureId");
     m_countryName = env->GetFieldID(m_class, "mMwmName", "Ljava/lang/String;");
     m_version = env->GetFieldID(m_class, "mMwmVersion", "J");
     m_index = env->GetFieldID(m_class, "mFeatureIndex", "I");

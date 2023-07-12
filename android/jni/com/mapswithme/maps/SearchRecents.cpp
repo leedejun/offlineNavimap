@@ -9,7 +9,7 @@ using SearchRequest = search::QuerySaver::SearchRequest;
 extern "C"
 {
   JNIEXPORT void JNICALL
-  Java_com_mapswithme_maps_search_SearchRecents_nativeGetList(JNIEnv * env, jclass thiz, jobject result)
+  Java_com_ftmap_maps_search_SearchRecents_nativeGetList(JNIEnv * env, jclass thiz, jobject result)
   {
     auto const & items = g_framework->NativeFramework()->GetSearchAPI().GetLastSearchQueries();
     if (items.empty())
@@ -31,14 +31,14 @@ extern "C"
   }
 
   JNIEXPORT void JNICALL
-  Java_com_mapswithme_maps_search_SearchRecents_nativeAdd(JNIEnv * env, jclass thiz, jstring locale, jstring query)
+  Java_com_ftmap_maps_search_SearchRecents_nativeAdd(JNIEnv * env, jclass thiz, jstring locale, jstring query)
   {
     SearchRequest const sr(jni::ToNativeString(env, locale), jni::ToNativeString(env, query));
     g_framework->NativeFramework()->GetSearchAPI().SaveSearchQuery(sr);
   }
 
   JNIEXPORT void JNICALL
-  Java_com_mapswithme_maps_search_SearchRecents_nativeClear(JNIEnv * env, jclass thiz)
+  Java_com_ftmap_maps_search_SearchRecents_nativeClear(JNIEnv * env, jclass thiz)
   {
     g_framework->NativeFramework()->GetSearchAPI().ClearSearchHistory();
   }

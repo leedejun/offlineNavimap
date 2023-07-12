@@ -1,177 +1,343 @@
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by FernFlower decompiler)
+//
+
 package com.ftmap.app;
-
-//import static com.ftmap.maps.FTMap.nativeGetRouteFollowingInfo;
-
-import static com.ftmap.maps.FTMap.nativeGetRouteFollowingInfo;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemSelectedListener;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.ftmap.maps.FTMap;
-import com.ftmap.maps.MyPositionButton;
-import com.ftmap.maps.RoutingInfo;
 import com.ftmap.maps.BuildConfig;
 import com.ftmap.maps.FMap;
+import com.ftmap.maps.FTMap;
 import com.ftmap.maps.FTMapRoutePoint;
+import com.ftmap.maps.HotelsFilter;
 import com.ftmap.maps.MapRenderingListener;
 import com.ftmap.maps.R;
+import com.ftmap.maps.RoutingInfo;
+import com.ftmap.maps.FMap.DrawItemType;
+import com.ftmap.maps.FMap.Point;
+import com.ftmap.maps.FMap.PointItem;
+import com.ftmap.maps.FTMapRoutePoint.FTMapPoint;
+import com.ftmap.maps.R.id;
+import com.ftmap.maps.R.layout;
 import com.ftmap.maps.location.CompassData;
 import com.ftmap.maps.location.LocationHelper;
 import com.ftmap.maps.location.LocationListener;
-import com.ftmap.maps.location.LocationState;
+import com.ftmap.maps.location.LocationHelper.UiCallback;
+import com.ftmap.maps.location.LocationState.ModeChangeListener;
+import com.ftmap.maps.search.BookingFilterParams;
 import com.ftmap.maps.search.NativeSearchListener;
 import com.ftmap.maps.search.SearchEngine;
 import com.ftmap.maps.search.SearchResult;
 import com.ftmap.maps.sound.TtsPlayer;
-//import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.ArrayList;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
+import com.ftmap.maps.location.LocationState;
 
-public class MapTestActivity extends AppCompatActivity implements View.OnClickListener, MapRenderingListener, LocationListener,
-        LocationState.ModeChangeListener, NativeSearchListener,
-        LocationHelper.UiCallback {
+public class MapTestActivity extends AppCompatActivity implements OnClickListener, MapRenderingListener, LocationListener, ModeChangeListener, NativeSearchListener, UiCallback {
     private static final String TAG = MapTestActivity.class.getSimpleName();
-
-    private FMap.PointItem point = null;
+    private PointItem point = null;
     private EditText etSearchPoi;
     private Spinner mapZoomSp;
     private TextView mapZoomTv;
     private Boolean firstEnter = false;
     private int mMyPositionMode;
-    private MapButtonClickListener mMapButtonClickListener;
+    private MapTestActivity.MapButtonClickListener mMapButtonClickListener;
 
     public MapTestActivity() {
-
     }
 
-
-    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ftmap);
 
         FMap.INSTANCE.init(this.getApplication(), this, R.id.map_view_container, BuildConfig.APPLICATION_ID);
+
         LocationHelper.INSTANCE.onEnteredIntoFirstRun();
         if (!LocationHelper.INSTANCE.isActive())
             LocationHelper.INSTANCE.start();
-        initOnMapClickListener();
-        findViewById(R.id.btnSearchPoi).setOnClickListener(this);
-        findViewById(R.id.btnLocate).setOnClickListener(this);
-        findViewById(R.id.btnRoute).setOnClickListener(this);
-        findViewById(R.id.btnZoomIn).setOnClickListener(this);
-        findViewById(R.id.btnZoomOut).setOnClickListener(this);
-        findViewById(R.id.btnStyleClear).setOnClickListener(this);
-        findViewById(R.id.btnStyleDark).setOnClickListener(this);
-        findViewById(R.id.btShowRoute).setOnClickListener(this);
-        findViewById(R.id.btHideRoute).setOnClickListener(this);
-        findViewById(R.id.btFollowRoute).setOnClickListener(this);
-        etSearchPoi = (EditText) findViewById(R.id.etSearchPoi);
-        mapZoomSp = (Spinner) findViewById(R.id.map_zoom_sp);
-        mapZoomTv = (TextView) findViewById(R.id.map_zoom_tv);
-//        final FloatingActionButton myPosition = findViewById(R.id.my_position);
-//        MyPositionButton  mNavMyPosition = new MyPositionButton(myPosition, mMyPositionMode, (v) -> mMapButtonClickListener.onClick(MapButtons.myPosition));
-//        mNavMyPosition.showButton(true);
-        ArrayList<String> zoomStr = new ArrayList<>();
-        for (int i = 0; i < 19; i++) {
+
+
+        this.initOnMapClickListener();
+        this.findViewById(id.btnSearchPoi).setOnClickListener(this);
+        this.findViewById(id.btnLocate).setOnClickListener(this);
+        this.findViewById(id.btnRoute).setOnClickListener(this);
+        this.findViewById(id.btnZoomIn).setOnClickListener(this);
+        this.findViewById(id.btnZoomOut).setOnClickListener(this);
+        this.findViewById(id.btnStyleClear).setOnClickListener(this);
+        this.findViewById(id.btnStyleDark).setOnClickListener(this);
+        this.findViewById(id.btShowRoute).setOnClickListener(this);
+        this.findViewById(id.btHideRoute).setOnClickListener(this);
+        this.findViewById(id.btFollowRoute).setOnClickListener(this);
+        this.etSearchPoi = (EditText) this.findViewById(id.etSearchPoi);
+        this.mapZoomSp = (Spinner) this.findViewById(id.map_zoom_sp);
+        this.mapZoomTv = (TextView) this.findViewById(id.map_zoom_tv);
+        ArrayList<String> zoomStr = new ArrayList();
+
+        for (int i = 0; i < 19; ++i) {
             int zoom = 1 + i;
             zoomStr.add(zoom + "");
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, zoomStr);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        //将adapter 添加到spinner中
-        mapZoomSp.setAdapter(adapter);
-        mapZoomSp.setVisibility(View.VISIBLE);
-        mapZoomSp.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
+
+        this.mapZoomSp.setAdapter(adapter);
+        this.mapZoomSp.setVisibility(View.GONE);
+        this.mapZoomSp.setOnItemSelectedListener(new OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (firstEnter) {
+                if (MapTestActivity.this.firstEnter) {
                     DisplayMetrics dm = new DisplayMetrics();
-                    getWindowManager().getDefaultDisplay().getRealMetrics(dm);
+                    MapTestActivity.this.getWindowManager().getDefaultDisplay().getRealMetrics(dm);
                     int dwidth = dm.widthPixels;
                     int dheight = dm.heightPixels;
-//                    Toast.makeText(MapTestActivity.this, dwidth+"----"+dheight+"---11111--", Toast.LENGTH_LONG).show();
-                    FMap.INSTANCE.PtoG(dwidth / 2, dheight / 2, (JSONObject results1) -> {
+                    FMap.INSTANCE.PtoG((double) (dwidth / 2), (double) (dheight / 2), (results1) -> {
                         try {
                             double mercatorX = results1.getDouble("mercatorX");
                             double mercatorY = results1.getDouble("mercatorY");
-
-                            FMap.INSTANCE.ToLatLon(mercatorX, mercatorY, (JSONObject result1) -> {
+                            FMap.INSTANCE.ToLatLon(mercatorX, mercatorY, (result1) -> {
                                 try {
                                     double lat = result1.getDouble("lat");
                                     double lon = result1.getDouble("lon");
                                     FMap.INSTANCE.setViewCenter(lat, lon, position + 1);
-
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
+                                } catch (JSONException var6) {
+                                    var6.printStackTrace();
                                 }
+
                             });
-
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        } catch (JSONException var6) {
+                            var6.printStackTrace();
                         }
+
                     });
                 }
-                firstEnter = true;
+
+                MapTestActivity.this.firstEnter = true;
             }
 
-            @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
             }
         });
         String a = "提交11";
-//        mNavigationController = new NavigationController(this);
-//        TrafficManager.INSTANCE.attach(mNavigationController);
-//        SearchEngine.INSTANCE.addListener(this);
-
     }
 
     private void runSearch(String keyword) {
-        // The previous search should be cancelled before the new one is started, since previous search
-        // results are no longer needed.
         SearchEngine.INSTANCE.cancel();
-
-        SearchEngine.INSTANCE.searchInteractive(keyword, System.nanoTime(),
-                true /* isMapAndTable */,
-                null,
-                null);
+        SearchEngine.INSTANCE.searchInteractive(keyword, System.nanoTime(), true, (HotelsFilter) null, (BookingFilterParams) null);
         SearchEngine.INSTANCE.setQuery(keyword);
     }
 
-    @Override
     public void onResultsUpdate(@NonNull SearchResult[] results, long timestamp, boolean isHotel) {
         Log.d("Search", results.toString());
     }
 
-    @Override
     public void onResultsEnd(long timestamp) {
         Log.d("Search", "onResultsEnd");
     }
 
-    public enum MapButtons {
+    @SuppressLint({"NonConstantResourceId"})
+    public void onClick(View view) {
+        int id = view.getId();
+        if (id == R.id.btFollowRoute) {
+//            FMap.INSTANCE.removeRoute();
+//            FMap.INSTANCE.closeRouting();
+//            FTMap.nativeDisableFollowing();
+//            FTMap.nativeDeleteSavedRoutePoints();
+//            FTMap.nativeCloseRouting();
+//            FMap.INSTANCE.updatePreviewModeAll();
+            FMap.INSTANCE.followRoute("route-1");
+        } else if (id == R.id.btnSearchPoi) {
+            String aa = "116.35772,39.99226;116.358599,39.992297;116.358888,39.992307;116.359097,39.992317;116.359706,39.992325;116.360235,39.992344;116.361254,39.992373;116.36153,39.992377;116.361531,39.992377";
+            String bb = "116.344908,39.985187;116.344908,39.985187;116.344916,39.985074;116.345086,39.985081;116.346582,39.985129;116.346574,39.985238;116.346564,39.985408;116.346564,39.985558;116.346553,39.985698;116.344458,39.985651;116.344268,39.985642;116.343503,39.985624;116.342653,39.985605;116.342352,39.985605;116.342014,39.985595;116.341744,39.985587;116.341663,39.985587;116.340647,39.985558;116.339737,39.985529;116.339311,39.985521;116.338710,39.985503;116.338442,39.985562;116.338251,39.985583;116.338112,39.985573;116.337195,39.985554;116.335768,39.985499;116.334853,39.985460;116.334612,39.985449;116.334561,39.985460;116.334451,39.985460;116.333442,39.985472;116.333075,39.985464;116.332595,39.985464;116.332514,39.985484;116.332455,39.985534;116.332404,39.985684;116.332404,39.985725;116.332356,39.986195;116.332326,39.986345;116.332320,39.986382;116.332205,39.986370;";
+            String s = this.etSearchPoi.getText().toString();
+            FMap.INSTANCE.cancelSearch();
+            FMap.INSTANCE.search(s, 39.988965415846174, 116.36762810740483, (results) -> {
+                String s1 = results.toString();
+                Log.d("Search", s1);
+            });
+        } else if (id == R.id.btShowRoute) {
+            FMap.INSTANCE.showRoute("route-1", "#ff0000", "#00ff00");
+        } else if (id == R.id.btHideRoute) {
+            FMap.INSTANCE.updatePreviewModeAll();
+//            RoutingInfo mRoutingInfo=      FTMap.nativeGetRouteFollowingInfo();
+//                FMap.INSTANCE.getRouteTime("route-1", (result) -> {
+//                    String a = result.toString();
+//                    Log.d("getRouteTime", a);
+//                });
+//                FMap.INSTANCE.getRouteDistance("route-1", (result) -> {
+//                    String a1 = result.toString();
+//                    Log.d("getRouteDistance", a1);
+//                });
+//                FMap.INSTANCE.getRouteInfo("route-1", (result) -> {
+//                    String a1 = result.toString();
+//                    Log.d("getRouteInfo", a1);
+//                });
+        } else if (id == R.id.btnLocate) {
+            PointItem pointItem = (PointItem) FMap.INSTANCE.createDrawItem(DrawItemType.POINT);
+            pointItem.pos(new Point(116.40152D, 39.90768D));
+            pointItem.color("#00FF00");
+            pointItem.id("111111");
+            pointItem.icon("ftmap-chechang");
+            pointItem.radius(100.0D);
+//            long poiIdBack = pointItem.uppoidate();
+            LocationState.nativeSwitchToNextMode();
+            if (!LocationHelper.INSTANCE.isActive())
+                LocationHelper.INSTANCE.start();
+//            FMap.INSTANCE.setViewCenter(39.90768D, 116.40152D, -1);
+        } else if (id == R.id.btnRoute) {
+            FMap.INSTANCE.removeRoute();
+            FMap.INSTANCE.closeRouting();
+            FTMapRoutePoint mFTMapRoutePoint = new FTMapRoutePoint();
+            FTMapPoint startPoint = new FTMapPoint();
+            Location lastLocation = LocationHelper.INSTANCE.getSavedLocation();
+            startPoint.setName("我的位置");
+            startPoint.setLat(lastLocation.getLatitude());
+            startPoint.setLon(lastLocation.getLongitude());
+            startPoint.setMyPosition(true);
+            FTMapPoint endPoint = new FTMapPoint();
+            endPoint.setName("北京饭店");
+            endPoint.setLat(39.90768D);
+            endPoint.setLon(116.40152D);
+            endPoint.setMyPosition(false);
+            mFTMapRoutePoint.setEndPoint(endPoint);
+            mFTMapRoutePoint.setStartPoint(startPoint);
+            JSONArray points = FTMapRoutePoint.toJsonArr();
+            FMap.INSTANCE.routing(points, "Vehicle", (result) -> {
+                String s1 = result.toString();
+                Log.d("routing", s1);
+                FMap.INSTANCE.updatePreviewModeAll();
+                try {
+                    JSONArray var2 = result.getJSONArray("result");
+                } catch (Exception var3) {
+                }
+
+            });
+        } else if (id == R.id.btnZoomIn) {
+            RoutingInfo routingInfo = FTMap.nativeGetRouteFollowingInfo();
+//                bb = routingInfo.toString();
+        } else if (id == R.id.btnZoomOut) {
+            FMap.INSTANCE.zoom(false);
+        } else if (id == R.id.btnStyleClear) {
+            FMap.INSTANCE.setMapStyle("clear");
+        } else if (id == R.id.btnStyleDark) {
+            FMap.INSTANCE.setMapStyle("camouflage");
+        }
+
+
+    }
+
+    private void initOnMapClickListener() {
+        FMap.INSTANCE.OnMapClickListener((results) -> {
+            String s1 = results.toString();
+            Log.d("OnMapClickListener", s1);
+
+            try {
+                if ("longClick".equals(results.get("clickTypr").toString())) {
+                    int screenX = results.getInt("screenX");
+                    int screenY = results.getInt("screenY");
+                    FMap.INSTANCE.PtoG((double) screenX, (double) screenY, (results1) -> {
+                        try {
+                            double mercatorX = results1.getDouble("mercatorX");
+                            double mercatorY = results1.getDouble("mercatorY");
+                            FMap.INSTANCE.GetMapObject(mercatorX, mercatorY, (results2) -> {
+                                Toast.makeText(this, results2.toString(), Toast.LENGTH_LONG).show();
+                            });
+                        } catch (JSONException var6) {
+                            var6.printStackTrace();
+                        }
+
+                    });
+                } else if ("Move".equals(results.get("clickTypr").toString())) {
+                    DisplayMetrics dm1 = this.getResources().getDisplayMetrics();
+                    FMap.INSTANCE.ScreenToMapObject((double) (dm1.widthPixels / 2), (double) (dm1.heightPixels / 2), (results1) -> {
+                    });
+                }
+            } catch (JSONException var5) {
+                var5.printStackTrace();
+            }
+
+        });
+    }
+
+    public void onRenderingCreated() {
+//        LocationHelper.INSTANCE.attach(this);
+    }
+
+    public void onRenderingRestored() {
+    }
+
+    public void onRenderingInitializationFinished() {
+    }
+
+    public void onPointerCaptureChanged(boolean hasCapture) {
+        super.onPointerCaptureChanged(hasCapture);
+    }
+
+    public Activity getActivity() {
+        return null;
+    }
+
+    public void onMyPositionModeChanged(int newMode) {
+    }
+
+    public void onLocationUpdated(@NonNull Location location) {
+        RoutingInfo routingInfo = FTMap.nativeGetRouteFollowingInfo();
+        if (routingInfo != null) {
+            String s = routingInfo.toString();
+            Log.d("移动了定位", s);
+            Toast.makeText(this, s, Toast.LENGTH_LONG).show();
+        }
+
+        TtsPlayer.INSTANCE.playTurnNotifications(this.getApplicationContext());
+    }
+
+    public void onCompassUpdated(long time, double north) {
+    }
+
+    public void onLocationError(int errorCode) {
+    }
+
+    public void onCompassUpdated(@NonNull CompassData compass) {
+    }
+
+    public void onLocationError() {
+    }
+
+    public void onLocationNotFound() {
+    }
+
+    public void onRoutingFinish() {
+    }
+
+    public interface MapButtonClickListener {
+        void onClick(MapTestActivity.MapButtons var1);
+    }
+
+    public static enum MapButtons {
         myPosition,
         toggleMapLayer,
         zoomIn,
@@ -180,361 +346,9 @@ public class MapTestActivity extends AppCompatActivity implements View.OnClickLi
         search,
         bookmarks,
         menu,
-        help
-    }
+        help;
 
-    public interface MapButtonClickListener {
-        void onClick(MapButtons button);
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @Override
-    public void onClick(View view) {
-        int id = view.getId();
-        if (id == R.id.btFollowRoute) {
-            FMap.INSTANCE.followRoute("route-1");
-//                DisplayMetrics dm = getResources().getDisplayMetrics();
-//                FMap.INSTANCE.ScreenToMapObject(dm.widthPixels/2, dm.heightPixels/2, (JSONObject results1) -> {
-//                            Toast.makeText(MapTestActivity.this, results1.toString(), Toast.LENGTH_LONG).show();
-//
-//                });
-
-//                break;
-//                FMap.PointItem pointItem = (FMap.PointItem) FMap.INSTANCE.createDrawItem(FMap.DrawItemType.POINT);
-//                //  data.m_title = "40.040045, 116.35874";
-//                pointItem.pos(new FMap.Point(109.17786132812502, 19.313103027343753));
-//                pointItem.color("#00FF00");
-//                pointItem.id("pointiD");
-//                pointItem.icon("renyuan-2");
-//                pointItem.radius(100);
-//                pointItem.update();
-//                FMap.LineItem  lineItem = (FMap.LineItem)FMap.INSTANCE.createDrawItem(FMap.DrawItemType.LINE);
-//                String pts = "[109.17786132812502,19.318103027343753,109.17786132812502,19.318103027343753,109.17786132812502,19.301623535156253,109.15588867187502,19.285144042968753,109.13940917968752,19.274157714843753,109.12842285156252,19.263171386718753,109.11743652343752,19.246691894531253,109.10645019531252,19.235705566406253,109.10095703125002,19.224719238281253,109.09546386718752,19.219226074218753,109.09546386718752,19.213732910156253,109.10095703125002,19.213732910156253,109.12292968750002,19.213732910156253,109.15588867187502,19.224719238281253,109.18884765625002,19.235705566406253,109.22180664062502,19.241198730468753,109.24927246093752,19.246691894531253,109.26575195312502,19.246691894531253,109.27124511718752,19.252185058593753,109.27673828125002,19.252185058593753,109.27673828125002,19.241198730468753,109.27673828125002,19.224719238281253,109.27673828125002,19.213732910156253,109.27124511718752,19.202746582031253,109.26575195312502,19.186267089843753,109.26025878906252,19.175280761718753,109.26025878906252,19.180773925781253,109.27124511718752,19.191760253906253,109.29321777343752,19.208239746093753,109.30969726562502,19.224719238281253,109.33166992187502,19.230212402343753,109.34265625000002,19.241198730468753,109.34814941406252,19.246691894531253,109.35364257812502,19.257678222656253,109.35913574218752,19.257678222656253,109.36462890625002,19.246691894531253,109.36462890625002,19.241198730468753,109.36462890625002,19.224719238281253,109.36462890625002,19.213732910156253,109.36462890625002,19.191760253906253,109.35364257812502,19.175280761718753,109.34814941406252,19.153308105468753,109.33716308593752,19.136828613281253,109.33166992187502,19.125842285156253,109.33166992187502,19.114855957031253,109.33166992187502,19.109362792968753,109.33166992187502,19.114855957031253,109.33166992187502,19.125842285156253,109.33166992187502,19.136828613281253,109.33716308593752,19.142321777343753,109.33716308593752,19.147814941406253,109.34265625000002,19.147814941406253,109.34814941406252,19.147814941406253,109.35364257812502,19.136828613281253,109.35913574218752,19.114855957031253,109.36462890625002,19.087390136718753,109.36462890625002,19.065417480468753,109.36462890625002,19.043444824218753,109.36462890625002,19.026965332031253,109.36462890625002,19.010485839843753,109.37012207031252,19.010485839843753,109.37561523437502,19.015979003906253,109.37561523437502,19.032458496093753,109.38660156250002,19.054431152343753,109.39758789062502,19.076403808593753,109.40857421875002,19.103869628906253,109.41956054687502,19.120349121093753,109.43604003906252,19.142321777343753,109.44153320312502,19.158801269531253,109.45251953125002,19.164294433593753,109.45801269531252,19.169787597656253,109.46350585937502,19.175280761718753,109.46350585937502,19.169787597656253,109.46899902343752,19.158801269531253,109.47449218750002,19.147814941406253,109.47449218750002,19.131335449218753,109.47449218750002,19.114855957031253,109.47449218750002,19.092883300781253,109.47449218750002,19.065417480468753,109.46899902343752,19.054431152343753,109.46899902343752,19.048937988281253,109.46899902343752,19.043444824218753,109.46899902343752,19.059924316406253,109.47449218750002,19.076403808593753,109.48547851562502,19.098376464843753,109.50195800781252,19.125842285156253,109.51843750000002,19.147814941406253,109.52393066406252,19.158801269531253,109.53491699218752,19.164294433593753,109.54041015625002,19.175280761718753,109.54590332031252,19.175280761718753,109.54590332031252,19.180773925781253,109.55688964843752,19.180773925781253,109.55688964843752,19.169787597656253,109.55688964843752,19.153308105468753,109.55688964843752,19.136828613281253,109.55688964843752,19.114855957031253,109.55688964843752,19.092883300781253,109.55688964843752,19.059924316406253,109.55688964843752,19.043444824218753,109.55139648437502,19.026965332031253,109.54590332031252,19.015979003906253,109.55139648437502,19.021472167968753,109.55688964843752,19.032458496093753,109.56787597656252,19.048937988281253,109.58435546875002,19.065417480468753,109.59534179687502,19.081896972656253,109.60632812500002,19.092883300781253,109.61731445312502,19.103869628906253,109.62830078125002,19.109362792968753,109.62830078125002,19.114855957031253,109.63379394531252,19.109362792968753,109.63928710937502,19.098376464843753,109.63928710937502,19.087390136718753,109.63928710937502,19.059924316406253,109.63928710937502,19.021472167968753,109.63379394531252,18.983020019531253,109.62280761718752,18.950061035156253,109.61731445312502,18.928088378906253,109.61731445312502,18.911608886718753,109.61182128906252,18.895129394531253,109.61182128906252,18.889636230468753,109.61182128906252,18.895129394531253,109.61731445312502,18.917102050781253,109.63379394531252,18.944567871093753,109.65576660156252,18.977526855468753,109.67773925781252,19.004992675781253,109.69971191406252,19.037951660156253,109.71619140625002,19.059924316406253,109.72168457031252,19.076403808593753,109.73267089843752,19.081896972656253,109.73267089843752,19.087390136718753,109.73816406250002,19.087390136718753,109.74365722656252,19.087390136718753,109.74365722656252,19.081896972656253,109.74365722656252,19.065417480468753,109.74365722656252,19.043444824218753,109.74365722656252,19.015979003906253,109.74365722656252,18.983020019531253,109.74365722656252,18.955554199218753,109.73816406250002,18.928088378906253,109.73267089843752,18.917102050781253,109.72717773437502,18.906115722656253,109.72717773437502,18.922595214843753,109.73267089843752,18.944567871093753,109.73816406250002,18.972033691406253,109.74365722656252,18.988513183593753,109.75464355468752,19.004992675781253,109.76562988281252,19.015979003906253,109.76562988281252,19.032458496093753,109.77112304687502,19.032458496093753,109.77112304687502,19.037951660156253,109.77112304687502,19.021472167968753,109.77112304687502,19.004992675781253,109.77112304687502,18.988513183593753,109.77112304687502,18.972033691406253,109.77112304687502,18.955554199218753,109.77112304687502,18.944567871093753,109.77112304687502,18.939074707031253,109.77112304687502,18.955554199218753,109.77661621093752,18.972033691406253,109.79309570312502,18.988513183593753,109.80408203125002,19.004992675781253,109.82056152343752,19.032458496093753,109.83154785156252,19.048937988281253,109.83704101562502,19.059924316406253,109.84253417968752,19.059924316406253,109.84253417968752,19.054431152343753,109.84253417968752,19.037951660156253,109.84253417968752,19.021472167968753,109.84253417968752,19.004992675781253,109.84253417968752,18.983020019531253,109.84802734375002,18.961047363281253,109.84802734375002,18.944567871093753,109.84802734375002,18.933581542968753,109.84802734375002,18.928088378906253,109.85352050781252,18.922595214843753,109.85352050781252,18.928088378906253,109.85901367187502,18.939074707031253,109.86450683593752,18.955554199218753,109.87549316406252,18.972033691406253,109.88098632812502,18.988513183593753,109.88647949218752,19.010485839843753,109.89197265625002,19.037951660156253,109.89746582031252,19.054431152343753,109.89746582031252,19.065417480468753,109.90295898437502,19.070910644531253,109.90845214843752,19.070910644531253,109.90845214843752,19.065417480468753,109.91394531250002,19.059924316406253,109.91943847656252,19.043444824218753,109.92493164062502,19.032458496093753,109.93591796875002,19.010485839843753,109.94141113281252,18.994006347656253,109.94690429687502,18.972033691406253,109.95239746093752,18.950061035156253,109.95789062500002,18.928088378906253,109.95789062500002,18.922595214843753,109.95789062500002,18.917102050781253,109.95789062500002,18.928088378906253,109.96338378906252,18.944567871093753,109.96887695312502,18.966540527343753,109.96887695312502,18.988513183593753,109.97437011718752,19.021472167968753,109.97986328125002,19.037951660156253,109.99084960937502,19.059924316406253,109.99634277343752,19.076403808593753,109.99634277343752,19.070910644531253,109.99634277343752,19.059924316406253,109.99634277343752,19.054431152343753,109.99634277343752,19.048937988281253,110.00183593750002,19.043444824218753]";
-//                try {
-//                    JSONArray    array = new JSONArray(pts);
-//                    lineItem.points(array);
-//                    lineItem.icon("2A");
-//                    lineItem.width(20);
-//                    lineItem.color("#79a9fc");
-//                    lineItem.id("testRoute");
-//                    lineItem.update();
-////                     把线显示到屏幕中间
-//                    FMap.INSTANCE.centerPoints(array);
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//
-        } else if (id == R.id.btnSearchPoi) {
-            String aa = "116.35772,39.99226;116.358599,39.992297;116.358888,39.992307;116.359097,39.992317;116.359706,39.992325;116.360235,39.992344;116.361254,39.992373;116.36153,39.992377;116.361531,39.992377";
-            String bb = "116.344908,39.985187;116.344908,39.985187;116.344916,39.985074;116.345086,39.985081;116.346582,39.985129;116.346574,39.985238;116.346564,39.985408;116.346564,39.985558;116.346553,39.985698;116.344458,39.985651;116.344268,39.985642;116.343503,39.985624;116.342653,39.985605;116.342352,39.985605;116.342014,39.985595;116.341744,39.985587;116.341663,39.985587;116.340647,39.985558;116.339737,39.985529;116.339311,39.985521;116.338710,39.985503;116.338442,39.985562;116.338251,39.985583;116.338112,39.985573;116.337195,39.985554;116.335768,39.985499;116.334853,39.985460;116.334612,39.985449;116.334561,39.985460;116.334451,39.985460;116.333442,39.985472;116.333075,39.985464;116.332595,39.985464;116.332514,39.985484;116.332455,39.985534;116.332404,39.985684;116.332404,39.985725;116.332356,39.986195;116.332326,39.986345;116.332320,39.986382;116.332205,39.986370";
-            String cc = "116.468442,40.009750;116.468442,40.009750;116.468403,40.009782;116.468403,40.009942;116.468403,40.010051;116.468403,40.010110;116.468454,40.010110;116.468921,40.010113;116.469047,40.010113;116.469216,40.010113;116.469508,40.010125;116.469486,40.010293;116.468864,40.010302;116.468816,40.010302;116.468703,40.010302;116.468580,40.010302;116.468143,40.010302;116.467952,40.010299;116.467700,40.010299;116.467510,40.010299;116.467040,40.010287;116.466839,40.010287;116.466799,40.010117;116.466810,40.010047;116.466850,40.009357;116.466869,40.008857;116.466879,40.008547;116.466920,40.007407;116.466920,40.007298;116.466949,40.006747;116.466971,40.006318;116.466981,40.006088;116.467011,40.005028;116.467022,40.004857;116.467022,40.004378;116.467022,40.004257;116.467030,40.004138;116.467051,40.003998;116.467059,40.003929;116.467059,40.003867;116.467059,40.003818;116.467091,40.003207;116.467110,40.002659;116.467121,40.002445;116.467140,40.001849;116.467150,40.001679;116.467166,40.001251;116.467180,40.000808;116.467180,40.000639;116.467180,40.000580;116.467182,40.000489;116.467196,40.000399;116.467201,40.000358;116.467199,40.000308;116.467166,40.000234;116.467097,40.000144;116.467022,40.000068;116.466895,39.999928;116.466839,39.999869;116.466501,39.999562;116.466450,39.999517;116.466372,39.999451;116.466096,39.999201;116.466013,39.999125;116.465713,39.998854;116.465525,39.998675;116.465477,39.998634;116.465396,39.998554;116.465415,39.998515;116.465444,39.998455;116.465517,39.998414;116.465576,39.998375;116.465742,39.998264;116.466539,39.997738;116.466600,39.997699;116.466834,39.997547;116.466914,39.997493;116.467102,39.997370;116.467201,39.997298;116.467250,39.997267;116.467542,39.997080;116.467853,39.996881;116.467979,39.996789;116.468019,39.996764;116.468786,39.996279;116.469017,39.996123;116.469098,39.996063;116.469167,39.996014;116.469309,39.995923;116.469390,39.995985;116.469248,39.996084;116.469178,39.996135;116.469087,39.996195;116.469052,39.996217;116.468222,39.996750;116.468212,39.996741";
-            String s = etSearchPoi.getText().toString();
-            FMap.INSTANCE.cancelSearch();
-            FMap.INSTANCE.searchWay(s, cc, (JSONArray results) -> {
-                String s1 = results.toString();
-                Log.d("searchWay", s1);
-            });
-//            runSearch(s);
-//            FMap.INSTANCE.search(s,/*1d,2d,3d,*/ (JSONArray results) -> {
-//                String s1 = results.toString();
-//                Log.d("Search", s1);
-//            });
-        } else if (id == R.id.btShowRoute) {
-            FMap.INSTANCE.showRoute("route-1", "#ff0000", "#00ff00");
-//
-        } else if (id == R.id.btHideRoute) {
-            FMap.INSTANCE.getRouteTime("route-1", (JSONObject result) -> {
-                String a = result.toString();
-                Log.d("getRouteTime", a);
-            });
-            FMap.INSTANCE.getRouteDistance("route-1", (JSONObject result) -> {
-                String a1 = result.toString();
-                Log.d("getRouteDistance", a1);
-            });
-            FMap.INSTANCE.getRouteInfo("route-1", (JSONObject result) -> {
-                String a1 = result.toString();
-                try {
-                    String routeDistance = result.getString("routeDistance");
-                    JSONArray jsonArray = new JSONArray(routeDistance);
-                    JSONObject o = (JSONObject) jsonArray.get(0);
-                    String m_street = o.getString("m_street");
-                    String turnString = o.getString("turnString");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                Log.d("getRouteDistance", a1);
-            });
-//                FMap.INSTANCE.hideRoute("route-1");
-        } else if (id == R.id.btnLocate) {
-            FMap.PointItem pointItem = (FMap.PointItem) FMap.INSTANCE.createDrawItem(FMap.DrawItemType.POINT);
-            //  data.m_title = "40.040045, 116.35874";
-            pointItem.pos(new FMap.Point(116.40152, 39.90768));
-            pointItem.color("#00FF00");
-            pointItem.id("111111");
-            pointItem.icon("ftmap-chechang");
-            pointItem.radius(100);
-            long poiIdBack = pointItem.uppoidate();
-            //119.8681282,35.338494221984661
-            //124.79901609409046，55.887908445347364
-            //112.95700768349326,29.411557982948096
-            FMap.INSTANCE.setViewCenter(39.90768, 116.40152, -1);
-//                FMap.INSTANCE.showRoute("route-1","#ff0000","#ff0000");
-//        if( this.line != null ){
-//          this.line.width(10.0 );
-//          this.line.update();
-//        }
-
-//                if (this.point == null) {
-//                    FMap.PointItem item = (FMap.PointItem) FMap.INSTANCE.createDrawItem(FMap.DrawItemType.POINT);
-//                    item.pos(new FMap.Point(109.17786132812502, 19.318103027343753));
-//                    item.color("#ff0000");
-//                    item.radius(50);
-//                    item.update();
-//
-//                    String pts = "[109.17786132812502,19.318103027343753,109.17786132812502,19.318103027343753,109.17786132812502,19.301623535156253,109.15588867187502,19.285144042968753,109.13940917968752,19.274157714843753,109.12842285156252,19.263171386718753,109.11743652343752,19.246691894531253,109.10645019531252,19.235705566406253,109.10095703125002,19.224719238281253,109.09546386718752,19.219226074218753,109.09546386718752,19.213732910156253,109.10095703125002,19.213732910156253,109.12292968750002,19.213732910156253,109.15588867187502,19.224719238281253,109.18884765625002,19.235705566406253,109.22180664062502,19.241198730468753,109.24927246093752,19.246691894531253,109.26575195312502,19.246691894531253,109.27124511718752,19.252185058593753,109.27673828125002,19.252185058593753,109.27673828125002,19.241198730468753,109.27673828125002,19.224719238281253,109.27673828125002,19.213732910156253,109.27124511718752,19.202746582031253,109.26575195312502,19.186267089843753,109.26025878906252,19.175280761718753,109.26025878906252,19.180773925781253,109.27124511718752,19.191760253906253,109.29321777343752,19.208239746093753,109.30969726562502,19.224719238281253,109.33166992187502,19.230212402343753,109.34265625000002,19.241198730468753,109.34814941406252,19.246691894531253,109.35364257812502,19.257678222656253,109.35913574218752,19.257678222656253,109.36462890625002,19.246691894531253,109.36462890625002,19.241198730468753,109.36462890625002,19.224719238281253,109.36462890625002,19.213732910156253,109.36462890625002,19.191760253906253,109.35364257812502,19.175280761718753,109.34814941406252,19.153308105468753,109.33716308593752,19.136828613281253,109.33166992187502,19.125842285156253,109.33166992187502,19.114855957031253,109.33166992187502,19.109362792968753,109.33166992187502,19.114855957031253,109.33166992187502,19.125842285156253,109.33166992187502,19.136828613281253,109.33716308593752,19.142321777343753,109.33716308593752,19.147814941406253,109.34265625000002,19.147814941406253,109.34814941406252,19.147814941406253,109.35364257812502,19.136828613281253,109.35913574218752,19.114855957031253,109.36462890625002,19.087390136718753,109.36462890625002,19.065417480468753,109.36462890625002,19.043444824218753,109.36462890625002,19.026965332031253,109.36462890625002,19.010485839843753,109.37012207031252,19.010485839843753,109.37561523437502,19.015979003906253,109.37561523437502,19.032458496093753,109.38660156250002,19.054431152343753,109.39758789062502,19.076403808593753,109.40857421875002,19.103869628906253,109.41956054687502,19.120349121093753,109.43604003906252,19.142321777343753,109.44153320312502,19.158801269531253,109.45251953125002,19.164294433593753,109.45801269531252,19.169787597656253,109.46350585937502,19.175280761718753,109.46350585937502,19.169787597656253,109.46899902343752,19.158801269531253,109.47449218750002,19.147814941406253,109.47449218750002,19.131335449218753,109.47449218750002,19.114855957031253,109.47449218750002,19.092883300781253,109.47449218750002,19.065417480468753,109.46899902343752,19.054431152343753,109.46899902343752,19.048937988281253,109.46899902343752,19.043444824218753,109.46899902343752,19.059924316406253,109.47449218750002,19.076403808593753,109.48547851562502,19.098376464843753,109.50195800781252,19.125842285156253,109.51843750000002,19.147814941406253,109.52393066406252,19.158801269531253,109.53491699218752,19.164294433593753,109.54041015625002,19.175280761718753,109.54590332031252,19.175280761718753,109.54590332031252,19.180773925781253,109.55688964843752,19.180773925781253,109.55688964843752,19.169787597656253,109.55688964843752,19.153308105468753,109.55688964843752,19.136828613281253,109.55688964843752,19.114855957031253,109.55688964843752,19.092883300781253,109.55688964843752,19.059924316406253,109.55688964843752,19.043444824218753,109.55139648437502,19.026965332031253,109.54590332031252,19.015979003906253,109.55139648437502,19.021472167968753,109.55688964843752,19.032458496093753,109.56787597656252,19.048937988281253,109.58435546875002,19.065417480468753,109.59534179687502,19.081896972656253,109.60632812500002,19.092883300781253,109.61731445312502,19.103869628906253,109.62830078125002,19.109362792968753,109.62830078125002,19.114855957031253,109.63379394531252,19.109362792968753,109.63928710937502,19.098376464843753,109.63928710937502,19.087390136718753,109.63928710937502,19.059924316406253,109.63928710937502,19.021472167968753,109.63379394531252,18.983020019531253,109.62280761718752,18.950061035156253,109.61731445312502,18.928088378906253,109.61731445312502,18.911608886718753,109.61182128906252,18.895129394531253,109.61182128906252,18.889636230468753,109.61182128906252,18.895129394531253,109.61731445312502,18.917102050781253,109.63379394531252,18.944567871093753,109.65576660156252,18.977526855468753,109.67773925781252,19.004992675781253,109.69971191406252,19.037951660156253,109.71619140625002,19.059924316406253,109.72168457031252,19.076403808593753,109.73267089843752,19.081896972656253,109.73267089843752,19.087390136718753,109.73816406250002,19.087390136718753,109.74365722656252,19.087390136718753,109.74365722656252,19.081896972656253,109.74365722656252,19.065417480468753,109.74365722656252,19.043444824218753,109.74365722656252,19.015979003906253,109.74365722656252,18.983020019531253,109.74365722656252,18.955554199218753,109.73816406250002,18.928088378906253,109.73267089843752,18.917102050781253,109.72717773437502,18.906115722656253,109.72717773437502,18.922595214843753,109.73267089843752,18.944567871093753,109.73816406250002,18.972033691406253,109.74365722656252,18.988513183593753,109.75464355468752,19.004992675781253,109.76562988281252,19.015979003906253,109.76562988281252,19.032458496093753,109.77112304687502,19.032458496093753,109.77112304687502,19.037951660156253,109.77112304687502,19.021472167968753,109.77112304687502,19.004992675781253,109.77112304687502,18.988513183593753,109.77112304687502,18.972033691406253,109.77112304687502,18.955554199218753,109.77112304687502,18.944567871093753,109.77112304687502,18.939074707031253,109.77112304687502,18.955554199218753,109.77661621093752,18.972033691406253,109.79309570312502,18.988513183593753,109.80408203125002,19.004992675781253,109.82056152343752,19.032458496093753,109.83154785156252,19.048937988281253,109.83704101562502,19.059924316406253,109.84253417968752,19.059924316406253,109.84253417968752,19.054431152343753,109.84253417968752,19.037951660156253,109.84253417968752,19.021472167968753,109.84253417968752,19.004992675781253,109.84253417968752,18.983020019531253,109.84802734375002,18.961047363281253,109.84802734375002,18.944567871093753,109.84802734375002,18.933581542968753,109.84802734375002,18.928088378906253,109.85352050781252,18.922595214843753,109.85352050781252,18.928088378906253,109.85901367187502,18.939074707031253,109.86450683593752,18.955554199218753,109.87549316406252,18.972033691406253,109.88098632812502,18.988513183593753,109.88647949218752,19.010485839843753,109.89197265625002,19.037951660156253,109.89746582031252,19.054431152343753,109.89746582031252,19.065417480468753,109.90295898437502,19.070910644531253,109.90845214843752,19.070910644531253,109.90845214843752,19.065417480468753,109.91394531250002,19.059924316406253,109.91943847656252,19.043444824218753,109.92493164062502,19.032458496093753,109.93591796875002,19.010485839843753,109.94141113281252,18.994006347656253,109.94690429687502,18.972033691406253,109.95239746093752,18.950061035156253,109.95789062500002,18.928088378906253,109.95789062500002,18.922595214843753,109.95789062500002,18.917102050781253,109.95789062500002,18.928088378906253,109.96338378906252,18.944567871093753,109.96887695312502,18.966540527343753,109.96887695312502,18.988513183593753,109.97437011718752,19.021472167968753,109.97986328125002,19.037951660156253,109.99084960937502,19.059924316406253,109.99634277343752,19.076403808593753,109.99634277343752,19.070910644531253,109.99634277343752,19.059924316406253,109.99634277343752,19.054431152343753,109.99634277343752,19.048937988281253,110.00183593750002,19.043444824218753]";
-//                    try {
-//                        JSONArray array = new JSONArray(pts);
-//                        // 把线显示到屏幕中间
-//                        FMap.INSTANCE.centerPoints(array);
-//
-//                    } catch (Exception e) {
-//                    }
-//                    this.point = item;
-//                } else {
-//                    this.point.pos(new FMap.Point(110.00183593750002, 19.043444824218753));
-//                    this.point.update();
-//                    String pts = "[109.17786132812502,19.318103027343753,109.17786132812502,19.318103027343753,109.17786132812502,19.301623535156253,109.15588867187502,19.285144042968753,109.13940917968752,19.274157714843753,109.12842285156252,19.263171386718753,109.11743652343752,19.246691894531253,109.10645019531252,19.235705566406253,109.10095703125002,19.224719238281253,109.09546386718752,19.219226074218753,109.09546386718752,19.213732910156253,109.10095703125002,19.213732910156253,109.12292968750002,19.213732910156253,109.15588867187502,19.224719238281253,109.18884765625002,19.235705566406253,109.22180664062502,19.241198730468753,109.24927246093752,19.246691894531253,109.26575195312502,19.246691894531253,109.27124511718752,19.252185058593753,109.27673828125002,19.252185058593753,109.27673828125002,19.241198730468753,109.27673828125002,19.224719238281253,109.27673828125002,19.213732910156253,109.27124511718752,19.202746582031253,109.26575195312502,19.186267089843753,109.26025878906252,19.175280761718753,109.26025878906252,19.180773925781253,109.27124511718752,19.191760253906253,109.29321777343752,19.208239746093753,109.30969726562502,19.224719238281253,109.33166992187502,19.230212402343753,109.34265625000002,19.241198730468753,109.34814941406252,19.246691894531253,109.35364257812502,19.257678222656253,109.35913574218752,19.257678222656253,109.36462890625002,19.246691894531253,109.36462890625002,19.241198730468753,109.36462890625002,19.224719238281253,109.36462890625002,19.213732910156253,109.36462890625002,19.191760253906253,109.35364257812502,19.175280761718753,109.34814941406252,19.153308105468753,109.33716308593752,19.136828613281253,109.33166992187502,19.125842285156253,109.33166992187502,19.114855957031253,109.33166992187502,19.109362792968753,109.33166992187502,19.114855957031253,109.33166992187502,19.125842285156253,109.33166992187502,19.136828613281253,109.33716308593752,19.142321777343753,109.33716308593752,19.147814941406253,109.34265625000002,19.147814941406253,109.34814941406252,19.147814941406253,109.35364257812502,19.136828613281253,109.35913574218752,19.114855957031253,109.36462890625002,19.087390136718753,109.36462890625002,19.065417480468753,109.36462890625002,19.043444824218753,109.36462890625002,19.026965332031253,109.36462890625002,19.010485839843753,109.37012207031252,19.010485839843753,109.37561523437502,19.015979003906253,109.37561523437502,19.032458496093753,109.38660156250002,19.054431152343753,109.39758789062502,19.076403808593753,109.40857421875002,19.103869628906253,109.41956054687502,19.120349121093753,109.43604003906252,19.142321777343753,109.44153320312502,19.158801269531253,109.45251953125002,19.164294433593753,109.45801269531252,19.169787597656253,109.46350585937502,19.175280761718753,109.46350585937502,19.169787597656253,109.46899902343752,19.158801269531253,109.47449218750002,19.147814941406253,109.47449218750002,19.131335449218753,109.47449218750002,19.114855957031253,109.47449218750002,19.092883300781253,109.47449218750002,19.065417480468753,109.46899902343752,19.054431152343753,109.46899902343752,19.048937988281253,109.46899902343752,19.043444824218753,109.46899902343752,19.059924316406253,109.47449218750002,19.076403808593753,109.48547851562502,19.098376464843753,109.50195800781252,19.125842285156253,109.51843750000002,19.147814941406253,109.52393066406252,19.158801269531253,109.53491699218752,19.164294433593753,109.54041015625002,19.175280761718753,109.54590332031252,19.175280761718753,109.54590332031252,19.180773925781253,109.55688964843752,19.180773925781253,109.55688964843752,19.169787597656253,109.55688964843752,19.153308105468753,109.55688964843752,19.136828613281253,109.55688964843752,19.114855957031253,109.55688964843752,19.092883300781253,109.55688964843752,19.059924316406253,109.55688964843752,19.043444824218753,109.55139648437502,19.026965332031253,109.54590332031252,19.015979003906253,109.55139648437502,19.021472167968753,109.55688964843752,19.032458496093753,109.56787597656252,19.048937988281253,109.58435546875002,19.065417480468753,109.59534179687502,19.081896972656253,109.60632812500002,19.092883300781253,109.61731445312502,19.103869628906253,109.62830078125002,19.109362792968753,109.62830078125002,19.114855957031253,109.63379394531252,19.109362792968753,109.63928710937502,19.098376464843753,109.63928710937502,19.087390136718753,109.63928710937502,19.059924316406253,109.63928710937502,19.021472167968753,109.63379394531252,18.983020019531253,109.62280761718752,18.950061035156253,109.61731445312502,18.928088378906253,109.61731445312502,18.911608886718753,109.61182128906252,18.895129394531253,109.61182128906252,18.889636230468753,109.61182128906252,18.895129394531253,109.61731445312502,18.917102050781253,109.63379394531252,18.944567871093753,109.65576660156252,18.977526855468753,109.67773925781252,19.004992675781253,109.69971191406252,19.037951660156253,109.71619140625002,19.059924316406253,109.72168457031252,19.076403808593753,109.73267089843752,19.081896972656253,109.73267089843752,19.087390136718753,109.73816406250002,19.087390136718753,109.74365722656252,19.087390136718753,109.74365722656252,19.081896972656253,109.74365722656252,19.065417480468753,109.74365722656252,19.043444824218753,109.74365722656252,19.015979003906253,109.74365722656252,18.983020019531253,109.74365722656252,18.955554199218753,109.73816406250002,18.928088378906253,109.73267089843752,18.917102050781253,109.72717773437502,18.906115722656253,109.72717773437502,18.922595214843753,109.73267089843752,18.944567871093753,109.73816406250002,18.972033691406253,109.74365722656252,18.988513183593753,109.75464355468752,19.004992675781253,109.76562988281252,19.015979003906253,109.76562988281252,19.032458496093753,109.77112304687502,19.032458496093753,109.77112304687502,19.037951660156253,109.77112304687502,19.021472167968753,109.77112304687502,19.004992675781253,109.77112304687502,18.988513183593753,109.77112304687502,18.972033691406253,109.77112304687502,18.955554199218753,109.77112304687502,18.944567871093753,109.77112304687502,18.939074707031253,109.77112304687502,18.955554199218753,109.77661621093752,18.972033691406253,109.79309570312502,18.988513183593753,109.80408203125002,19.004992675781253,109.82056152343752,19.032458496093753,109.83154785156252,19.048937988281253,109.83704101562502,19.059924316406253,109.84253417968752,19.059924316406253,109.84253417968752,19.054431152343753,109.84253417968752,19.037951660156253,109.84253417968752,19.021472167968753,109.84253417968752,19.004992675781253,109.84253417968752,18.983020019531253,109.84802734375002,18.961047363281253,109.84802734375002,18.944567871093753,109.84802734375002,18.933581542968753,109.84802734375002,18.928088378906253,109.85352050781252,18.922595214843753,109.85352050781252,18.928088378906253,109.85901367187502,18.939074707031253,109.86450683593752,18.955554199218753,109.87549316406252,18.972033691406253,109.88098632812502,18.988513183593753,109.88647949218752,19.010485839843753,109.89197265625002,19.037951660156253,109.89746582031252,19.054431152343753,109.89746582031252,19.065417480468753,109.90295898437502,19.070910644531253,109.90845214843752,19.070910644531253,109.90845214843752,19.065417480468753,109.91394531250002,19.059924316406253,109.91943847656252,19.043444824218753,109.92493164062502,19.032458496093753,109.93591796875002,19.010485839843753,109.94141113281252,18.994006347656253,109.94690429687502,18.972033691406253,109.95239746093752,18.950061035156253,109.95789062500002,18.928088378906253,109.95789062500002,18.922595214843753,109.95789062500002,18.917102050781253,109.95789062500002,18.928088378906253,109.96338378906252,18.944567871093753,109.96887695312502,18.966540527343753,109.96887695312502,18.988513183593753,109.97437011718752,19.021472167968753,109.97986328125002,19.037951660156253,109.99084960937502,19.059924316406253,109.99634277343752,19.076403808593753,109.99634277343752,19.070910644531253,109.99634277343752,19.059924316406253,109.99634277343752,19.054431152343753,109.99634277343752,19.048937988281253,110.00183593750002,19.043444824218753]";
-//                    try {
-//                        JSONArray array = new JSONArray(pts);
-//                        // 把线显示到屏幕中间
-//                        FMap.INSTANCE.centerPoints(array);
-//
-//                    } catch (Exception e) {
-//                    }
-//                }
-
-//        if( this.line == null ){
-//          this.line = (FMap.LineItem)FMap.INSTANCE.createDrawItem(FMap.DrawItemType.LINE);
-//        }
-//        String pts = "[109.17786132812502,19.318103027343753,109.17786132812502,19.318103027343753,109.17786132812502,19.301623535156253,109.15588867187502,19.285144042968753,109.13940917968752,19.274157714843753,109.12842285156252,19.263171386718753,109.11743652343752,19.246691894531253,109.10645019531252,19.235705566406253,109.10095703125002,19.224719238281253,109.09546386718752,19.219226074218753,109.09546386718752,19.213732910156253,109.10095703125002,19.213732910156253,109.12292968750002,19.213732910156253,109.15588867187502,19.224719238281253,109.18884765625002,19.235705566406253,109.22180664062502,19.241198730468753,109.24927246093752,19.246691894531253,109.26575195312502,19.246691894531253,109.27124511718752,19.252185058593753,109.27673828125002,19.252185058593753,109.27673828125002,19.241198730468753,109.27673828125002,19.224719238281253,109.27673828125002,19.213732910156253,109.27124511718752,19.202746582031253,109.26575195312502,19.186267089843753,109.26025878906252,19.175280761718753,109.26025878906252,19.180773925781253,109.27124511718752,19.191760253906253,109.29321777343752,19.208239746093753,109.30969726562502,19.224719238281253,109.33166992187502,19.230212402343753,109.34265625000002,19.241198730468753,109.34814941406252,19.246691894531253,109.35364257812502,19.257678222656253,109.35913574218752,19.257678222656253,109.36462890625002,19.246691894531253,109.36462890625002,19.241198730468753,109.36462890625002,19.224719238281253,109.36462890625002,19.213732910156253,109.36462890625002,19.191760253906253,109.35364257812502,19.175280761718753,109.34814941406252,19.153308105468753,109.33716308593752,19.136828613281253,109.33166992187502,19.125842285156253,109.33166992187502,19.114855957031253,109.33166992187502,19.109362792968753,109.33166992187502,19.114855957031253,109.33166992187502,19.125842285156253,109.33166992187502,19.136828613281253,109.33716308593752,19.142321777343753,109.33716308593752,19.147814941406253,109.34265625000002,19.147814941406253,109.34814941406252,19.147814941406253,109.35364257812502,19.136828613281253,109.35913574218752,19.114855957031253,109.36462890625002,19.087390136718753,109.36462890625002,19.065417480468753,109.36462890625002,19.043444824218753,109.36462890625002,19.026965332031253,109.36462890625002,19.010485839843753,109.37012207031252,19.010485839843753,109.37561523437502,19.015979003906253,109.37561523437502,19.032458496093753,109.38660156250002,19.054431152343753,109.39758789062502,19.076403808593753,109.40857421875002,19.103869628906253,109.41956054687502,19.120349121093753,109.43604003906252,19.142321777343753,109.44153320312502,19.158801269531253,109.45251953125002,19.164294433593753,109.45801269531252,19.169787597656253,109.46350585937502,19.175280761718753,109.46350585937502,19.169787597656253,109.46899902343752,19.158801269531253,109.47449218750002,19.147814941406253,109.47449218750002,19.131335449218753,109.47449218750002,19.114855957031253,109.47449218750002,19.092883300781253,109.47449218750002,19.065417480468753,109.46899902343752,19.054431152343753,109.46899902343752,19.048937988281253,109.46899902343752,19.043444824218753,109.46899902343752,19.059924316406253,109.47449218750002,19.076403808593753,109.48547851562502,19.098376464843753,109.50195800781252,19.125842285156253,109.51843750000002,19.147814941406253,109.52393066406252,19.158801269531253,109.53491699218752,19.164294433593753,109.54041015625002,19.175280761718753,109.54590332031252,19.175280761718753,109.54590332031252,19.180773925781253,109.55688964843752,19.180773925781253,109.55688964843752,19.169787597656253,109.55688964843752,19.153308105468753,109.55688964843752,19.136828613281253,109.55688964843752,19.114855957031253,109.55688964843752,19.092883300781253,109.55688964843752,19.059924316406253,109.55688964843752,19.043444824218753,109.55139648437502,19.026965332031253,109.54590332031252,19.015979003906253,109.55139648437502,19.021472167968753,109.55688964843752,19.032458496093753,109.56787597656252,19.048937988281253,109.58435546875002,19.065417480468753,109.59534179687502,19.081896972656253,109.60632812500002,19.092883300781253,109.61731445312502,19.103869628906253,109.62830078125002,19.109362792968753,109.62830078125002,19.114855957031253,109.63379394531252,19.109362792968753,109.63928710937502,19.098376464843753,109.63928710937502,19.087390136718753,109.63928710937502,19.059924316406253,109.63928710937502,19.021472167968753,109.63379394531252,18.983020019531253,109.62280761718752,18.950061035156253,109.61731445312502,18.928088378906253,109.61731445312502,18.911608886718753,109.61182128906252,18.895129394531253,109.61182128906252,18.889636230468753,109.61182128906252,18.895129394531253,109.61731445312502,18.917102050781253,109.63379394531252,18.944567871093753,109.65576660156252,18.977526855468753,109.67773925781252,19.004992675781253,109.69971191406252,19.037951660156253,109.71619140625002,19.059924316406253,109.72168457031252,19.076403808593753,109.73267089843752,19.081896972656253,109.73267089843752,19.087390136718753,109.73816406250002,19.087390136718753,109.74365722656252,19.087390136718753,109.74365722656252,19.081896972656253,109.74365722656252,19.065417480468753,109.74365722656252,19.043444824218753,109.74365722656252,19.015979003906253,109.74365722656252,18.983020019531253,109.74365722656252,18.955554199218753,109.73816406250002,18.928088378906253,109.73267089843752,18.917102050781253,109.72717773437502,18.906115722656253,109.72717773437502,18.922595214843753,109.73267089843752,18.944567871093753,109.73816406250002,18.972033691406253,109.74365722656252,18.988513183593753,109.75464355468752,19.004992675781253,109.76562988281252,19.015979003906253,109.76562988281252,19.032458496093753,109.77112304687502,19.032458496093753,109.77112304687502,19.037951660156253,109.77112304687502,19.021472167968753,109.77112304687502,19.004992675781253,109.77112304687502,18.988513183593753,109.77112304687502,18.972033691406253,109.77112304687502,18.955554199218753,109.77112304687502,18.944567871093753,109.77112304687502,18.939074707031253,109.77112304687502,18.955554199218753,109.77661621093752,18.972033691406253,109.79309570312502,18.988513183593753,109.80408203125002,19.004992675781253,109.82056152343752,19.032458496093753,109.83154785156252,19.048937988281253,109.83704101562502,19.059924316406253,109.84253417968752,19.059924316406253,109.84253417968752,19.054431152343753,109.84253417968752,19.037951660156253,109.84253417968752,19.021472167968753,109.84253417968752,19.004992675781253,109.84253417968752,18.983020019531253,109.84802734375002,18.961047363281253,109.84802734375002,18.944567871093753,109.84802734375002,18.933581542968753,109.84802734375002,18.928088378906253,109.85352050781252,18.922595214843753,109.85352050781252,18.928088378906253,109.85901367187502,18.939074707031253,109.86450683593752,18.955554199218753,109.87549316406252,18.972033691406253,109.88098632812502,18.988513183593753,109.88647949218752,19.010485839843753,109.89197265625002,19.037951660156253,109.89746582031252,19.054431152343753,109.89746582031252,19.065417480468753,109.90295898437502,19.070910644531253,109.90845214843752,19.070910644531253,109.90845214843752,19.065417480468753,109.91394531250002,19.059924316406253,109.91943847656252,19.043444824218753,109.92493164062502,19.032458496093753,109.93591796875002,19.010485839843753,109.94141113281252,18.994006347656253,109.94690429687502,18.972033691406253,109.95239746093752,18.950061035156253,109.95789062500002,18.928088378906253,109.95789062500002,18.922595214843753,109.95789062500002,18.917102050781253,109.95789062500002,18.928088378906253,109.96338378906252,18.944567871093753,109.96887695312502,18.966540527343753,109.96887695312502,18.988513183593753,109.97437011718752,19.021472167968753,109.97986328125002,19.037951660156253,109.99084960937502,19.059924316406253,109.99634277343752,19.076403808593753,109.99634277343752,19.070910644531253,109.99634277343752,19.059924316406253,109.99634277343752,19.054431152343753,109.99634277343752,19.048937988281253,110.00183593750002,19.043444824218753]";
-//        try{
-//          JSONArray array = new JSONArray(pts);
-//          line.points(array);
-//          line.width(20);
-//          line.color("#00ff0033");
-//          line.id("testRoute");
-//          line.update();
-//          // 把线显示到屏幕中间
-//          FMap.INSTANCE.centerPoints(array);
-//
-//        }
-//        catch(Exception e){
-//
-//        }
-        } else if (id == R.id.btnRoute) {//                String json ="[{\"index\":\"0\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450779\",\"lat\":\"27.270722\",\"length\":\"0\"},{\"index\":\"1\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450779\",\"lat\":\"27.270722\",\"length\":\"0.000906538\"},{\"index\":\"2\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450558\",\"lat\":\"27.271601\",\"length\":\"7.97234e-05\"},{\"index\":\"3\",\"m_street\":\"无名路\",\"turnString\":\"TurnRight\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450636\",\"lat\":\"27.271616\",\"length\":\"0.0023955\"},{\"index\":\"4\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.452862\",\"lat\":\"27.272501\",\"length\":\"0.000980554\"},{\"index\":\"5\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.452785\",\"lat\":\"27.271523\",\"length\":\"0.000727163\"},{\"index\":\"6\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.452779\",\"lat\":\"27.270796\",\"length\":\"0.00141439\"},{\"index\":\"7\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.452656\",\"lat\":\"27.269387\",\"length\":\"0.00559783\"},{\"index\":\"8\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.452227\",\"lat\":\"27.263806\",\"length\":\"0.00564217\"},{\"index\":\"9\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.451752\",\"lat\":\"27.258184\",\"length\":\"0.000346771\"},{\"index\":\"10\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.451725\",\"lat\":\"27.257838\",\"length\":\"0.00596223\"},{\"index\":\"11\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.451234\",\"lat\":\"27.251896\",\"length\":\"0.00275031\"},{\"index\":\"12\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450923\",\"lat\":\"27.249163\",\"length\":\"0.000517078\"},{\"index\":\"13\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450878\",\"lat\":\"27.248648\",\"length\":\"0.000167457\"},{\"index\":\"14\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450864\",\"lat\":\"27.248481\",\"length\":\"0.000546488\"},{\"index\":\"15\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450843\",\"lat\":\"27.247935\",\"length\":\"0.000999846\"},{\"index\":\"16\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450805\",\"lat\":\"27.246936\",\"length\":\"0.000644647\"},{\"index\":\"17\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450773\",\"lat\":\"27.246292\",\"length\":\"0.000319549\"},{\"index\":\"18\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450770\",\"lat\":\"27.245973\",\"length\":\"0.000941848\"},{\"index\":\"19\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450676\",\"lat\":\"27.245036\",\"length\":\"0.00523041\"},{\"index\":\"20\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450279\",\"lat\":\"27.239820\",\"length\":\"0.000819395\"},{\"index\":\"21\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450231\",\"lat\":\"27.239002\",\"length\":\"0.000497809\"},{\"index\":\"22\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450151\",\"lat\":\"27.238511\",\"length\":\"0.000341287\"},{\"index\":\"23\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450137\",\"lat\":\"27.238170\",\"length\":\"9.09783e-05\"},{\"index\":\"24\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.450129\",\"lat\":\"27.238079\",\"length\":\"0.00347386\"},{\"index\":\"25\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.449823\",\"lat\":\"27.234619\",\"length\":\"3.82519e-05\"},{\"index\":\"26\",\"m_street\":\"西湖路\",\"turnString\":\"GoStraight\",\"targetName\":\"西湖路\",\"sourceName\":\"西湖路\",\"lon\":\"111.449821\",\"lat\":\"27.234581\",\"length\":\"0.000337558\"},{\"index\":\"27\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.449791\",\"lat\":\"27.234245\",\"length\":\"0.000153008\"},{\"index\":\"28\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.449781\",\"lat\":\"27.234092\",\"length\":\"0.000511377\"},{\"index\":\"29\",\"m_street\":\"西湖路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.449748\",\"lat\":\"27.233582\",\"length\":\"0.0041423\"},{\"index\":\"30\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.449472\",\"lat\":\"27.229449\",\"length\":\"0.00344921\"},{\"index\":\"31\",\"m_street\":\"敏州西路\",\"turnString\":\"TurnRight\",\"targetName\":\"敏州西路\",\"sourceName\":\"西湖路\",\"lon\":\"111.449282\",\"lat\":\"27.226005\",\"length\":\"0.00207327\"},{\"index\":\"32\",\"m_street\":\"马蹄塘路\",\"turnString\":\"UTurnLeft\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.449102\",\"lat\":\"27.223939\",\"length\":\"0.0044745\"},{\"index\":\"33\",\"m_street\":\"敏州西路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.444628\",\"lat\":\"27.224011\",\"length\":\"0.000107362\"},{\"index\":\"34\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.444625\",\"lat\":\"27.223903\",\"length\":\"0.00342812\"},{\"index\":\"35\",\"m_street\":\"无名路\",\"turnString\":\"None\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.448053\",\"lat\":\"27.223838\",\"length\":\"0.000837974\"},{\"index\":\"36\",\"m_street\":\"无名路\",\"turnString\":\"ReachedYourDestination\",\"targetName\":\"无名路\",\"sourceName\":\"无名路\",\"lon\":\"111.448032\",\"lat\":\"27.223000\",\"length\":\"0\"}]";
-//
-//                StringBuilder stringBuilder3 = new StringBuilder();
-//                try {
-//                    AssetManager assetManager = MapTestActivity.this.getAssets();
-//                    BufferedReader bf = new BufferedReader(new InputStreamReader(
-//                            assetManager.open("routionData.json")));
-//                    String line;
-//                    while ((line = bf.readLine()) != null) {
-//                        stringBuilder3.append(line);
-//                    }
-//
-//                    JSONArray jsonArray = new JSONArray(stringBuilder3.toString());
-//                    StringBuffer stringBuffer = new StringBuffer();
-//                    StringBuffer stringBuffer2= new StringBuffer();
-//                    for(int i=0 ; i < jsonArray.length() ;i++){
-//                        JSONObject o = (JSONObject) jsonArray.get(i);
-//                        String lon = o.getString("lon");
-//                        String lat = o.getString("lat");
-//                        String id = o.getString("index");
-//                        stringBuffer.append("<node id='");
-//                        stringBuffer.append(id);
-//                        stringBuffer.append("' lat='");
-//                        stringBuffer.append(lat);
-//                        stringBuffer.append("' lon='");
-//                        stringBuffer.append(lon);
-//                        stringBuffer.append("' />");
-//                        stringBuffer.append("\n");
-//
-//                        stringBuffer2.append("<nd ref='");
-//                        stringBuffer2.append(id);
-//                        stringBuffer2.append("' />");
-//                        stringBuffer2.append("\n");
-//                    }
-//                    String s1 = stringBuffer.toString();
-//                    String s3 = stringBuffer2.toString();
-//                    String s2 = stringBuffer.toString();
-//                } catch (IOException | JSONException e) {
-//                    e.printStackTrace();
-//                }
-            FMap.INSTANCE.removeRoute();
-            FMap.INSTANCE.closeRouting();
-            FTMapRoutePoint mFTMapRoutePoint = new FTMapRoutePoint();
-            FTMapRoutePoint.FTMapPoint startPoint = new FTMapRoutePoint.FTMapPoint();
-            Location lastLocation = LocationHelper.INSTANCE.getSavedLocation();
-            startPoint.setName("我的位置");
-            startPoint.setLat(lastLocation.getLatitude());
-            startPoint.setLon(lastLocation.getLongitude());
-            startPoint.setMyPosition(true);
-            FTMapRoutePoint.FTMapPoint endPoint = new FTMapRoutePoint.FTMapPoint();
-            endPoint.setName("北京饭店");
-            endPoint.setLat(39.90768);
-            endPoint.setLon(116.40152);
-            endPoint.setMyPosition(false);
-            mFTMapRoutePoint.setEndPoint(endPoint);
-            mFTMapRoutePoint.setStartPoint(startPoint);
-            JSONArray points = mFTMapRoutePoint.toJsonArr();
-            FMap.INSTANCE.routing(points, "Vehicle", (JSONObject result) -> {
-                String s1 = result.toString();
-                Log.d("routing", s1);
-                // 把路线画出来
-                try {
-                    JSONArray routePoints = result.getJSONArray("result");
-//                        this.line = (FMap.LineItem) FMap.INSTANCE.createDrawItem(FMap.DrawItemType.LINE);
-//                        line.points(routePoints);
-//                        line.width(20);
-//                        line.color("#79a9fc");
-//                        line.id("testRoute");
-//                        line.update();
-//                        // 把线显示到屏幕中间
-//                        FMap.INSTANCE.centerPoints(routePoints);
-                } catch (Exception e) {
-
-                }
-            });
-        } else if (id == R.id.btnZoomIn) {
-            RoutingInfo routingInfo = nativeGetRouteFollowingInfo();
-            String s1 = routingInfo.toString();
-//                FMap.INSTANCE.hideRoute("route-1");
-//                FMap.INSTANCE.zoom(true);
-        } else if (id == R.id.btnZoomOut) {
-            FMap.INSTANCE.zoom(false);
-        } else if (id == R.id.btnStyleClear) {
-            FMap.INSTANCE.setMapStyle("clear");
-        } else if (id == R.id.btnStyleDark) {
-            FMap.INSTANCE.setMapStyle("camouflage");
+        private MapButtons() {
         }
     }
-
-    private void initOnMapClickListener() {
-        FMap.INSTANCE.OnMapClickListener((JSONObject results) -> {
-            String s1 = results.toString();
-            Log.d("OnMapClickListener", s1);
-
-            try {
-                if ("longClick".equals(results.get("clickTypr").toString())) {
-                    int screenX = results.getInt("screenX");
-                    int screenY = results.getInt("screenY");
-//                    Toast.makeText(MapTestActivity.this, screenX+"----"+screenY+"-----", Toast.LENGTH_LONG).show();
-                    FMap.INSTANCE.PtoG(screenX, screenY, (JSONObject results1) -> {
-                        try {
-                            double mercatorX = results1.getDouble("mercatorX");
-                            double mercatorY = results1.getDouble("mercatorY");
-                            FMap.INSTANCE.GetMapObject(mercatorX, mercatorY, (JSONObject results2) -> {
-                                Toast.makeText(MapTestActivity.this, results2.toString(), Toast.LENGTH_LONG).show();
-
-                            });
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    });
-                } else if ("Move".equals(results.get("clickTypr").toString())) {
-                    DisplayMetrics dm1 = getResources().getDisplayMetrics();
-                    FMap.INSTANCE.ScreenToMapObject(dm1.widthPixels / 2, dm1.heightPixels / 2, (JSONObject results1) -> {
-//                                Toast.makeText(MapTestActivity.this, results1.toString(), Toast.LENGTH_LONG).show();
-
-                    });
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-//                    String s1 = results.toString();
-//                    Log.d("PtoG", s1);
-//          results.put("");
-        });
-    }
-
-    @Override
-    public void onRenderingCreated() {
-//        checkMeasurementSystem();
-//        checkKitkatMigrationMove();
-
-        LocationHelper.INSTANCE.attach(this);
-    }
-
-    @Override
-    public void onRenderingRestored() {
-
-    }
-
-    @Override
-    public void onRenderingInitializationFinished() {
-
-    }
-
-
-    @Override
-    public void onPointerCaptureChanged(boolean hasCapture) {
-        super.onPointerCaptureChanged(hasCapture);
-    }
-
-    @Override
-    public Activity getActivity() {
-        return null;
-    }
-
-    @Override
-    public void onMyPositionModeChanged(int newMode) {
-
-    }
-
-    @Override
-    public void onLocationUpdated(@NonNull Location location) {
-
-        RoutingInfo routingInfo = FTMap.nativeGetRouteFollowingInfo();
-        if (routingInfo != null) {
-            String s = routingInfo.toString();
-            Log.d("移动了定位", s);
-            Toast.makeText(MapTestActivity.this, s, Toast.LENGTH_LONG).show();
-        }
-//        mNavigationController.update(Framework.nativeGetRouteFollowingInfo());
-        TtsPlayer.INSTANCE.playTurnNotifications(getApplicationContext());
-
-    }
-
-    @Override
-    public void onCompassUpdated(long time, double north) {
-
-    }
-
-    @Override
-    public void onLocationError(int errorCode) {
-
-    }
-
-    @Override
-    public void onCompassUpdated(@NonNull CompassData compass) {
-
-    }
-
-    @Override
-    public void onLocationError() {
-
-    }
-
-    @Override
-    public void onLocationNotFound() {
-
-    }
-
-    @Override
-    public void onRoutingFinish() {
-
-    }
-
-
 }

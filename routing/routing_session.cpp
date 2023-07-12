@@ -508,6 +508,10 @@ namespace routing {
             return;
         }
 
+        if(m_route==route)
+        {
+            return;
+        }
         RemoveRoute();
         SetState(SessionState::RouteNotStarted);
         m_lastCompletionPercent = 0;

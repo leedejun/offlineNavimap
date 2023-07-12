@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import com.ftmap.maps.FTMap;
 import com.ftmap.maps.background.AppBackgroundTracker;
 
-class TransitionListener implements AppBackgroundTracker.OnTransitionListener
+public class TransitionListener implements AppBackgroundTracker.OnTransitionListener
 {
   @NonNull
   private final GPSCheck mReceiver = new GPSCheck();

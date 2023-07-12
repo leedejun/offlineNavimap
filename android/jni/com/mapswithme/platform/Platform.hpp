@@ -19,7 +19,7 @@ class Platform : public ::Platform
 public:
   Platform();
 
-  void Initialize(JNIEnv * env, jobject functorProcessObject, jstring apkPath, jstring storagePath,
+  void Initialize(JNIEnv * env, jobject functorProcessObject,jobject context, jstring apkPath, jstring storagePath,
                   jstring privatePath, jstring tmpPath, jstring obbGooglePath, jstring flavorName,
                   jstring buildType, bool isTablet);
 
@@ -62,12 +62,14 @@ public:
 
   AndroidSecureStorage & GetSecureStorage() { return m_secureStorage; }
 
-  jobject GetContext() { return m_functorProcessObject; }
+//  jobject GetContext() { return m_functorProcessObject; }
+jobject GetContext() { return m_contextObject; }
 
   static Platform & Instance();
 
 private:
   jobject m_functorProcessObject = nullptr;
+  jobject m_contextObject = nullptr;
 //  jmethodID m_sendPushWooshTagsMethod = nullptr;
   jmethodID m_sendAppsFlyerTagsMethod = nullptr;
   jmethodID m_myTrackerTrackMethod = nullptr;

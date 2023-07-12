@@ -42,6 +42,13 @@ public:
   vector<RouteSegment::SpeedCamera> GetSpeedCameraInfo(Segment const & segment) override;
   void Clear() override;
 
+    void SetSearchClass(const int searchClass){
+      for(auto &item: m_graphs){
+        item.second.m_indexGraph ? item.second.m_indexGraph->SetSearchClass(searchClass) :
+        CreateIndexGraph(item.first, item.second).m_indexGraph->SetSearchClass(searchClass);
+      }
+    }
+
 private:
   struct GraphAttrs
   {

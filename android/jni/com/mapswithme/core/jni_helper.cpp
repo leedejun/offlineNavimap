@@ -4,7 +4,7 @@
 
 #include "base/assert.hpp"
 #include "base/exception.hpp"
-
+#include <jni.h>
 #include <vector>
 
 static JavaVM * g_jvm = 0;
@@ -14,8 +14,8 @@ extern JavaVM * GetJVM()
 }
 
 // Caching is necessary to create class from native threads.
-//jclass g_mapObjectClazz;
-//jclass g_featureIdClazz;
+jclass g_mapObjectClazz;
+jclass g_featureIdClazz;
 //jclass g_myTrackerClazz;
 jclass g_httpClientClazz;
 jclass g_httpParamsClazz;
@@ -42,14 +42,33 @@ JNI_OnLoad(JavaVM * jvm, void *)
   jni::InitAssertLog();
 
   JNIEnv * env = jni::GetEnv();
-//  g_mapObjectClazz = jni::GetGlobalClassRef(env, "com/mapswithme/maps/data/MapObject");
-//  g_featureIdClazz = jni::GetGlobalClassRef(env, "com/mapswithme/maps/data/FeatureId");
+/*  static jobject class_loader_obj_ = NULL;
+  static jmethodID find_class_mid_ = NULL;
+   jclass classLoaderClass = env->FindClass("java/lang/ClassLoader");
+ jclass adapterClass = env->FindClass( "com/ftmap/util/HttpClient");
+ if (adapterClass) {
+ jmethodID getClassLoader = jni::GetStaticMethodID(env, adapterClass,"getClassLoader","()Ljava/lang/ClassLoader; ");
+ jobject obj = env->CallStaticObjectMethod(adapterClass, getClassLoader);
+ class_loader_obj_ = env->NewGlobalRef(obj);
+ find_class_mid_ = jni::GetMethodID(env, classLoaderClass, "loadClass","(Ljava/lang/String; )Ljava/lang/Class; ");
+ env->DeleteLocalRef(classLoaderClass);
+ env->DeleteLocalRef( adapterClass);
+ env->DeleteLocalRef(obj);
+ }
+    jstring class_name = env->NewStringUTF("com/ftmap/util/HttpClient");
+    g_httpClientClazz = static_cast<jclass>(env->CallObjectMethod(class_loader_obj_, find_class_mid_,
+                                                                  class_name));*/
+
 //  g_myTrackerClazz = jni::GetGlobalClassRef(env, "com/my/tracker/MyTracker");
   g_httpClientClazz = jni::GetGlobalClassRef(env, "com/ftmap/util/HttpClient");
+
+  g_featureIdClazz = jni::GetGlobalClassRef(env, "com/ftmap/maps/FeatureId");
+  g_mapObjectClazz = jni::GetGlobalClassRef(env, "com/ftmap/maps/MapObject");
   g_httpParamsClazz = jni::GetGlobalClassRef(env, "com/ftmap/util/HttpClient$Params");
   g_platformSocketClazz = jni::GetGlobalClassRef(env, "com/ftmap/maps/location/PlatformSocket");
   g_utilsClazz = jni::GetGlobalClassRef(env, "com/ftmap/util/Utils");
 //  g_bannerClazz = jni::GetGlobalClassRef(env, "com/mapswithme/maps/ads/Banner");
+//com.ftmap.util.log;
   g_loggerFactoryClazz = jni::GetGlobalClassRef(env, "com/ftmap/util/log/LoggerFactory");
   g_keyValueClazz = jni::GetGlobalClassRef(env, "com/ftmap/util/KeyValue");
   g_httpUploaderClazz = jni::GetGlobalClassRef(env, "com/ftmap/util/HttpUploader");
@@ -68,8 +87,8 @@ JNI_OnUnload(JavaVM *, void *)
 {
   g_jvm = 0;
   JNIEnv * env = jni::GetEnv();
-//  env->DeleteGlobalRef(g_mapObjectClazz);
-//  env->DeleteGlobalRef(g_featureIdClazz);
+  env->DeleteGlobalRef(g_mapObjectClazz);
+  env->DeleteGlobalRef(g_featureIdClazz);
 //  env->DeleteGlobalRef(g_myTrackerClazz);
   env->DeleteGlobalRef(g_httpClientClazz);
   env->DeleteGlobalRef(g_httpParamsClazz);
@@ -257,7 +276,7 @@ std::string DescribeException()
 
 jobject GetNewParcelablePointD(JNIEnv * env, m2::PointD const & point)
 {
-  jclass klass = env->FindClass("com/mapswithme/maps/data/ParcelablePointD");
+  jclass klass = env->FindClass("com/ftmap/maps/ParcelablePointD");
   ASSERT ( klass, () );
   jmethodID methodID = GetConstructorID(env, klass, "(DD)V");
 

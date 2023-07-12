@@ -63,6 +63,8 @@ public:
 
   void SetGuides(GuidesGraph const & guides);
 
+    void SetSearchClass(const int searchClass){m_graph.SetSearchClass(searchClass);}
+
   WorldGraph & GetGraph() const { return m_graph; }
   WorldGraphMode GetMode() const { return m_graph.GetMode(); }
   LatLonWithAltitude const & GetStartJunction() const;

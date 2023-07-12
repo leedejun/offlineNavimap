@@ -30,6 +30,9 @@ set(
   com/mapswithme/maps/FtMap.cpp
   com/mapswithme/maps/FtMap.hpp
   com/mapswithme/maps/SearchEngine.hpp
+  #com/mapswithme/maps/SearchEngine.cpp
+ # com/mapswithme/maps/SearchRecents.cpp
+   #     com/mapswithme/maps/UserMarkHelper.cpp
   com/mapswithme/opengl/android_gl_utils.hpp
   com/mapswithme/opengl/androidoglcontext.hpp
   com/mapswithme/opengl/androidoglcontextfactory.hpp
@@ -43,7 +46,7 @@ set(
   com/mapswithme/core/logging.cpp
   com/mapswithme/maps/Framework.cpp
   com/mapswithme/maps/LocationHelper.cpp
-#  com/mapswithme/maps/LocationState.cpp
+  com/mapswithme/maps/LocationState.cpp
   com/mapswithme/maps/MapFragment.cpp
   com/mapswithme/maps/MapManager.cpp
   com/mapswithme/maps/PrivateVariables.cpp
@@ -51,6 +54,7 @@ set(
   com/mapswithme/maps/settings/UnitLocale.cpp
   com/mapswithme/maps/sound/tts.cpp
   com/mapswithme/maps/TrackRecorder.cpp
+#  com/mapswithme/maps/ugc/UGC.cpp
   com/mapswithme/opengl/android_gl_utils.cpp
   com/mapswithme/opengl/androidoglcontext.cpp
   com/mapswithme/opengl/androidoglcontextfactory.cpp
@@ -61,7 +65,7 @@ set(
   com/mapswithme/platform/PThreadImpl.cpp
   com/mapswithme/platform/SecureStorage.cpp
   com/mapswithme/platform/SocketImpl.cpp
-
+  #com/mapswithme/maps/MwmApplication.cpp
   com/mapswithme/util/Config.cpp
   com/mapswithme/util/GeoUtils.cpp
   com/mapswithme/platform/GuiThread.cpp

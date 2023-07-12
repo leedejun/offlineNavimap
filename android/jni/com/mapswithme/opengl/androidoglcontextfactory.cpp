@@ -109,7 +109,8 @@ AndroidOGLContextFactory::AndroidOGLContextFactory(JNIEnv * env, jobject jsurfac
   bool availableES3 = IsSupportedRGB8(m_display, true /* es3 */);
   if (availableES3)
   {
-    int const sdkVersion = GetAndroidSdkVersion();
+//    int const sdkVersion = GetAndroidSdkVersion();
+    int const sdkVersion = 28;
     if (sdkVersion != 0)
       availableES3 = (sdkVersion >= kMinSdkVersionForES3);
   }

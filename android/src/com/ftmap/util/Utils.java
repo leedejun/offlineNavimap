@@ -1,7 +1,6 @@
 package com.ftmap.util;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.Context;
@@ -33,11 +32,25 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 import androidx.fragment.app.Fragment;
 
-import com.ftmap.maps.FTMap;
+import com.ftmap.app.MapTestApplication;
+import com.ftmap.base.CustomNavigateUpListener;
+import com.ftmap.maps.BuildConfig;
+import com.ftmap.maps.R;
+import com.ftmap.util.CrashlyticsUtils;
+import com.ftmap.util.StorageUtils;
 import com.ftmap.util.concurrency.UiThread;
 import com.ftmap.util.log.Logger;
 import com.ftmap.util.log.LoggerFactory;
+//import com.mapswithme.maps.BuildConfig;
+//import com.mapswithme.maps.MwmApplication;
+//import com.mapswithme.maps.R;
+//import com.mapswithme.maps.base.CustomNavigateUpListener;
+//import com.mapswithme.maps.analytics.ExternalLibrariesMediator;
+//import com.mapswithme.util.concurrency.UiThread;
+//import com.mapswithme.util.log.Logger;
+//import com.mapswithme.util.log.LoggerFactory;
 //import com.mapswithme.util.statistics.AlohaHelper;
+import com.ftmap.app.MapTestApplication;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -82,6 +95,12 @@ public class Utils
   {
     return Build.VERSION.SDK_INT >= target;
   }
+
+  public static boolean isAmazonDevice()
+  {
+    return "Amazon".equalsIgnoreCase(Build.MANUFACTURER);
+  }
+
   /**
    * Enable to keep screen on.
    * Disable to let system turn it off automatically.
@@ -118,7 +137,7 @@ public class Utils
   public static void copyTextToClipboard(Context context, String text)
   {
     final android.content.ClipboardManager clipboard =
-        (android.content.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+            (android.content.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
     final ClipData clip = ClipData.newPlainText("maps.me: " + text, text);
     clipboard.setPrimaryClip(clip);
   }
@@ -146,7 +165,7 @@ public class Utils
 
   public static boolean isPackageInstalled(String packageUri)
   {
-    PackageManager pm = FTMap.INSTANCE.getApp().getPackageManager();
+    PackageManager pm = MapTestApplication.get().getPackageManager();
     boolean installed;
     try
     {
@@ -159,14 +178,14 @@ public class Utils
     return installed;
   }
 
-//  public static Uri buildMailUri(String to, String subject, String body)
-//  {
-//    String uriString = Constants.Url.MAILTO_SCHEME + Uri.encode(to) +
-//        Constants.Url.MAIL_SUBJECT + Uri.encode(subject) +
-//        Constants.Url.MAIL_BODY + Uri.encode(body);
-//
-//    return Uri.parse(uriString);
-//  }
+  public static Uri buildMailUri(String to, String subject, String body)
+  {
+    String uriString = Constants.Url.MAILTO_SCHEME + Uri.encode(to) +
+            Constants.Url.MAIL_SUBJECT + Uri.encode(subject) +
+            Constants.Url.MAIL_BODY + Uri.encode(body);
+
+    return Uri.parse(uriString);
+  }
 
   public static String getFullDeviceModel()
   {
@@ -177,6 +196,42 @@ public class Utils
     return model;
   }
 
+  public static void openAppInMarket(Activity activity, String url)
+  {
+    final Intent marketIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+    marketIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+      marketIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+    else
+      marketIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+    try
+    {
+      activity.startActivity(marketIntent);
+    } catch (ActivityNotFoundException e)
+    {
+//      AlohaHelper.logException(e);
+    }
+  }
+
+  public static void showFacebookPage(Activity activity)
+  {
+    try
+    {
+      // Exception is thrown if we don't have installed Facebook application.
+      activity.getPackageManager().getPackageInfo(Constants.Package.FB_PACKAGE, 0);
+      activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.Url.FB_MAPSME_COMMUNITY_NATIVE)));
+    } catch (final Exception e)
+    {
+      activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.Url.FB_MAPSME_COMMUNITY_HTTP)));
+    }
+  }
+
+  public static void showTwitterPage(Activity activity)
+  {
+    activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.Url.TWITTER_MAPSME_HTTP)));
+  }
+
   public static void openUrl(@NonNull Context context, @Nullable String url)
   {
     if (TextUtils.isEmpty(url))
@@ -184,8 +239,8 @@ public class Utils
 
     final Intent intent = new Intent(Intent.ACTION_VIEW);
     Uri uri = isHttpOrHttpsScheme(url)
-               ? Uri.parse(url)
-               : new Uri.Builder().scheme("http").appendEncodedPath(url).build();
+            ? Uri.parse(url)
+            : new Uri.Builder().scheme("http").appendEncodedPath(url).build();
     intent.setData(uri);
     try
     {
@@ -193,11 +248,11 @@ public class Utils
     }
     catch (ActivityNotFoundException e)
     {
-//      CrashlyticsUtils.logException(e);
+      CrashlyticsUtils.logException(e);
     }
     catch (AndroidRuntimeException e)
     {
-//      CrashlyticsUtils.logException(e);
+      CrashlyticsUtils.logException(e);
       intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       context.startActivity(intent);
     }
@@ -214,12 +269,12 @@ public class Utils
     }
     catch (ActivityNotFoundException e)
     {
-//      CrashlyticsUtils.logException(e);
+      CrashlyticsUtils.logException(e);
       return false;
     }
     catch (AndroidRuntimeException e)
     {
-//      CrashlyticsUtils.logException(e);
+      CrashlyticsUtils.logException(e);
       intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       context.startActivity(intent);
       return false;
@@ -256,33 +311,99 @@ public class Utils
     }
   }
 
-  public static String getInstallationId()
+  public static void sendBugReport(@NonNull Activity activity, @NonNull String subject)
   {
-    return "";
-//    final Context context = app;
-//    final SharedPreferences sharedPrefs = context.getSharedPreferences(
-//      org.alohalytics.Statistics.PREF_FILE, Context.MODE_PRIVATE);
-//    // "UNIQUE_ID" is the value of org.alohalytics.Statistics.PREF_UNIQUE_ID, but it private.
-//    String installationId = sharedPrefs.getString("UNIQUE_ID", null);
-//
-//    if (TextUtils.isEmpty(installationId))
-//      return "";
-//
-//    return installationId;
+    LoggerFactory.INSTANCE.zipLogs(new SupportInfoWithLogsCallback(activity, subject,
+            Constants.Email.SUPPORT));
   }
 
-//  @Nullable
-//  public static String getAdvertisingId(@NonNull Context context)
-//  {
-//    MwmApplication application = MwmApplication.from(context);
+  public static void sendFeedback(@NonNull Activity activity)
+  {
+    LoggerFactory.INSTANCE.zipLogs(new SupportInfoWithLogsCallback(activity, "Feedback",
+            Constants.Email.FEEDBACK));
+  }
+
+  public static void navigateToParent(@Nullable Activity activity)
+  {
+    if (activity == null)
+      return;
+
+    if (activity instanceof CustomNavigateUpListener)
+      ((CustomNavigateUpListener) activity).customOnNavigateUp();
+    else
+      NavUtils.navigateUpFromSameTask(activity);
+  }
+
+  public static SpannableStringBuilder formatUnitsText(Context context, @DimenRes int size, @DimenRes int units, String dimension, String unitText)
+  {
+    final SpannableStringBuilder res = new SpannableStringBuilder(dimension).append(" ").append(unitText);
+    res.setSpan(new AbsoluteSizeSpan(UiUtils.dimen(context, size), false), 0, dimension.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    res.setSpan(new AbsoluteSizeSpan(UiUtils.dimen(context, units), false), dimension.length(), res.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    return res;
+  }
+
+  public static void checkConnection(final Context context, final @StringRes int message, final Proc<Boolean> onCheckPassedCallback)
+  {
+    if (true/*ConnectionState.isConnected()*/)
+    {
+      onCheckPassedCallback.invoke(true);
+      return;
+    }
+
+    class Holder
+    {
+      boolean accepted;
+    }
+
+    final Holder holder = new Holder();
+    new AlertDialog.Builder(context)
+            .setMessage(message)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.downloader_retry, new DialogInterface.OnClickListener()
+            {
+              @Override
+              public void onClick(DialogInterface dialog, int which)
+              {
+                holder.accepted = true;
+                checkConnection(context, message, onCheckPassedCallback);
+              }
+            }).setOnDismissListener(new DialogInterface.OnDismissListener()
+            {
+              @Override
+              public void onDismiss(DialogInterface dialog)
+              {
+                if (!holder.accepted)
+                  onCheckPassedCallback.invoke(false);
+              }
+            }).show();
+  }
+
+  public static String getInstallationId()
+  {
+    final Context context = MapTestApplication.get();
+    final SharedPreferences sharedPrefs = context.getSharedPreferences(
+            "ALOHALYTICS", Context.MODE_PRIVATE);
+    // "UNIQUE_ID" is the value of org.alohalytics.Statistics.PREF_UNIQUE_ID, but it private.
+    String installationId = sharedPrefs.getString("UNIQUE_ID", null);
+
+    if (TextUtils.isEmpty(installationId))
+      return "";
+
+    return installationId;
+  }
+
+  @Nullable
+  public static String getAdvertisingId(@NonNull Context context)
+  {
+    MapTestApplication application = MapTestApplication.from(context);
 //    ExternalLibrariesMediator mediator = application.getMediator();
-//    return mediator.getAdvertisingId();
-//  }
+    return null;
+  }
 
   @NonNull
   public static String getMacAddress(boolean md5Decoded)
   {
-    final Context context = FTMap.INSTANCE.getApp();
+    final Context context = MapTestApplication.get();
     byte[] macBytes = null;
     String address = "";
     try
@@ -290,7 +411,7 @@ public class Utils
       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
       {
         WifiManager manager = (WifiManager) context.getApplicationContext().
-            getSystemService(Context.WIFI_SERVICE);
+                getSystemService(Context.WIFI_SERVICE);
         if (manager == null)
           return "";
         WifiInfo info = manager.getConnectionInfo();
@@ -363,6 +484,76 @@ public class Utils
     }
   }
 
+  private static void launchAppDirectly(@NonNull Context context, @NonNull SponsoredLinks links)
+  {
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    intent.setData(Uri.parse(links.getDeepLink()));
+    context.startActivity(intent);
+  }
+
+  private static void launchAppIndirectly(@NonNull Context context, @NonNull SponsoredLinks links)
+  {
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    intent.setData(Uri.parse(links.getDeepLink()));
+    context.startActivity(intent);
+  }
+
+  public static void openPartner(@NonNull Context activity, @NonNull SponsoredLinks links,
+                                 @NonNull String packageName, @NonNull PartnerAppOpenMode openMode)
+  {
+    switch (openMode)
+    {
+      case  Direct:
+        if (!Utils.isAppInstalled(activity, packageName))
+        {
+          openUrl(activity, links.getUniversalLink());
+          return;
+        }
+        launchAppDirectly(activity, links);
+        break;
+      case Indirect:
+        launchAppIndirectly(activity, links);
+        break;
+      default:
+        throw new AssertionError("Unsupported partner app open mode: " + openMode +
+                "; Package name: " + packageName);
+    }
+  }
+
+  public static void sendTo(@NonNull Context context, @NonNull String email)
+  {
+    Intent intent = new Intent(Intent.ACTION_SENDTO);
+    intent.setData(Utils.buildMailUri(email, "", ""));
+    context.startActivity(intent);
+  }
+
+  public static void callPhone(@NonNull Context context, @NonNull String phone)
+  {
+    Intent intent = new Intent(Intent.ACTION_DIAL);
+    intent.setData(Uri.parse("tel:" + phone));
+    try
+    {
+      context.startActivity(intent);
+    }
+    catch (ActivityNotFoundException e)
+    {
+      LOGGER.e(TAG, "Failed to call phone", e);
+//      AlohaHelper.logException(e);
+    }
+  }
+
+  public static void showSystemSettings(@NonNull Context context)
+  {
+    try
+    {
+      context.startActivity(new Intent(Settings.ACTION_SETTINGS));
+    }
+    catch (ActivityNotFoundException e)
+    {
+      LOGGER.e(TAG, "Failed to open system settings", e);
+    }
+  }
 
   @Nullable
   public static String getCurrencyCode()
@@ -430,7 +621,7 @@ public class Utils
     catch (Throwable e)
     {
       LOGGER.e(TAG, "Failed to format string for price = " + price
-                    + " and currencyCode = " + currencyCode, e);
+              + " and currencyCode = " + currencyCode, e);
       text = (price + " " + currencyCode);
     }
     return text;
@@ -447,7 +638,7 @@ public class Utils
     {
       LOGGER.e(TAG, "Failed to obtain currency symbol by currency code = " + currencyCode, e);
     }
-    
+
     return currencyCode;
   }
 
@@ -471,11 +662,11 @@ public class Utils
     catch (RuntimeException e)
     {
       LOGGER.e(TAG, "Failed to get string with id '" + key + "'", e);
-//      if (BuildConfig.BUILD_TYPE.equals("debug") || BuildConfig.BUILD_TYPE.equals("beta"))
-//      {
-//        Toast.makeText(context, "Add string id for '" + key + "'!",
-//                       Toast.LENGTH_LONG).show();
-//      }
+      if (BuildConfig.BUILD_TYPE.equals("debug") || BuildConfig.BUILD_TYPE.equals("beta"))
+      {
+        Toast.makeText(context, "Add string id for '" + key + "'!",
+                Toast.LENGTH_LONG).show();
+      }
     }
     return INVALID_ID;
   }
@@ -532,17 +723,17 @@ public class Utils
     return c;
   }
 
-  public static void detachFragmentIfCoreNotInitialized(@NonNull Context context,
+/*  public static void detachFragmentIfCoreNotInitialized(@NonNull Context context,
                                                         @NonNull Fragment fragment)
   {
-    if (context instanceof AppCompatActivity )
+    if (context instanceof AppCompatActivity && !MapTestApplication.get().arePlatformAndCoreInitialized())
     {
       ((AppCompatActivity)context).getSupportFragmentManager()
-                                  .beginTransaction()
-                                  .detach(fragment)
-                                  .commit();
+              .beginTransaction()
+              .detach(fragment)
+              .commit();
     }
-  }
+  }*/
 
   public static String capitalize(@Nullable String src)
   {
@@ -601,7 +792,7 @@ public class Utils
       return "";
 
     String key = "type." + type.replace('-', '.')
-                               .replace(':', '_');
+            .replace(':', '_');
     return getLocalizedFeatureByKey(context, key);
   }
 
@@ -643,7 +834,7 @@ public class Utils
         final Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(Intent.EXTRA_EMAIL, new String[] { mEmail });
-        intent.putExtra(Intent.EXTRA_SUBJECT, "[" + "" + "] " + mSubject);
+        intent.putExtra(Intent.EXTRA_SUBJECT, "[" + BuildConfig.VERSION_NAME + "] " + mSubject);
         if (success)
         {
           String logsZipFile = StorageUtils.getLogsZipPath(activity.getApplication());
@@ -662,7 +853,7 @@ public class Utils
         }
         catch (ActivityNotFoundException e)
         {
-//          CrashlyticsUtils.logException(e);
+          CrashlyticsUtils.logException(e);
         }
       });
     }

@@ -23,8 +23,8 @@ std::string GetLocalizedStringByUtil(jmethodID const & methodId, std::string con
 
   jni::TScopedLocalRef strRef(env, jni::ToJavaString(env, str));
   jobject context = android::Platform::Instance().GetContext();
-  jni::TScopedLocalRef localizedStrRef(env, env->CallStaticObjectMethod(g_utilsClazz, methodId,
-                                                                        context, strRef.get()));
+  jstring strResult = (jstring)env->CallStaticObjectMethod(g_utilsClazz, methodId, context, strRef.get());
+  jni::TScopedLocalRef localizedStrRef(env, strResult);
   return jni::ToNativeString(env, static_cast<jstring>(localizedStrRef.get()));
 }
 }  // namespace

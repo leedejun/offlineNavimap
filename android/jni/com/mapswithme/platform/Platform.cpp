@@ -60,7 +60,7 @@ std::string Platform::GetMemoryInfo() const
   if (env == nullptr)
     return std::string();
 
-  static std::shared_ptr<jobject> classMemLogging = jni::make_global_ref(env->FindClass("com/mapswithme/util/log/MemLogging"));
+  static std::shared_ptr<jobject> classMemLogging = jni::make_global_ref(env->FindClass("com/ftmap/util/log/MemLogging"));
   ASSERT(classMemLogging, ());
 
   static jmethodID const getMemoryInfoId = jni::GetStaticMethodID(env, static_cast<jclass>(*classMemLogging), "getMemoryInfo", "()Ljava/lang/String;");
@@ -84,7 +84,7 @@ std::string Platform::DeviceModel() const
 {
   JNIEnv * env = jni::GetEnv();
   static jmethodID const getDeviceModelId = jni::GetStaticMethodID(env, g_utilsClazz, "getDeviceModel",
-                                                                  "()Ljava/lang/String;");
+                                                                   "()Ljava/lang/String;");
   auto const deviceModel = static_cast<jstring>(env->CallStaticObjectMethod(g_utilsClazz,
                                                                             getDeviceModelId));
   return jni::ToNativeString(env, deviceModel);
@@ -106,7 +106,7 @@ Platform::EConnectionType Platform::ConnectionStatus()
   if (env == nullptr)
     return EConnectionType::CONNECTION_NONE;
 
-  static std::shared_ptr<jobject> clazzConnectionState = jni::make_global_ref(env->FindClass("com/mapswithme/util/ConnectionState"));
+  static std::shared_ptr<jobject> clazzConnectionState = jni::make_global_ref(env->FindClass("com/ftmap/util/ConnectionState"));
   ASSERT(clazzConnectionState, ());
 
   static jmethodID const getConnectionMethodId = jni::GetStaticMethodID(env, static_cast<jclass>(*clazzConnectionState), "getConnectionState", "()B");
@@ -120,13 +120,13 @@ Platform::ChargingStatus Platform::GetChargingStatus()
     return Platform::ChargingStatus::Unknown;
 
   static jclass const clazzBatteryState =
-      jni::GetGlobalClassRef(env, "com/mapswithme/util/BatteryState");
+      jni::GetGlobalClassRef(env, "com/ftmap/util/BatteryState");
   ASSERT(clazzBatteryState, ());
 
   static jmethodID const getChargingMethodId =
-      jni::GetStaticMethodID(env, clazzBatteryState, "getChargingStatus", "()I");
+          jni::GetStaticMethodID(env, clazzBatteryState, "getChargingStatus", "()I");
   return static_cast<Platform::ChargingStatus>(
-      env->CallStaticIntMethod(clazzBatteryState, getChargingMethodId));
+          env->CallStaticIntMethod(clazzBatteryState, getChargingMethodId));
 }
 
 uint8_t Platform::GetBatteryLevel()
@@ -136,11 +136,11 @@ uint8_t Platform::GetBatteryLevel()
     return 100;
 
   static auto const clazzBatteryState =
-      jni::GetGlobalClassRef(env, "com/mapswithme/util/BatteryState");
+      jni::GetGlobalClassRef(env, "com/ftmap/util/BatteryState");
   ASSERT(clazzBatteryState, ());
 
   static auto const getLevelMethodId =
-      jni::GetStaticMethodID(env, clazzBatteryState, "getLevel", "()I");
+          jni::GetStaticMethodID(env, clazzBatteryState, "getLevel", "()I");
 
   return static_cast<uint8_t>(env->CallStaticIntMethod(clazzBatteryState, getLevelMethodId));
 }
@@ -161,25 +161,26 @@ namespace platform
 
 namespace android
 {
-Platform::Platform()
-{
-  auto env = jni::GetEnv();
-  static auto const getSettingsPathId =
-      jni::GetStaticMethodID(env, g_storageUtilsClazz, "getSettingsPath", "()Ljava/lang/String;");
+    Platform::Platform()
+    {
+      auto env = jni::GetEnv();
+      static auto const getSettingsPathId =
+              jni::GetStaticMethodID(env, g_storageUtilsClazz, "getSettingsPath", "()Ljava/lang/String;");
 
-  auto const settingsDir =
-      static_cast<jstring>(env->CallStaticObjectMethod(g_storageUtilsClazz, getSettingsPathId));
+      auto const settingsDir =
+              static_cast<jstring>(env->CallStaticObjectMethod(g_storageUtilsClazz, getSettingsPathId));
 
-  SetSettingsDir(jni::ToNativeString(env, settingsDir));
-}
+      SetSettingsDir(jni::ToNativeString(env, settingsDir));
+    }
 
-void Platform::Initialize(JNIEnv * env, jobject functorProcessObject, jstring apkPath,
-                          jstring storagePath, jstring privatePath, jstring tmpPath,
-                          jstring obbGooglePath, jstring flavorName, jstring buildType,
-                          bool isTablet)
-{
-  m_functorProcessObject = env->NewGlobalRef(functorProcessObject);
-  jclass const functorProcessClass = env->GetObjectClass(functorProcessObject);
+    void Platform::Initialize(JNIEnv * env, jobject functorProcessObject,jobject context, jstring apkPath,
+                              jstring storagePath, jstring privatePath, jstring tmpPath,
+                              jstring obbGooglePath, jstring flavorName, jstring buildType,
+                              bool isTablet)
+    {
+      m_functorProcessObject = env->NewGlobalRef(functorProcessObject);
+      m_contextObject = env->NewGlobalRef(context);
+      jclass const functorProcessClass = env->GetObjectClass(functorProcessObject);
 //  m_sendPushWooshTagsMethod = env->GetMethodID(functorProcessClass, "sendPushWooshTags",
 //      "(Ljava/lang/String;[Ljava/lang/String;)V");
 //  m_sendAppsFlyerTagsMethod = env->GetMethodID(functorProcessClass, "sendAppsFlyerTags",
@@ -187,91 +188,91 @@ void Platform::Initialize(JNIEnv * env, jobject functorProcessObject, jstring ap
 //  m_myTrackerTrackMethod = env->GetStaticMethodID(g_myTrackerClazz, "trackEvent",
 //      "(Ljava/lang/String;)Z");
 
-  m_guiThread = std::make_unique<GuiThread>(m_functorProcessObject);
+      m_guiThread = std::make_unique<GuiThread>(m_functorProcessObject);
 
-  std::string const flavor = jni::ToNativeString(env, flavorName);
-  std::string const build = jni::ToNativeString(env, buildType);
-  LOG(LINFO, ("Flavor name:", flavor));
-  LOG(LINFO, ("Build type name:", build));
+      std::string const flavor = jni::ToNativeString(env, flavorName);
+      std::string const build = jni::ToNativeString(env, buildType);
+      LOG(LINFO, ("Flavor name:", flavor));
+      LOG(LINFO, ("Build type name:", build));
 
-  if (build == "beta" || build == "debug")
-    m_androidDefResScope = "fwr";
-  else if (flavor.find("google") == 0)
-    m_androidDefResScope = "ferw";
-  else if (flavor.find("amazon") == 0 || flavor.find("samsung") == 0) // optimization to read World mwm-s faster
-    m_androidDefResScope = "frw";
-  else
-    m_androidDefResScope = "fwr";
+      if (build == "beta" || build == "debug")
+        m_androidDefResScope = "fwr";
+      else if (flavor.find("google") == 0)
+        m_androidDefResScope = "ferw";
+      else if (flavor.find("amazon") == 0 || flavor.find("samsung") == 0) // optimization to read World mwm-s faster
+        m_androidDefResScope = "frw";
+      else
+        m_androidDefResScope = "fwr";
 
-  m_isTablet = isTablet;
-  m_resourcesDir = jni::ToNativeString(env, apkPath);
-  m_privateDir = jni::ToNativeString(env, privatePath);
-  m_tmpDir = jni::ToNativeString(env, tmpPath);
-  m_writableDir = jni::ToNativeString(env, storagePath);
+      m_isTablet = isTablet;
+      m_resourcesDir = jni::ToNativeString(env, apkPath);
+      m_privateDir = jni::ToNativeString(env, privatePath);
+      m_tmpDir = jni::ToNativeString(env, tmpPath);
+      m_writableDir = jni::ToNativeString(env, storagePath);
 
-  std::string const obbPath = jni::ToNativeString(env, obbGooglePath);
-  Platform::FilesList files;
-  GetFilesByExt(obbPath, ".obb", files);
-  m_extResFiles.clear();
-  for (size_t i = 0; i < files.size(); ++i)
-    m_extResFiles.push_back(obbPath + files[i]);
+      std::string const obbPath = jni::ToNativeString(env, obbGooglePath);
+      Platform::FilesList files;
+      GetFilesByExt(obbPath, ".obb", files);
+      m_extResFiles.clear();
+      for (size_t i = 0; i < files.size(); ++i)
+        m_extResFiles.push_back(obbPath + files[i]);
 
-  LOG(LINFO, ("Apk path = ", m_resourcesDir));
-  LOG(LINFO, ("Writable path = ", m_writableDir));
-  LOG(LINFO, ("Temporary path = ", m_tmpDir));
-  LOG(LINFO, ("OBB Google path = ", obbPath));
-  LOG(LINFO, ("OBB Google files = ", files));
+      LOG(LINFO, ("Apk path = ", m_resourcesDir));
+      LOG(LINFO, ("Writable path = ", m_writableDir));
+      LOG(LINFO, ("Temporary path = ", m_tmpDir));
+      LOG(LINFO, ("OBB Google path = ", obbPath));
+      LOG(LINFO, ("OBB Google files = ", files));
 
-  // IMPORTANT: This method SHOULD be called from UI thread to cache static jni ID-s inside.
+      // IMPORTANT: This method SHOULD be called from UI thread to cache static jni ID-s inside.
 //  (void) ConnectionStatus();
-}
+    }
 
-Platform::~Platform()
-{
-  JNIEnv * env = jni::GetEnv();
+    Platform::~Platform()
+    {
+      JNIEnv * env = jni::GetEnv();
 
-  if (m_functorProcessObject)
-    env->DeleteGlobalRef(m_functorProcessObject);
-}
+      if (m_functorProcessObject)
+        env->DeleteGlobalRef(m_functorProcessObject);
+    }
 
-void Platform::OnExternalStorageStatusChanged(bool isAvailable)
-{
-}
+    void Platform::OnExternalStorageStatusChanged(bool isAvailable)
+    {
+    }
 
-std::string Platform::GetStoragePathPrefix() const
-{
-  size_t const count = m_writableDir.size();
-  ASSERT_GREATER ( count, 2, () );
+    std::string Platform::GetStoragePathPrefix() const
+    {
+      size_t const count = m_writableDir.size();
+      ASSERT_GREATER ( count, 2, () );
 
-  size_t const i = m_writableDir.find_last_of('/', count-2);
-  ASSERT_GREATER ( i, 0, () );
+      size_t const i = m_writableDir.find_last_of('/', count-2);
+      ASSERT_GREATER ( i, 0, () );
 
-  return m_writableDir.substr(0, i);
-}
+      return m_writableDir.substr(0, i);
+    }
 
-void Platform::SetWritableDir(std::string const & dir)
-{
-  m_writableDir = dir;
-  settings::Set("StoragePath", m_writableDir);
-  LOG(LINFO, ("Writable path = ", m_writableDir));
-}
+    void Platform::SetWritableDir(std::string const & dir)
+    {
+      m_writableDir = dir;
+      settings::Set("StoragePath", m_writableDir);
+      LOG(LINFO, ("Writable path = ", m_writableDir));
+    }
 
-void Platform::SetSettingsDir(std::string const & dir)
-{
-  m_settingsDir = dir;
-  LOG(LINFO, ("Settings path = ", m_settingsDir));
-}
+    void Platform::SetSettingsDir(std::string const & dir)
+    {
+      m_settingsDir = dir;
+      LOG(LINFO, ("Settings path = ", m_settingsDir));
+    }
 
-bool Platform::HasAvailableSpaceForWriting(uint64_t size) const
-{
-  return (GetWritableStorageStatus(size) == ::Platform::STORAGE_OK);
-}
+    bool Platform::HasAvailableSpaceForWriting(uint64_t size) const
+    {
+      return (GetWritableStorageStatus(size) == ::Platform::STORAGE_OK);
+    }
 
-Platform & Platform::Instance()
-{
-  static Platform platform;
-  return platform;
-}
+    Platform & Platform::Instance()
+    {
+      static Platform platform;
+      return platform;
+    }
 
 //void Platform::SendPushWooshTag(std::string const & tag, std::vector<std::string> const & values)
 //{
@@ -307,83 +308,83 @@ Platform & Platform::Instance()
 //                      jni::TScopedLocalObjectArrayRef(env, jni::ToKeyValueArray(env, params)).get());
 //}
 
-void Platform::SetGuiThread(std::unique_ptr<base::TaskLoop> guiThread)
-{
-  m_guiThread = std::move(guiThread);
-}
+    void Platform::SetGuiThread(std::unique_ptr<base::TaskLoop> guiThread)
+    {
+      m_guiThread = std::move(guiThread);
+    }
 
-void Platform::AndroidSecureStorage::Init(JNIEnv * env)
-{
-  if (m_secureStorageClass != nullptr)
-    return;
+    void Platform::AndroidSecureStorage::Init(JNIEnv * env)
+    {
+      if (m_secureStorageClass != nullptr)
+        return;
 
-  m_secureStorageClass = jni::GetGlobalClassRef(env, "com/ftmap/util/SecureStorage");
-  ASSERT(m_secureStorageClass, ());
-}
+      m_secureStorageClass = jni::GetGlobalClassRef(env, "com/ftmap/util/SecureStorage");
+      ASSERT(m_secureStorageClass, ());
+    }
 
-void Platform::AndroidSecureStorage::Save(std::string const & key, std::string const & value)
-{
-  JNIEnv * env = jni::GetEnv();
-  if (env == nullptr)
-    return;
+    void Platform::AndroidSecureStorage::Save(std::string const & key, std::string const & value)
+    {
+      JNIEnv * env = jni::GetEnv();
+      if (env == nullptr)
+        return;
 
-  Init(env);
+      Init(env);
 
-  static jmethodID const saveMethodId =
-    jni::GetStaticMethodID(env, m_secureStorageClass, "save", "(Ljava/lang/String;Ljava/lang/String;)V");
+      static jmethodID const saveMethodId =
+              jni::GetStaticMethodID(env, m_secureStorageClass, "save", "(Ljava/lang/String;Ljava/lang/String;)V");
 
-  env->CallStaticVoidMethod(m_secureStorageClass, saveMethodId,
-                            jni::TScopedLocalRef(env, jni::ToJavaString(env, key)).get(),
-                            jni::TScopedLocalRef(env, jni::ToJavaString(env, value)).get());
-}
+      env->CallStaticVoidMethod(m_secureStorageClass, saveMethodId,
+                                jni::TScopedLocalRef(env, jni::ToJavaString(env, key)).get(),
+                                jni::TScopedLocalRef(env, jni::ToJavaString(env, value)).get());
+    }
 
-bool Platform::AndroidSecureStorage::Load(std::string const & key, std::string & value)
-{
-  JNIEnv * env = jni::GetEnv();
-  if (env == nullptr)
-    return false;
+    bool Platform::AndroidSecureStorage::Load(std::string const & key, std::string & value)
+    {
+      JNIEnv * env = jni::GetEnv();
+      if (env == nullptr)
+        return false;
 
-  Init(env);
+      Init(env);
 
-  static jmethodID const loadMethodId =
-    jni::GetStaticMethodID(env, m_secureStorageClass, "load", "(Ljava/lang/String;)Ljava/lang/String;");
+      static jmethodID const loadMethodId =
+              jni::GetStaticMethodID(env, m_secureStorageClass, "load", "(Ljava/lang/String;)Ljava/lang/String;");
 
-  auto const resultString = static_cast<jstring>(env->CallStaticObjectMethod(m_secureStorageClass, loadMethodId,
-    jni::TScopedLocalRef(env, jni::ToJavaString(env, key)).get()));
-  if (resultString == nullptr)
-    return false;
+      auto const resultString = static_cast<jstring>(env->CallStaticObjectMethod(m_secureStorageClass, loadMethodId,
+                                                                                 jni::TScopedLocalRef(env, jni::ToJavaString(env, key)).get()));
+      if (resultString == nullptr)
+        return false;
 
-  value = jni::ToNativeString(env, resultString);
-  return true;
-}
+      value = jni::ToNativeString(env, resultString);
+      return true;
+    }
 
-void Platform::AndroidSecureStorage::Remove(std::string const & key)
-{
-  JNIEnv * env = jni::GetEnv();
-  if (env == nullptr)
-    return;
+    void Platform::AndroidSecureStorage::Remove(std::string const & key)
+    {
+      JNIEnv * env = jni::GetEnv();
+      if (env == nullptr)
+        return;
 
-  Init(env);
+      Init(env);
 
-  static jmethodID const removeMethodId =
-    jni::GetStaticMethodID(env, m_secureStorageClass, "remove", "(Ljava/lang/String;)V");
+      static jmethodID const removeMethodId =
+              jni::GetStaticMethodID(env, m_secureStorageClass, "remove", "(Ljava/lang/String;)V");
 
-  env->CallStaticVoidMethod(m_secureStorageClass, removeMethodId,
-                            jni::TScopedLocalRef(env, jni::ToJavaString(env, key)).get());
-}
+      env->CallStaticVoidMethod(m_secureStorageClass, removeMethodId,
+                                jni::TScopedLocalRef(env, jni::ToJavaString(env, key)).get());
+    }
 
-int GetAndroidSdkVersion()
-{
-  char osVersion[PROP_VALUE_MAX + 1];
-  if (__system_property_get("ro.build.version.sdk", osVersion) == 0)
-    return 0;
+    int GetAndroidSdkVersion()
+    {
+      char osVersion[PROP_VALUE_MAX + 1];
+      if (__system_property_get("ro.build.version.sdk", osVersion) == 0)
+        return 0;
 
-  int version;
-  if (!strings::to_int(std::string(osVersion), version))
-    version = 0;
+      int version;
+      if (!strings::to_int(std::string(osVersion), version))
+        version = 0;
 
-  return version;
-}
+      return version;
+    }
 }  // namespace android
 
 Platform & GetPlatform()

@@ -44,6 +44,8 @@ public:
   JointSegment const & GetStartJoint() const { return m_startJoint; }
   JointSegment const & GetFinishJoint() const { return m_endJoint; }
 
+    void SetSearchClass(const int searchClass){m_graph.SetSearchClass(searchClass);}
+
   // AStarGraph overridings
   // @{
   RouteWeight HeuristicCostEstimate(Vertex const & from, Vertex const & to) override;
@@ -96,7 +98,7 @@ public:
   // @}
 
   WorldGraphMode GetMode() const { return m_graph.GetMode(); }
-  
+
   /// \brief Reconstructs JointSegment by segment after building the route.
   std::vector<Segment> ReconstructJoint(JointSegment const & joint);
 

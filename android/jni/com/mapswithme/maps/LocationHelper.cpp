@@ -5,13 +5,13 @@
 extern "C"
 {
   JNIEXPORT void JNICALL
-  Java_com_mapswithme_maps_location_LocationHelper_nativeOnLocationError(JNIEnv * env, jclass clazz, int errorCode)
+  Java_com_ftmap_maps_location_LocationHelper_nativeOnLocationError(JNIEnv * env, jclass clazz, int errorCode)
   {
     g_framework->OnLocationError(errorCode);
   }
 
   JNIEXPORT void JNICALL
-  Java_com_mapswithme_maps_location_LocationHelper_nativeLocationUpdated(JNIEnv * env, jclass clazz, jlong time,
+  Java_com_ftmap_maps_location_LocationHelper_nativeLocationUpdated(JNIEnv * env, jclass clazz, jlong time,
                                                                          jdouble lat, jdouble lon, jfloat accuracy,
                                                                          jdouble altitude, jfloat speed, jfloat bearing)
   {

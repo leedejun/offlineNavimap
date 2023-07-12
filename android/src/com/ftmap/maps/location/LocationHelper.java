@@ -6,22 +6,25 @@ import android.location.Location;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
-//import com.mapswithme.maps.Framework;
-//import com.mapswithme.maps.MwmApplication;
-//import com.mapswithme.maps.base.Initializable;
-//import com.mapswithme.maps.bookmarks.data.FeatureId;
-//import com.mapswithme.maps.bookmarks.data.MapObject;
-//import com.mapswithme.maps.routing.RoutingController;
+
+import com.ftmap.app.MapTestApplication;
+import com.ftmap.base.Initializable;
 import com.ftmap.maps.FTMap;
-import com.ftmap.util.Config;
+import com.ftmap.maps.FeatureId;
+import com.ftmap.maps.Framework;
+import com.ftmap.maps.MapObject;
+import com.ftmap.maps.RoutingController;
+import com.ftmap.maps.location.CompassData;
+import com.ftmap.maps.location.LocationListener;
+import com.ftmap.maps.location.TransitionListener;
 import com.ftmap.util.Listeners;
 import com.ftmap.util.LocationUtils;
-//import com.ftmap.util.PermissionsUtils;
 import com.ftmap.util.Utils;
 import com.ftmap.util.log.Logger;
 import com.ftmap.util.log.LoggerFactory;
 
-public enum LocationHelper// implements Initializable<Void>
+
+public enum LocationHelper implements Initializable<Void>
 {
   INSTANCE;
 
@@ -56,17 +59,17 @@ public enum LocationHelper// implements Initializable<Void>
       if (mInFirstRun)
       {
         mLogger.d(TAG, "Location update is obtained and must be ignored, " +
-                       "because the app is in a first run mode");
+                "because the app is in a first run mode");
         return;
       }
 
       nativeLocationUpdated(location.getTime(),
-                            location.getLatitude(),
-                            location.getLongitude(),
-                            location.getAccuracy(),
-                            location.getAltitude(),
-                            location.getSpeed(),
-                            location.getBearing());
+              location.getLatitude(),
+              location.getLongitude(),
+              location.getAccuracy(),
+              location.getAltitude(),
+              location.getSpeed(),
+              location.getBearing());
 
       if (mUiCallback != null)
         mUiCallback.onLocationUpdated(location);
@@ -92,7 +95,7 @@ public enum LocationHelper// implements Initializable<Void>
       mSavedLocation = null;
       nativeOnLocationError(errorCode);
       mLogger.d(TAG, "nativeOnLocationError errorCode = " + errorCode +
-                ", current state = " + LocationState.nameOf(getMyPositionMode()));
+              ", current state = " + LocationState.nameOf(getMyPositionMode()));
 
       if (mUiCallback == null)
         return;
@@ -113,7 +116,7 @@ public enum LocationHelper// implements Initializable<Void>
   private final Listeners<LocationListener> mListeners = new Listeners<>();
   @Nullable
   private Location mSavedLocation;
-//  private MapObject mMyPosition;
+  private MapObject mMyPosition;
   private long mSavedLocationTime;
   @NonNull
   private final SensorHelper mSensorHelper = new SensorHelper();
@@ -128,40 +131,42 @@ public enum LocationHelper// implements Initializable<Void>
 
   @SuppressWarnings("FieldCanBeLocal")
   private final LocationState.ModeChangeListener mMyPositionModeListener =
-      new LocationState.ModeChangeListener()
-  {
-    @Override
-    public void onMyPositionModeChanged(int newMode)
-    {
-      notifyMyPositionModeChanged(newMode);
-      mLogger.d(TAG, "onMyPositionModeChanged mode = " + LocationState.nameOf(newMode));
+          new LocationState.ModeChangeListener()
+          {
+            @Override
+            public void onMyPositionModeChanged(int newMode)
+            {
+              notifyMyPositionModeChanged(newMode);
+              mLogger.d(TAG, "onMyPositionModeChanged mode = " + LocationState.nameOf(newMode));
 
-      if (mUiCallback == null)
-        mLogger.d(TAG, "UI is not ready to listen my position changes, i.e. it's not attached yet.");
-    }
-  };
+              if (mUiCallback == null)
+                mLogger.d(TAG, "UI is not ready to listen my position changes, i.e. it's not attached yet.");
+            }
+          };
 
   @SuppressWarnings("FieldCanBeLocal")
   private final LocationState.LocationPendingTimeoutListener mLocationPendingTimeoutListener =
-      new LocationState.LocationPendingTimeoutListener()
-  {
-    @Override
-    public void onLocationPendingTimeout()
-    {
-      stop();
-      if (LocationUtils.areLocationServicesTurnedOn())
-        notifyLocationNotFound();
-    }
-  };
+          new LocationState.LocationPendingTimeoutListener()
+          {
+            @Override
+            public void onLocationPendingTimeout()
+            {
+              stop();
+              if (LocationUtils.areLocationServicesTurnedOn())
+                notifyLocationNotFound();
+            }
+          };
 
+  @Override
   public void initialize(@Nullable Void aVoid)
   {
     initProvider();
     LocationState.nativeSetListener(mMyPositionModeListener);
     LocationState.nativeSetLocationPendingTimeoutListener(mLocationPendingTimeoutListener);
-    FTMap.INSTANCE.backgroundTracker().addListener(mOnTransition);
+//    MapTestApplication.backgroundTracker().addListener(mOnTransition);
   }
 
+  @Override
   public void destroy()
   {
     // No op.
@@ -169,7 +174,19 @@ public enum LocationHelper// implements Initializable<Void>
 
   private void initProvider()
   {
+    mLogger.d(TAG, "initProvider", new Throwable());
+//    final MwmApplication application = MwmApplication.get();
+//    final boolean containsGoogleServices = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(application) == ConnectionResult.SUCCESS;
+//    final boolean googleServicesTurnedInSettings = Config.useGoogleServices();
+//    if (containsGoogleServices && googleServicesTurnedInSettings)
+//    {
+//      mLogger.d(TAG, "Use fused provider.");
+//      mLocationProvider = new GoogleFusedLocationProvider(new FusedLocationFixChecker());
+//    }
+//    else
+//    {
       initNativeProvider();
+//    }
   }
 
   void initNativeProvider()
@@ -181,31 +198,31 @@ public enum LocationHelper// implements Initializable<Void>
   public void onLocationUpdated(@NonNull Location location)
   {
     mSavedLocation = location;
-//    mMyPosition = null;
+    mMyPosition = null;
     mSavedLocationTime = System.currentTimeMillis();
   }
 
   /**
    * @return MapObject.MY_POSITION, null if location is not yet determined or "My position" button is switched off.
    */
-//  @Nullable
-//  public MapObject getMyPosition()
-//  {
-//    if (!LocationState.isTurnedOn())
-//    {
-//      mMyPosition = null;
-//      return null;
-//    }
-//
-//    if (mSavedLocation == null)
-//      return null;
-//
-//    if (mMyPosition == null)
-//      mMyPosition = MapObject.createMapObject(FeatureId.EMPTY, MapObject.MY_POSITION, "", "",
-//                                  mSavedLocation.getLatitude(), mSavedLocation.getLongitude());
-//
-//    return mMyPosition;
-//  }
+  @Nullable
+  public MapObject getMyPosition()
+  {
+    if (!LocationState.isTurnedOn())
+    {
+      mMyPosition = null;
+      return null;
+    }
+
+    if (mSavedLocation == null)
+      return null;
+
+    if (mMyPosition == null)
+      mMyPosition = MapObject.createMapObject(FeatureId.EMPTY, MapObject.MY_POSITION, "", "",
+              mSavedLocation.getLatitude(), mSavedLocation.getLongitude());
+
+    return mMyPosition;
+  }
 
   /**
    * <p>Obtains last known saved location. It depends on "My position" button mode and is erased on "No follow, no position" one.
@@ -266,14 +283,14 @@ public enum LocationHelper// implements Initializable<Void>
     // the core to the platform code (https://jira.mail.ru/browse/MAPSME-3675),
     // because calling the native method 'nativeIsRouteFinished'
     // too often can result in poor UI performance.
-//    if (RoutingController.get().isNavigating() && Framework.nativeIsRouteFinished())
-//    {
-//      mLogger.d(TAG, "End point is reached");
-//      restart();
-//      if (mUiCallback != null)
-//        mUiCallback.onRoutingFinish();
-//      RoutingController.get().cancel();
-//    }
+    if (RoutingController.get().isNavigating() && FTMap.nativeIsRouteFinished())
+    {
+      mLogger.d(TAG, "End point is reached");
+      restart();
+      if (mUiCallback != null)
+        mUiCallback.onRoutingFinish();
+      RoutingController.get().cancel();
+    }
   }
 
   private void notifyLocationUpdated(LocationListener listener)
@@ -362,35 +379,35 @@ public enum LocationHelper// implements Initializable<Void>
   private void calcLocationUpdatesInterval()
   {
     mLogger.d(TAG, "calcLocationUpdatesInterval()");
-//    if (RoutingController.get().isNavigating())
-//    {
-//      mLogger.d(TAG, "calcLocationUpdatesInterval(), it's navigation mode");
-//      final @Framework.RouterType int router = Framework.nativeGetRouter();
-//      switch (router)
-//      {
-//      case Framework.ROUTER_TYPE_PEDESTRIAN:
-//        mInterval = INTERVAL_NAVIGATION_PEDESTRIAN_MS;
-//        break;
-//
-//      case Framework.ROUTER_TYPE_VEHICLE:
-//        mInterval = INTERVAL_NAVIGATION_VEHICLE_MS;
-//        break;
-//
-//      case Framework.ROUTER_TYPE_BICYCLE:
-//        mInterval = INTERVAL_NAVIGATION_BICYCLE_MS;
-//        break;
-//
-//      case Framework.ROUTER_TYPE_TRANSIT:
-//        // TODO: what is the interval should be for transit type?
-//        mInterval = INTERVAL_NAVIGATION_PEDESTRIAN_MS;
-//        break;
-//
-//      default:
-//        throw new IllegalArgumentException("Unsupported router type: " + router);
-//      }
-//
-//      return;
-//    }
+    if (RoutingController.get().isNavigating())
+    {
+      mLogger.d(TAG, "calcLocationUpdatesInterval(), it's navigation mode");
+      final @Framework.RouterType int router = FTMap.nativeGetRouter();
+      switch (router)
+      {
+        case Framework.ROUTER_TYPE_PEDESTRIAN:
+          mInterval = INTERVAL_NAVIGATION_PEDESTRIAN_MS;
+          break;
+
+        case Framework.ROUTER_TYPE_VEHICLE:
+          mInterval = INTERVAL_NAVIGATION_VEHICLE_MS;
+          break;
+
+        case Framework.ROUTER_TYPE_BICYCLE:
+          mInterval = INTERVAL_NAVIGATION_BICYCLE_MS;
+          break;
+
+        case Framework.ROUTER_TYPE_TRANSIT:
+          // TODO: what is the interval should be for transit type?
+          mInterval = INTERVAL_NAVIGATION_PEDESTRIAN_MS;
+          break;
+
+        default:
+          throw new IllegalArgumentException("Unsupported router type: " + router);
+      }
+
+      return;
+    }
 
     int mode = getMyPositionMode();
     switch (mode)
@@ -443,7 +460,7 @@ public enum LocationHelper// implements Initializable<Void>
     if (isLocationUpdateStoppedByUser())
     {
       mLogger.d(TAG, "Location updates are stopped by the user manually, so skip provider start"
-                     + " until the user starts it manually.");
+              + " until the user starts it manually.");
       return;
     }
 
@@ -451,7 +468,7 @@ public enum LocationHelper// implements Initializable<Void>
     //noinspection ConstantConditions
     if (mLocationProvider.isActive())
       throw new AssertionError("Location provider '" + mLocationProvider
-                               + "' must be stopped first");
+              + "' must be stopped first");
 
     addListener(mCoreLocationListener, true);
 
@@ -495,14 +512,14 @@ public enum LocationHelper// implements Initializable<Void>
   private void startInternal()
   {
     mLogger.d(TAG, "startInternal(), current provider is '" + mLocationProvider
-                   + "' , my position mode = " + LocationState.nameOf(getMyPositionMode())
-                   + ", mInFirstRun = " + mInFirstRun);
-//    if (!PermissionsUtils.isLocationGranted())
-//    {
-//      mLogger.w(TAG, "Dynamic permission ACCESS_COARSE_LOCATION/ACCESS_FINE_LOCATION is not granted",
-//                new Throwable());
-//      return;
-//    }
+            + "' , my position mode = " + LocationState.nameOf(getMyPositionMode())
+            + ", mInFirstRun = " + mInFirstRun);
+/*    if (!PermissionsUtils.isLocationGranted())
+    {
+      mLogger.w(TAG, "Dynamic permission ACCESS_COARSE_LOCATION/ACCESS_FINE_LOCATION is not granted",
+              new Throwable());
+      return;
+    }*/
     checkProviderInitialization();
     //noinspection ConstantConditions
     mLocationProvider.start();
@@ -611,8 +628,7 @@ public enum LocationHelper// implements Initializable<Void>
     {
       notifyLocationUpdated();
       mLogger.d(TAG, "Current location is available, so play the nice zoom animation");
-      FTMap.cmd("runFirstLaunchAnimation").run();
-//      Framework.nativeRunFirstLaunchAnimation();
+      FTMap.nativeRunFirstLaunchAnimation();
       return;
     }
 
@@ -651,21 +667,9 @@ public enum LocationHelper// implements Initializable<Void>
     return LocationState.nativeGetMode();
   }
 
-  private static void nativeOnLocationError(int errorCode){
-    FTMap.cmd("locationState_onError").set("errorCode",errorCode).run();
-  }
-  private static void nativeLocationUpdated(long time, double lat, double lon, float accuracy,
-                                                   double altitude, float speed, float bearing){
-    FTMap.cmd("locationState_onUpdated")
-            .set("time",time)
-            .set("lat",lat)
-            .set("lon",lon)
-            .set("accuracy",accuracy)
-            .set("altitude",altitude)
-            .set("speed",speed)
-            .set("bearing",bearing)
-            .run();
-  }
+  private static native void nativeOnLocationError(int errorCode);
+  private static native void nativeLocationUpdated(long time, double lat, double lon, float accuracy,
+                                                   double altitude, float speed, float bearing);
 
   public interface UiCallback
   {

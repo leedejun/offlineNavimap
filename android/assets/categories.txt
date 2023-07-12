@@ -57,7 +57,7 @@ th:กินร้านไหนดี|อาหาร
 tr:Nerede yenir|Yemek
 uk:Де поїсти|Їжа
 vi:Ăn ở đâu|ẩm thực
-zh-Hans:在哪儿吃|食物
+zh-Hans:在哪儿吃|食物|美食
 zh-Hant:在哪兒吃|飲食
 el:Πού να φάμε|Φαγητό
 he:אוכל
@@ -2272,7 +2272,7 @@ th:2สถานที่ประกอบพิธีกรรม
 tr:4Ibadet yerleri|3tapınak
 uk:3Храм|пам’ятка|алтарь|пам’ятні місця
 vi:Chùa
-zh-Hans:1礼拜场所|庙|景点
+zh-Hans:1礼拜场所|庙|景点|宗教设施
 zh-Hant:1寺廟|1禱告|寺|禪寺|旅遊景點
 el:Χώρος λατρείας|ναός|αξιοθέατα
 sk:3Svätyňa|3chrám|3posvätné miesto
@@ -3333,14 +3333,14 @@ th:คลินิก|โรงพยาบาล
 tr:Klinik|hastane
 uk:Поліклініка|клініка|лікарня
 vi:Phòng khám|bịnh viện|dưỡng đường|Bệnh viện|BV
-zh-Hans:诊所|医院
+zh-Hans:诊所
 zh-Hant:診所|醫院
 el:Κλινική|νοσοκομείο|γιατρός
 sk:Poliklinika|nemocnica|zdravotné stredisko
 fa:کلینیک|مطب
 
-amenity-doctors|@hospital
-en:Doctor|clinic|U+1F489|U+1F3E5|U+1F691|hospital
+amenity-doctors
+en:Doctor|clinic|U+1F489|U+1F3E5|U+1F691
 ru:Врач|больница|клиника|поликлиника
 ar:طبيب|عيادة|مستشفى
 cs:Lékařská ordinace|Klinika|nemocnice
@@ -3365,8 +3365,8 @@ th:ห้องแพทย์|โรงพยาบาล|คลินิก
 tr:Doktor muayenehanesi|Klinik|hastane
 uk:Лікар|Поліклініка|клініка|лікарня
 vi:Bác sĩ|Phòng khám|bịnh viện|dưỡng đường|BVbệnh viện
-zh-Hans:医师办公室|诊所|医院
-zh-Hant:醫師診間|診所|醫院
+zh-Hans:医师办公室|诊所
+zh-Hant:醫師診間|診所
 el:Γιατροί|ιατροί|κλινική|νοσοκομείο
 sk:Ambulancia|Poliklinika|nemocnica
 fa:کلینیک|مطب دکتر
@@ -9281,3 +9281,114 @@ sk:Brod
 zh-Hans:浅滩
 zh-Hant:淺灘
 fa:گدار
+
+amenity-lqgas
+zh-Hans:联勤加油站
+
+amenity-lqyl
+zh-Hans:联勤医疗保障
+
+amenity-lqwx
+zh-Hans:联勤维修点
+
+amenity-xqd
+zh-Hans:特征地物点
+
+amenity-jsdw
+zh-Hans:军事单位
+
+amenity-xzd
+zh-Hans:修整点
+
+amenity-hqbj
+zh-Hans:后勤补给
+
+amenity-djzd
+zh-Hans:待机阵地
+
+amenity-yjybq
+zh-Hans:应急隐蔽区
+
+amenity-kfsld
+zh-Hans:可发射路段
+
+amenity-gjlk
+zh-Hans:关键岔路口
+
+amenity-bridge
+zh-Hans:桥梁|桥
+
+amenity-gdry
+zh-Hans:演示人员
+
+amenity-gdcl
+zh-Hans:演示车辆
+
+amenity-fszd
+zh-Hans:演示阵地
+
+amenity-fyjg
+zh-Hans:防疫机构
+
+amenity-gsservices
+zh-Hans:高速服务区|服务区
+
+amenity-blood_bank
+zh-Hans:血站
+
+amenity-gssfz
+zh-Hans:收费站
+
+amenity-wlky
+zh-Hans:物流快运|快递|物流
+
+amenity-wlyq
+zh-Hans:物流园区|物流
+
+shop-jzjcls
+zh-Hans:家装建材零售|建筑材料
+
+shop-pfscls
+zh-Hans:商品交易|批发市场零售|物资采购市场
+
+shop-bhscls
+zh-Hans:百货商场零售|物资采购市场
+
+shop-bhsdls
+zh-Hans:百货商店零售
+
+shop-rzdls
+zh-Hans:日杂店
+
+shop-blls
+zh-Hans:便利零售
+
+shop-cjscls
+zh-Hans:超级市场零售
+
+amenity-ljbridge
+zh-Hans:立交桥
+
+amenity-jmzs
+zh-Hans:居民住宿
+
+amenity-zzl
+zh-Hans:住宅楼
+
+amenity-hystation
+zh-Hans:货运火车站|火车站
+
+amenity-kystation
+zh-Hans:客运火车站|火车站
+
+amenity-park1
+zh-Hans:公园
+
+amenity-square
+zh-Hans:广场
+
+amenity-post
+zh-Hans:邮局
+
+amenity-dock
+zh-Hans:码头

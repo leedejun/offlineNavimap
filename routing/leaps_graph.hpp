@@ -32,6 +32,8 @@ public:
   Segment const & GetFinishSegment() const;
   ms::LatLon const & GetPoint(Segment const & segment, bool front) const;
 
+    void SetSearchClass(const int searchClass){m_starter.SetSearchClass(searchClass);}
+
 private:
   void GetEdgesList(Segment const & segment, bool isOutgoing, std::vector<SegmentEdge> & edges);
 

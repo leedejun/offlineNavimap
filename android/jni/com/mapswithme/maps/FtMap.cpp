@@ -1,17 +1,48 @@
 //#include "map/framework_ft.hpp"
-//#include "com/mapswithme/core/jni_helper.hpp"
-//#include "com/mapswithme/platform/Platform.hpp"
+#include "com/mapswithme/core/jni_helper.hpp"
+#include "com/mapswithme/platform/Platform.hpp"
 #include "com/mapswithme/platform/GuiThread.hpp"
 #include "com/mapswithme/maps/Framework.hpp"
+#include "platform/network_policy.hpp"
 #include "drape_frontend/user_marks_provider.hpp"
+#include "platform/measurement_utils.hpp"
 #include "FtMap.hpp"
 //#include "platform/Platform.hpp"
 #include "map/gps_tracker.hpp"
 #include "map/user_mark_id_storage.hpp"
 #include "map/fd/map_engine.hpp"
 
+#include <string>
+#include <vector>
+
+#include <boost/algorithm/string/split.hpp>
+#include <boost/geometry/geometries/linestring.hpp>
+#include <boost/geometry/geometries/point.hpp>
+#include <tools/build/src/engine/strings.h>
+#include <com/mapswithme/platform/Platform.hpp>
+
+#include "3party/boost/boost/geometry.hpp"
+#include "3party/boost/boost/geometry/geometries/point_xy.hpp"
+#include "3party/boost/boost/geometry/geometries/polygon.hpp"
+
+namespace {
+    void OnRenderingInitializationFinished(std::shared_ptr<jobject> const &listener) {
+        JNIEnv *env = jni::GetEnv();
+        env->CallVoidMethod(*listener, jni::GetMethodID(env, *listener.get(),
+                                                        "onRenderingInitializationFinished",
+                                                        "()V"));
+    }
+}
+
+namespace bg = boost::geometry;
+typedef bg::model::d2::point_xy<double> Point;
+typedef bg::model::linestring<Point> Linestring;
+typedef bg::model::multi_linestring<Linestring> MultiLinestring;
+typedef bg::model::polygon<Point> Polygon;
+
 #define cmd CommandHelper::getIns()
 #define json JsonHelper::getIns()
+
 
 template<class TT>
 inline uint32_t toIntFromHexString(const TT &t) {
@@ -24,6 +55,23 @@ inline uint32_t toIntFromHexString(const TT &t) {
 
 }
 
+
+void Stringsplit(const std::string &str, const std::string &splits, std::vector<std::string> &res) {
+    if (str == "") return;
+    //在字符串末尾也加入分隔符，方便截取最后一段
+    std::string strs = str + splits;
+    size_t pos = strs.find(splits);
+    int step = splits.size();
+
+    // 若找不到内容则字符串搜索函数返回 npos
+    while (pos != strs.npos) {
+        std::string temp = strs.substr(0, pos);
+        res.push_back(temp);
+        //去掉已分割的字符串,在剩下的字符串中进行分割
+        strs = strs.substr(pos + step, strs.size());
+        pos = strs.find(splits);
+    }
+}
 
 inline dp::Color stringToDpColor(std::string colorString) {
     if (colorString[0] == '#') {
@@ -49,7 +97,7 @@ using UserMarkLayers = std::vector<std::unique_ptr<UserMarkLayer>>;
 using MarksCollection = std::map<kml::MarkId, std::unique_ptr<UserMark>>;
 using TracksCollection = std::map<kml::TrackId, std::unique_ptr<df::UserLineMark>>;
 
-
+::Framework *frm() { return g_framework->NativeFramework(); }
 
 
 /****************************************************************************/
@@ -76,8 +124,7 @@ static void LocationPendingTimeout(std::shared_ptr<jobject> const &listener) {
 //MyUserMark
 /****************************************************************************/
 
-struct MyUserMarkData
-{
+struct MyUserMarkData {
     std::string m_title;
     std::string m_subTitle;
     RouteMarkType m_pointType = RouteMarkType::Start;
@@ -103,10 +150,12 @@ public:
     MyUserMark(m2::PointD const &ptOrg) : UserMark(ptOrg, UserMark::Type::SEARCH) {
         m_titleDecl.m_anchor = dp::Top;
         m_titleDecl.m_primaryTextFont.m_color = df::GetColorConstant(kMyUserMarkPrimaryText);
-        m_titleDecl.m_primaryTextFont.m_outlineColor = df::GetColorConstant(kMyUserMarkPrimaryTextOutline);
+        m_titleDecl.m_primaryTextFont.m_outlineColor = df::GetColorConstant(
+                kMyUserMarkPrimaryTextOutline);
         m_titleDecl.m_primaryTextFont.m_size = kMyUserMarkPrimaryTextSize;
         m_titleDecl.m_secondaryTextFont.m_color = df::GetColorConstant(kMyUserMarkSecondaryText);
-        m_titleDecl.m_secondaryTextFont.m_outlineColor = df::GetColorConstant(kMyUserMarkSecondaryTextOutline);
+        m_titleDecl.m_secondaryTextFont.m_outlineColor = df::GetColorConstant(
+                kMyUserMarkSecondaryTextOutline);
         m_titleDecl.m_secondaryTextFont.m_size = kMyUserMarkSecondaryTextSize;
         m_titleDecl.m_secondaryOffset = m2::PointF(0, kMyUserMarkSecondaryOffsetY);
 
@@ -120,21 +169,21 @@ public:
     void setIcon(std::string icon) {
         _icon = icon;
     }
-    MyUserMarkData const & GetMarkData() const { return m_markData; }
-    void SetMarkData(MyUserMarkData && data){
+
+    MyUserMarkData const &GetMarkData() const { return m_markData; }
+
+    void SetMarkData(MyUserMarkData &&data) {
         SetDirty();
         m_markData = std::move(data);
         m_titleDecl.m_primaryText = m_markData.m_title;
-        if (!m_titleDecl.m_primaryText.empty())
-        {
+        if (!m_titleDecl.m_primaryText.empty()) {
             m_titleDecl.m_secondaryText = m_markData.m_subTitle;
             m_titleDecl.m_secondaryOptional = true;
-        }
-        else
+        } else
             m_titleDecl.m_secondaryText.clear();
     }
-    drape_ptr<df::UserPointMark::TitlesInfo> GetTitleDecl() const
-    {
+
+    drape_ptr<df::UserPointMark::TitlesInfo> GetTitleDecl() const {
         if (m_followingMode)
             return nullptr;
 
@@ -142,14 +191,16 @@ public:
         titles->push_back(m_titleDecl);
         return titles;
     }
-    virtual drape_ptr <SymbolNameZoomInfo> GetSymbolNames() const;
+
+    virtual drape_ptr<SymbolNameZoomInfo> GetSymbolNames() const;
+
 private:
     MyUserMarkData m_markData;
     dp::TitleDecl m_titleDecl;
     bool m_followingMode = false;
 };
 
-drape_ptr <df::UserPointMark::SymbolNameZoomInfo> MyUserMark::GetSymbolNames() const {
+drape_ptr<df::UserPointMark::SymbolNameZoomInfo> MyUserMark::GetSymbolNames() const {
     auto symbol = make_unique_dp<df::UserPointMark::SymbolNameZoomInfo>();
 
     symbol->emplace(1, _icon);
@@ -335,11 +386,12 @@ public:
         return m;
     }
 
-    void RemoveUserPointMark( long id) {
+    void RemoveUserPointMark(long id) {
         m_removedMarks.insert(id);
         m_groupMarks.erase(id);
         this->notifyChanges();
     }
+
     void RemoveUserPointMark(long long id) {
         m_removedMarks.insert(id);
         m_groupMarks.erase(id);
@@ -351,6 +403,7 @@ public:
         m_groupMarks.insert(id);
         this->notifyChanges();
     }
+
     void UpdateUserPointMark(long long id) {
         m_updatedMarks.insert(id);
         m_groupMarks.insert(id);
@@ -370,17 +423,47 @@ public:
 };
 
 static UserMarkerManager userMarks;
+
+
 #define ENGINE fd::MapEngine::get
 extern "C"
 {
+void CallRoutingListener(std::shared_ptr<jobject> listener, int errorCode,
+                         storage::CountriesSet const &absentMaps) {
+    JNIEnv *env = jni::GetEnv();
+    jmethodID const method = jni::GetMethodID(env, *listener, "onRoutingEvent",
+                                              "(I[Ljava/lang/String;)V");
+    ASSERT(method, ());
+
+    env->CallVoidMethod(*listener, method, errorCode, jni::TScopedLocalObjectArrayRef(env,
+                                                                                      jni::ToJavaStringArray(
+                                                                                              env,
+                                                                                              absentMaps)).get());
+}
+void CallRouteProgressListener(std::shared_ptr<jobject> listener, float progress) {
+    JNIEnv *env = jni::GetEnv();
+    jmethodID const methodId = jni::GetMethodID(env, *listener, "onRouteBuildingProgress", "(F)V");
+    env->CallVoidMethod(*listener, methodId, progress);
+}
+void CallRouteRecommendationListener(std::shared_ptr<jobject> listener,
+                                     RoutingManager::Recommendation recommendation) {
+    JNIEnv *env = jni::GetEnv();
+    jmethodID const methodId = jni::GetMethodID(env, *listener, "onRecommend", "(I)V");
+    env->CallVoidMethod(*listener, methodId, static_cast<int>(recommendation));
+}
+void CallSetRoutingLoadPointsListener(std::shared_ptr<jobject> listener, bool success) {
+    JNIEnv *env = jni::GetEnv();
+    jmethodID const methodId = jni::GetMethodID(env, *listener, "onRoutePointsLoaded", "(Z)V");
+    env->CallVoidMethod(*listener, methodId, static_cast<jboolean>(success));
+}
 JNIEXPORT jobject
 JNICALL
 Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
     std::string cmdName = cmd.getStr(msg, "_command");
     if (cmdName == "initPlatform") {
         jobject instance = cmd.getObj(msg, "thisInstance");
+        jobject context = cmd.getObj(msg, "context");
         jstring apkPath = cmd.getNativeStr(msg, "apkPath");
-
         jstring storagePath = cmd.getNativeStr(msg, "storagePath");
         jstring filesPath = cmd.getNativeStr(msg, "filesPath");
         jstring tempPath = cmd.getNativeStr(msg, "tempPath");
@@ -388,7 +471,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         jstring flavor = cmd.getNativeStr(msg, "flavor");
         jstring buildType = cmd.getNativeStr(msg, "buildType");
         bool isTablet = cmd.getBool(msg, "isTablet");
-        android::Platform::Instance().Initialize(env, instance, apkPath, storagePath, filesPath,
+        android::Platform::Instance().Initialize(env, instance, context, apkPath, storagePath, filesPath,
                                                  tempPath, obbPath, flavor, buildType, isTablet);
 
         if (!g_framework) {
@@ -444,21 +527,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         g_framework->Touch(actionType,
                            android::Framework::Finger(id1, x1, y1),
                            android::Framework::Finger(id2, x2, y2), maskedPointer);
-//        auto tmpMsg = env->NewGlobalRef(msg);
-//        auto dataJson = json.createJSONObject();
-//        m2::PointD mercator;
-//        auto touchListener = [](df::TapInfo const &tapInfo) {
-//            bool IsLong = tapInfo.m_isLong;
-//             mercator = tapInfo.m_mercator;
-////            ms::LatLon latLon = mercator::ToLatLon(mercator);
-////            ms::LatLon latLon1 = mercator::ToLatLon(mercator);
-//
-//        };
-//        auto nativeFramework = g_framework->NativeFramework();
-//        auto drapeEngine = nativeFramework->GetDrapeEngine();
-//        drapeEngine->SetTapEventInfoListener(touchListener);
-//
-//        cmd.asyncCall(tmpMsg, dataJson);
+
     } else if (cmdName == "attachSurface") {
         jobject surface = cmd.getObj(msg, "surface");
         cmd.set(msg, "result", g_framework->AttachSurface(env, surface));
@@ -533,7 +602,110 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
     } else if (cmdName == "runFirstLaunchAnimation") {
         if (g_framework->NativeFramework()->GetDrapeEngine())
             g_framework->NativeFramework()->GetDrapeEngine()->RunFirstLaunchAnimation();
-    } else if (cmdName == "Search") {
+    } else if (cmdName == "cancelSearch") {
+        g_framework->NativeFramework()->GetSearchAPI().CancelAllSearches();
+    } else if (cmdName == "searchWay") {
+        //沿途搜索
+        std::vector<std::string> strPoints;
+        std::string wayRoute = cmd.getStr(msg, "wayRoute");
+        Stringsplit(wayRoute, ";", strPoints);
+        Linestring route_line;
+        for (auto strPoint: strPoints) {
+            std::vector<std::string> spoint;
+            Stringsplit(strPoint, ",", spoint);
+            if (spoint.size() != 2) {
+
+//                return;
+            }
+            boost::geometry::append(route_line, Point(stod(spoint[0]), stod(spoint[1])));
+        }
+
+        MultiLinestring mul_line;
+        mul_line.push_back(route_line);
+
+        boost::geometry::model::multi_polygon<Polygon> result1;
+
+        boost::geometry::strategy::buffer::end_round end_strategy(36);
+        boost::geometry::strategy::buffer::distance_symmetric<double> distance_strategy(0.8);
+
+        boost::geometry::strategy::buffer::side_straight side_strategy;
+        boost::geometry::strategy::buffer::join_round join_strategy;
+        boost::geometry::strategy::buffer::point_circle point_strategy;
+
+        boost::geometry::buffer(mul_line, result1, distance_strategy, side_strategy, join_strategy,
+                                end_strategy, point_strategy);
+
+        if (result1.size() < 1) {
+//            return ;
+        } else {
+
+        }
+
+        Polygon polygon_buffer = result1[0];
+
+
+        auto tmpMsg = env->NewGlobalRef(msg);
+        auto onResults = [&, polygon_buffer, tmpMsg](search::Results const &results,
+                                                     std::vector<search::ProductInfo> const &productInfo) {
+            Polygon tmp_polygon_buffer = polygon_buffer;
+            std::vector<search::Result> tmp_results;
+            tmp_results.assign(results.begin(), results.end());
+            //
+            base::EraseIf(tmp_results,
+                          [&](search::Result const &result_item) {
+                              auto center = result_item.GetFeatureCenter();
+                              ms::LatLon latLon = mercator::ToLatLon(center);
+                              Point tmp(latLon.m_lon, latLon.m_lat);
+
+                              return !boost::geometry::within(tmp, tmp_polygon_buffer);
+                          });
+            auto it = tmp_results.begin();
+            auto array = json.createJSONArray();
+            std::stringstream stream;
+            stream << "[";
+            while (it != tmp_results.end()) {
+                stream << "{";
+                std::string name = it->GetString();
+                std::string address = it->GetAddress();
+                double lat = 0;
+                double lon = 0;
+                if (it->HasPoint()) {
+                    m2::PointD pt = it->GetFeatureCenter();
+                    ms::LatLon latLon = mercator::ToLatLon(pt);
+                    lat = latLon.m_lat;
+                    lon = latLon.m_lon;
+                }
+                auto info = it->GetRankingInfo();
+                double distance = info.m_distanceToPivot;
+                stream << "\"name\":" << "\"" << name << "\",";
+                stream << "\"address\":" << "\"" << address << "\",";
+                stream << "\"lat\":" << "\"" << lat << "\",";
+                stream << "\"lon\":" << "\"" << lon << "\",";
+                stream << "\"distance\":" << "\"" << std::fixed << distance << "\"";
+                stream << "}";
+                //<<std::fixed
+                if (it != results.end() - 1) {
+                    stream << ",";
+                }
+
+                it++;
+            }
+            stream << "]";
+            auto item = json.createJSONObject();
+            json.setString(item, "data", stream.str().c_str());
+            json.append(array, item);
+            cmd.asyncCall(tmpMsg, array);
+
+        };
+        search::EverywhereSearchParams params;
+        params.m_query = cmd.getStr(msg, "query");
+        params.m_lat = cmd.getDouble(msg, "lat");
+        params.m_lon = cmd.getDouble(msg, "lon");
+        params.m_inputLocale = "zh_CN_#Hans";
+        params.m_onResults = onResults;
+        g_framework->NativeFramework()->GetSearchAPI().SearchEverywhere(params);
+
+    } else if (cmdName == "search") {
         auto tmpMsg = env->NewGlobalRef(msg);
         auto onResults = [&, tmpMsg](search::Results const &results,
                                      std::vector<search::ProductInfo> const &productInfo) {
@@ -545,8 +717,8 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
                 stream << "{";
                 std::string name = it->GetString();
                 std::string address = it->GetAddress();
-                double lat =0;
-                double lon =0;
+                double lat = 0;
+                double lon = 0;
                 if (it->HasPoint()) {
                     m2::PointD pt = it->GetFeatureCenter();
                     ms::LatLon latLon = mercator::ToLatLon(pt);
@@ -554,7 +726,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
                     lon = latLon.m_lon;
                 }
                 auto info = it->GetRankingInfo();
-                double distance =  info.m_distanceToPivot;
+                double distance = info.m_distanceToPivot;
 
                 stream << "\"name\":" << "\"" << name << "\",";
                 stream << "\"address\":" << "\"" << address << "\",";
@@ -562,28 +734,10 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
                 stream << "\"lon\":" << "\"" << lon << "\",";
                 stream << "\"distance\":" << "\"" << distance << "\"";
                 stream << "}";
-                if(it != results.end()-1) {
+                if (it != results.end() - 1) {
                     stream << ",";
                 }
-/*
 
-                auto item = json.createJSONObject();
-                json.setString(item, "name", it->GetString());
-                json.setString(item, "address", it->GetAddress());
-                if (it->HasPoint()) {
-                    auto pt = it->GetFeatureCenter();
-                    json.setDouble(item, "lat", pt.x);
-                    json.setDouble(item, "lon", pt.y);
-                }
-                //20210309添加距离参数
-                auto info = it->GetRankingInfo();
-                json.setDouble(item, "distance", info.m_distanceToPivot);
-
-                json.append(array, item);
-                //小内存手机
-                if (it == results.begin() + 20) {
-//                    break;
-                }*/
                 it++;
             }
             stream << "]";
@@ -611,8 +765,19 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         auto dataJson = json.createJSONObject();
         if (featureID.IsValid()) {
             osm::MapObject mapObject = g_framework->NativeFramework()->GetMapObjectByID(featureID);
-            json.setString(dataJson, "poiName", mapObject.GetDefaultName());
-            json.setString(dataJson, "poiAddress", mapObject.GetHouseNumber());
+            std::string  poiName = mapObject.GetDefaultName();
+            std::string  poiAddress = mapObject.GetHouseNumber();
+            std::string  nullStr ="";
+            if ( strcmp( poiName.c_str(), nullStr.c_str() ) == 0 ){
+                json.setString(dataJson, "poiName", "未知位置");
+            } else{
+                json.setString(dataJson, "poiName", mapObject.GetDefaultName());
+            }
+            if ( strcmp( poiAddress.c_str(), nullStr.c_str() ) == 0 ){
+                json.setString(dataJson, "poiName", "未获取到地址");
+            }else{
+                json.setString(dataJson, "poiAddress", mapObject.GetHouseNumber());
+            }
         } else {
             json.setString(dataJson, "poiName", "未知位置");
             json.setString(dataJson, "poiAddress", "未获取到地址");
@@ -635,8 +800,19 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
                 m2::PointD(mercatorX, mercatorY));
         if (featureID.IsValid()) {
             osm::MapObject mapObject = g_framework->NativeFramework()->GetMapObjectByID(featureID);
-            json.setString(dataJson, "poiName", mapObject.GetDefaultName());
-            json.setString(dataJson, "poiAddress", mapObject.GetHouseNumber());
+            std::string  poiName = mapObject.GetDefaultName();
+            std::string  poiAddress = mapObject.GetHouseNumber();
+            std::string  nullStr ="";
+            if ( strcmp( poiName.c_str(), nullStr.c_str() ) == 0 ){
+                json.setString(dataJson, "poiName", "未知位置");
+            } else{
+                json.setString(dataJson, "poiName", mapObject.GetDefaultName());
+            }
+            if ( strcmp( poiAddress.c_str(), nullStr.c_str() ) == 0 ){
+                json.setString(dataJson, "poiName", "未获取到地址");
+            }else{
+                json.setString(dataJson, "poiAddress", mapObject.GetHouseNumber());
+            }
         } else {
             json.setString(dataJson, "poiName", "未知位置");
             json.setString(dataJson, "poiAddress", "未获取到地址");
@@ -675,7 +851,6 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         cmd.asyncCall(tmpMsg, dataJson);
 
     } else if (cmdName == "GetFeatureID") {
-        auto tmpMsg = env->NewGlobalRef(msg);
         double_t mercatorX = cmd.getDouble(msg, "mercatorX");
         double_t mercatorY = cmd.getDouble(msg, "mercatorY");
         auto const featureID = g_framework->NativeFramework()->GetFeatureAtPoint(
@@ -695,12 +870,25 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
 //                mercator);
         if (featureID.IsValid()) {
             osm::MapObject mapObject = g_framework->NativeFramework()->GetMapObjectByID(featureID);
-            json.setString(dataJson, "poiName", mapObject.GetDefaultName());
-            json.setString(dataJson, "poiAddress", mapObject.GetHouseNumber());
+            std::string  poiName = mapObject.GetDefaultName();
+            std::string  poiAddress = mapObject.GetHouseNumber();
+            std::string  nullStr ="";
+            if ( strcmp( poiName.c_str(), nullStr.c_str() ) == 0 ){
+                json.setString(dataJson, "poiName", "未知位置");
+            } else{
+                json.setString(dataJson, "poiName", mapObject.GetDefaultName());
+            }
+            if ( strcmp( poiAddress.c_str(), nullStr.c_str() ) == 0 ){
+                json.setString(dataJson, "poiName", "未获取到地址");
+            }else{
+                json.setString(dataJson, "poiAddress", mapObject.GetHouseNumber());
+            }
         } else {
             json.setString(dataJson, "poiName", "未知位置");
+            json.setString(dataJson, "poiAddress", "未获取到地址");
         }
         cmd.asyncCall(tmpMsg, dataJson);
+//        env->DeleteGlobalRef(tmpMsg);
     } else if (cmdName == "ClickListener") {
         auto touchListener = [](df::TapInfo const &tapInfo) {
 //            auto tmpMsg = env->NewGlobalRef(msg);
@@ -721,7 +909,6 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
     } else if (cmdName == "nativeSetupWidget") {
 //        屏幕坐标转墨卡托
         m2::PointD mercator = g_framework->NativeFramework()->PtoG(m2::PointD(345, 887));
-        double_t a = mercator.x;
 //        116.39126521640469  43.59062286906408 天安门
         //北京大学
 //                    p.put("x", 116.30959463350172);
@@ -747,7 +934,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
             m2::PointD mercatorPT = mercator::FromLatLon(lat, lon);
             auto engine = g_framework->NativeFramework()->GetDrapeEngine();
             if (engine)
-                engine->SetModelViewCenter(mercatorPT, zoom, true, false);
+                engine->SetModelViewCenter(mercatorPT, zoom, false, false);
 
         }
     } else if (cmdName == "centerPoints") {
@@ -769,10 +956,15 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
     } else if (cmdName == "setMapStyle") {
 //        ENGINE().clearRoutes();
         std::string style = cmd.getStr(msg, "style");
-        if (style == "dark")
-            g_framework->NativeFramework()->SetMapStyle(MapStyle::MapStyleDark);
-        else
+        if (style == "clear") {
             g_framework->NativeFramework()->SetMapStyle(MapStyle::MapStyleClear);
+        } else if (style == "dark") {
+            g_framework->NativeFramework()->SetMapStyle(MapStyle::MapStyleDark);
+        } else if (style == "camouflage") {
+            g_framework->NativeFramework()->SetMapStyle(MapStyle::MapStyleCamouflage);
+
+        }
+
     } else if (cmdName == "route") {
         ENGINE().clearRoutes();
         jobject array = cmd.getObj(msg, "points");
@@ -781,10 +973,11 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         std::vector<m2::PointD> points;
         for (int i = 0; i < length; i++) {
             jobject o = json.getJSONObject(array, i);
-            m2::PointD mercator = mercator::FromLatLon(ms::LatLon(json.getDouble(o, "lat"), json.getDouble(o, "lon")));
+            m2::PointD mercator = mercator::FromLatLon(
+                    ms::LatLon(json.getDouble(o, "lat"), json.getDouble(o, "lon")));
             points.push_back(mercator);
             RouteMarkData data;
-            data.m_title = json.getString(o,"name");
+            data.m_title = json.getString(o, "name");
             data.m_subTitle = "";
             if (i == 0) {
                 data.m_pointType = RouteMarkType::Start;
@@ -801,10 +994,12 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
                 data.m_isMyPosition = static_cast<bool>(false);
             }
             data.m_position = mercator;
-            if (type=="Vehicle"){
-                g_framework->NativeFramework()->GetRoutingManager().SetRouter(routing::RouterType::Vehicle);
-            }else if(type=="Pedestrian"){
-                g_framework->NativeFramework()->GetRoutingManager().SetRouter(routing::RouterType::Pedestrian);
+            if (type == "Vehicle") {
+                g_framework->NativeFramework()->GetRoutingManager().SetRouter(
+                        routing::RouterType::Vehicle);
+            } else if (type == "Pedestrian") {
+                g_framework->NativeFramework()->GetRoutingManager().SetRouter(
+                        routing::RouterType::Pedestrian);
             }
             g_framework->NativeFramework()->GetRoutingManager().AddRoutePoint(std::move(data));
         }
@@ -821,50 +1016,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         });
 
 
-//        auto result1 = env->NewGlobalRef(json.createJSONObject());
-//        auto tmpMsg = env->NewGlobalRef(msg);
-//        std::function<void(const std::vector<std::shared_ptr<routing::Route>> &)> func = [&, result1, tmpMsg](const std::vector<std::shared_ptr<routing::Route>> & route) {
-//
-//            cmd.asyncCall(tmpMsg, result1);
-//        };
-//        g_framework->NativeFramework()->GetRoutingManager().setFun(func);
-//        g_framework->NativeFramework()->GetRoutingManager().BuildRoute();
 
-
-        //        auto result = env->NewGlobalRef(json.createJSONObject());
-//        auto tmpMsg = env->NewGlobalRef(msg);
-//        json.setObject(result, "result", "success");
-//        cmd.asyncCall(tmpMsg, result);
-//      auto &routingSession = g_framework->NativeFramework()->GetRoutingManager().RoutingSession();
-//        auto result = env->NewGlobalRef(json.createJSONObject());
-//        auto tmpMsg = env->NewGlobalRef(msg);
-//        auto onReady = [&, result, tmpMsg](routing::Route const &route,
-//                                           routing::RouterResultCode code) {
-//            if (code == routing::RouterResultCode::NoError) {
-//                json.setString(result, "type", "route");
-//                std::string s = json.getString(result, "type");
-//                auto points = json.createJSONArray();
-//                auto routePoints = route.GetPoly().GetPoints();
-//                auto it = routePoints.begin();
-//                int i = 0;
-//                while (it != routePoints.end()) {
-//                    json.setDouble(points, it->x);
-//                    json.setDouble(points, it->y);
-//                    it++;
-//                    i++;
-//                }
-//                json.setObject(result, "result", points);
-//            }
-//            cmd.asyncCall(tmpMsg, result);
-//        };
-//        auto onNeedMap = [&](uint64_t, std::set<std::string> const &) {
-//
-//        };
-//        auto onRmRode = [&](routing::RouterResultCode code) {
-//
-//        };
-//        routingSession.BuildRoute2(routing::Checkpoints(move(points)), onReady, onNeedMap,
-//                                   onRmRode);
     } else if (cmdName == "getAllRouteInfo") {
         auto tmpMsg = env->NewGlobalRef(msg);
         jobject array = cmd.getObj(msg, "allRouteInfo");
@@ -872,12 +1024,13 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         auto routeInfoList = json.createJSONArray();
         for (int i = 0; i < length; i++) {
             jobject routeIdobj = json.getJSONObject(array, i);
-            std::string routeId =strings::to_string(routeIdobj);
+            std::string routeId = strings::to_string(routeIdobj);
             std::string routeInfo = ENGINE().getRouteInfo(routeId);
             auto result = env->NewGlobalRef(json.createJSONObject());
             json.setObject(result, "RouteInfo", json.toJNIString(routeInfo));
             double routeDistance = ENGINE().getRouteDistance(routeId);
-            json.setObject(result, "routeDistance", json.toJNIString(std::to_string(routeDistance)));
+            json.setObject(result, "routeDistance",
+                           json.toJNIString(std::to_string(routeDistance)));
             double time = ENGINE().getRouteTime(routeId);
             json.setObject(result, "routeTime", json.toJNIString(std::to_string(time)));
 
@@ -922,10 +1075,40 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         std::string routeId = cmd.getStr(msg, "routeId");
 //        g_framework->NativeFramework()->GetRoutingManager().FollowRoute();
         ENGINE().enterFollowRoute(routeId);
+    } else if (cmdName == "exitRoute") {
+        ENGINE().exitFollowRoute();
+    } else if (cmdName == "updatePreviewMode") {
+        std::string routeId = cmd.getStr(msg, "routeId");
+        ENGINE().updatePreviewMode(routeId);
+    } else if (cmdName == "updatePreviewModeAll") {
+        ENGINE().updatePreviewModeAll();
     } else if (cmdName == "removeRoute") {
-        g_framework->NativeFramework()->GetRoutingManager().RemoveRoute(true);
-    } else if (cmdName == "CloseRouting") {
-        g_framework->NativeFramework()->GetRoutingManager().CloseRouting(false);
+        ENGINE().removeRoute(true);
+    } else if (cmdName == "closeRouting") {
+        ENGINE().closeRouting(true);
+    } else if (cmdName == "addCustomMaker") {
+        std::string iconName = cmd.getStr(msg, "iconName");
+        jintArray jarr = (jintArray)cmd.getObj(msg,"");
+        int w = 32;
+        int h = 32;
+        int *arr = env->GetIntArrayElements(jarr,NULL);
+        int n = w*h; // 数组的长度
+        std::vector<unsigned char> img(n * 4);
+        for (int i = 0; i < n; i++) {
+            img[i * 4] = arr[i] & 0xFF; // 取a[i]的最低8位
+            img[i * 4 + 1] = (arr[i] >> 8) & 0xFF; // 右移8位后取最低8位
+            img[i * 4 + 2] = (arr[i] >> 16) & 0xFF; // 右移16位后取最低8位
+            img[i * 4 + 3] = (arr[i] >> 24) & 0xFF; // 右移24位后取最低8位
+        }
+        m2::PointD center = {116.39126521640469, 43.59062286906408};
+             m2::PointD markSize = {64.0f, 64.0f};
+             std::string text = "fdtest_poi";
+             ref_ptr<void> textureData = img.data();
+             int dataSize = 0;
+             df::DrapeApiCustomMarkData markData(center, markSize, text, textureData, dataSize);
+             g_framework->NativeFramework()->GetDrapeApi().AddCustomMark(iconName, markData);
+        env->ReleaseIntArrayElements(jarr, arr, 0);
+
     } else if (cmdName == "addDrawItem") {
         std::string type = cmd.getStr(msg, "type");
         if (type == "line") {
@@ -948,7 +1131,6 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
             lineData.Width(width);
             g_framework->NativeFramework()->GetDrapeApi().AddLine(id, lineData);
 
-//            long id = lineMask->GetId();
             long number = std::atoi(id.c_str());
 //            long  long  number = strtoll(id, NULL, 10);
             cmd.set(msg, "result", number);
@@ -961,15 +1143,15 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
             auto mark = userMarks.CreateUserMark<ColoredMarkPoint>(mercatorPoint);
             mark->SetColor(dp::Color(200, 100, 240, 255));
             mark->SetRadius(18.0f);
-            long long id =  mark->GetId();
+            long long id = mark->GetId();
             cmd.set(msg, "result", id);
             userMarks.notifyChanges();
         } else if (type == "textPoint") {
             double x = cmd.getDouble(msg, "x");
             double y = cmd.getDouble(msg, "y");
             m2::PointD mercatorPoint = mercator::FromLatLon(y, x);
-            auto mark =  userMarks.CreateUserMark<RouteMarkPoint>(mercatorPoint);
-            long long id =  mark->GetId();
+            auto mark = userMarks.CreateUserMark<RouteMarkPoint>(mercatorPoint);
+            long long id = mark->GetId();
             std::string title = cmd.getStr(msg, "title");
             RouteMarkData data;
             data.m_title = title;
@@ -991,10 +1173,10 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
 //            mark->SetRadius(18.0f);
 //            std::string a("route-point-finish");
             mark->setIcon(icon);
-            std::string  name  ="测试点名称";
+            std::string name = "测试点名称";
 //            mark1->SetName(name);
 //            long long id = mark->GetId();
-            long long id =  mark->GetId();
+            long long id = mark->GetId();
             RouteMarkData data;
             MyUserMarkData data1;
             data1.m_title = "测试点名称";
@@ -1014,7 +1196,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
     } else if (cmdName == "removeLineItem") {
         jobject array = cmd.getObj(msg, "lineIdList");
         int length = json.length(array);
-        for (int i = 0; i < length; i ++) {
+        for (int i = 0; i < length; i++) {
             std::string lineIdStr = json.getString(array, i);
             g_framework->NativeFramework()->GetDrapeApi().RemoveLine(lineIdStr);
         }
@@ -1024,13 +1206,13 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
     } else if (cmdName == "removeMarkItem") {
         jobject array = cmd.getObj(msg, "markIdList");
         int length = json.length(array);
-        for (int i = 0; i < length; i ++) {
+        for (int i = 0; i < length; i++) {
             std::string markIdStr = json.getString(array, i);
             long long markId;
             std::stringstream sstr;
             sstr.clear();
-            sstr<<markIdStr;
-            sstr>>markId;
+            sstr << markIdStr;
+            sstr >> markId;
             userMarks.RemoveUserPointMark(markId);
         }
 
@@ -1039,13 +1221,13 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         double x = cmd.getDouble(msg, "x");
         double y = cmd.getDouble(msg, "y");
 //        long  long id = cmd.getLong(msg, "markId");//mark->GetId();
-        std::string  id = cmd.getStr(msg, "markId");
+        std::string id = cmd.getStr(msg, "markId");
         std::string icon = cmd.getStr(msg, "icon");
         long long markId;
         std::stringstream sstr;
         sstr.clear();
-        sstr<<id;
-        sstr>>markId;
+        sstr << id;
+        sstr >> markId;
         auto mark = (MyUserMark *) userMarks.GetUserPointMark(markId);
         cmd.set(msg, "result", markId);
         m2::PointD mercatorPoint = mercator::FromLatLon(y, x);
@@ -1055,6 +1237,516 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
     }
     return nullptr;
 }
+RoutingManager::LoadRouteHandler g_loadRouteHandler;
+JNIEXPORT jint
+JNICALL
+Java_com_ftmap_maps_FTMap_nativeGetRouter(JNIEnv *env, jclass) {
+    return static_cast<jint>(g_framework->GetRoutingManager().GetRouter());
+}
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeRunFirstLaunchAnimation(JNIEnv *env, jclass) {
+    frm()->RunFirstLaunchAnimation();
+}
+JNIEXPORT jboolean
+
+JNICALL
+Java_com_ftmap_maps_FTMap_nativeIsRouteFinished(JNIEnv *env, jclass) {
+    return frm()->GetRoutingManager().IsRouteFinished();
+}
+
+JNIEXPORT jobject
+
+JNICALL
+Java_com_ftmap_maps_FTMap_nativeGetRouteFollowingInfo(JNIEnv *env, jclass) {
+    ::Framework *fr = frm();
+    if (!fr->GetRoutingManager().IsRoutingActive())
+        return nullptr;
+
+    routing::FollowingInfo info;
+    fr->GetRoutingManager().GetRouteFollowingInfo(info);
+    if (!info.IsValid())
+        return nullptr;
+//com.ftmap.maps
+    static jclass const klass = jni::GetGlobalClassRef(env, "com/ftmap/maps/RoutingInfo");
+    // Java signature : RoutingInfo(String distToTarget, String units, String distTurn, String
+    //                              turnSuffix, String currentStreet, String nextStreet,
+    //                              double completionPercent, int vehicleTurnOrdinal, int
+    //                              vehicleNextTurnOrdinal, int pedestrianTurnOrdinal, int exitNum,
+    //                              int totalTime, SingleLaneInfo[] lanes)
+    static jmethodID const ctorRouteInfoID =
+            jni::GetConstructorID(env, klass,
+                                  "(Ljava/lang/String;Ljava/lang/String;"
+                                  "Ljava/lang/String;Ljava/lang/String;"
+                                  "Ljava/lang/String;Ljava/lang/String;DIIIII"
+                                  "[Lcom/ftmap/maps/SingleLaneInfo;ZZ)V");
+
+    std::vector<routing::FollowingInfo::SingleLaneInfoClient> const &lanes = info.m_lanes;
+    jobjectArray jLanes = nullptr;
+    if (!lanes.empty()) {
+        static jclass const laneClass = jni::GetGlobalClassRef(env,
+                                                               "com/ftmap/maps/SingleLaneInfo");
+        auto const lanesSize = static_cast<jsize>(lanes.size());
+        jLanes = env->NewObjectArray(lanesSize, laneClass, nullptr);
+        ASSERT(jLanes, (jni::DescribeException()));
+        static jmethodID const ctorSingleLaneInfoID = jni::GetConstructorID(env, laneClass,
+                                                                            "([BZ)V");
+
+        for (jsize j = 0; j < lanesSize; ++j) {
+            auto const laneSize = static_cast<jsize>(lanes[j].m_lane.size());
+            jni::TScopedLocalByteArrayRef singleLane(env, env->NewByteArray(laneSize));
+            ASSERT(singleLane.get(), (jni::DescribeException()));
+            env->SetByteArrayRegion(singleLane.get(), 0, laneSize, lanes[j].m_lane.data());
+
+            jni::TScopedLocalRef singleLaneInfo(
+                    env, env->NewObject(laneClass, ctorSingleLaneInfoID, singleLane.get(),
+                                        lanes[j].m_isRecommended));
+            ASSERT(singleLaneInfo.get(), (jni::DescribeException()));
+            env->SetObjectArrayElement(jLanes, j, singleLaneInfo.get());
+        }
+    }
+
+    auto const &rm = frm()->GetRoutingManager();
+    auto const isSpeedCamLimitExceeded = rm.IsRoutingActive() ? rm.IsSpeedLimitExceeded() : false;
+    auto const shouldPlaySignal = frm()->GetRoutingManager().GetSpeedCamManager().ShouldPlayBeepSignal();
+    jobject const result = env->NewObject(
+            klass, ctorRouteInfoID, jni::ToJavaString(env, info.m_distToTarget),
+            jni::ToJavaString(env, info.m_targetUnitsSuffix),
+            jni::ToJavaString(env, info.m_distToTurn),
+            jni::ToJavaString(env, info.m_turnUnitsSuffix),
+            jni::ToJavaString(env, info.m_sourceName),
+            jni::ToJavaString(env, info.m_displayedStreetName), info.m_completionPercent,
+            info.m_turn,
+            info.m_nextTurn, info.m_pedestrianTurn, info.m_exitNum, info.m_time, jLanes,
+            static_cast<jboolean>(isSpeedCamLimitExceeded),
+            static_cast<jboolean>(shouldPlaySignal));
+    ASSERT(result, (jni::DescribeException()));
+    return result;
+}
+
+JNIEXPORT jobject
+
+JNICALL
+Java_com_ftmap_maps_FTMap_nativeGetTransitRouteInfo(JNIEnv *env, jclass) {
+    auto const routeInfo = frm()->GetRoutingManager().GetTransitRouteInfo();
+
+    static jclass const transitStepClass = jni::GetGlobalClassRef(env,
+                                                                  "com/ftmap/maps/TransitStepInfo");
+    // Java signature : TransitStepInfo(@TransitType int type, @Nullable String distance, @Nullable String distanceUnits,
+    //                                  int timeInSec, @Nullable String number, int color, int intermediateIndex)
+    static jmethodID const transitStepConstructor = jni::GetConstructorID(env, transitStepClass,
+                                                                          "(ILjava/lang/String;Ljava/lang/String;ILjava/lang/String;II)V");
+
+    jni::TScopedLocalRef const steps(env, jni::ToJavaArray(env, transitStepClass,
+                                                           routeInfo.m_steps,
+                                                           [&](JNIEnv *jEnv,
+                                                               TransitStepInfo const &stepInfo) {
+                                                               jni::TScopedLocalRef const distance(
+                                                                       env, jni::ToJavaString(env,
+                                                                                              stepInfo.m_distanceStr));
+                                                               jni::TScopedLocalRef const distanceUnits(
+                                                                       env, jni::ToJavaString(env,
+                                                                                              stepInfo.m_distanceUnitsSuffix));
+                                                               jni::TScopedLocalRef const number(
+                                                                       env, jni::ToJavaString(env,
+                                                                                              stepInfo.m_number));
+                                                               return env->NewObject(
+                                                                       transitStepClass,
+                                                                       transitStepConstructor,
+                                                                       static_cast<jint>(stepInfo.m_type),
+                                                                       distance.get(),
+                                                                       distanceUnits.get(),
+                                                                       static_cast<jint>(stepInfo.m_timeInSec),
+                                                                       number.get(),
+                                                                       static_cast<jint>(stepInfo.m_colorARGB),
+                                                                       static_cast<jint>(stepInfo.m_intermediateIndex));
+                                                           }));
+//com.ftmap.maps
+    static jclass const transitRouteInfoClass = jni::GetGlobalClassRef(env,
+                                                                       "com/ftmap/maps/TransitRouteInfo");
+    // Java signature : TransitRouteInfo(@NonNull String totalDistance, @NonNull String totalDistanceUnits, int totalTimeInSec,
+    //                                   @NonNull String totalPedestrianDistance, @NonNull String totalPedestrianDistanceUnits,
+    //                                   int totalPedestrianTimeInSec, @NonNull TransitStepInfo[] steps)
+
+    //
+    static jmethodID const transitRouteInfoConstructor = jni::GetConstructorID(env,
+                                                                               transitRouteInfoClass,
+                                                                               "(Ljava/lang/String;Ljava/lang/String;I"
+                                                                               "Ljava/lang/String;Ljava/lang/String;I"
+                                                                               "[Lcom/ftmap/maps/TransitStepInfo;)V");
+    jni::TScopedLocalRef const distance(env, jni::ToJavaString(env, routeInfo.m_totalDistanceStr));
+    jni::TScopedLocalRef const distanceUnits(env, jni::ToJavaString(env,
+                                                                    routeInfo.m_totalDistanceUnitsSuffix));
+    jni::TScopedLocalRef const distancePedestrian(env, jni::ToJavaString(env,
+                                                                         routeInfo.m_totalPedestrianDistanceStr));
+    jni::TScopedLocalRef const distancePedestrianUnits(env, jni::ToJavaString(env,
+                                                                              routeInfo.m_totalPedestrianUnitsSuffix));
+    return env->NewObject(transitRouteInfoClass, transitRouteInfoConstructor,
+                          distance.get(), distanceUnits.get(),
+                          static_cast<jint>(routeInfo.m_totalTimeInSec),
+                          distancePedestrian.get(), distancePedestrianUnits.get(),
+                          static_cast<jint>(routeInfo.m_totalPedestrianTimeInSec),
+                          steps.get());
+}
+
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeDisableFollowing(JNIEnv
+                                                 *env, jclass) {
+    frm()->GetRoutingManager().
+
+            DisableFollowMode();
+
+}
+
+JNIEXPORT jint
+
+JNICALL
+Java_com_ftmap_maps_FTMap_nativeGetLastUsedRouter(JNIEnv *env, jclass) {
+    return static_cast<jint>(g_framework->GetRoutingManager().GetLastUsedRouter());
+}
+
+JNIEXPORT jint
+
+JNICALL
+Java_com_ftmap_maps_FTMap_nativeInvalidRoutePointsTransactionId(JNIEnv *env, jclass) {
+    return frm()->GetRoutingManager().InvalidRoutePointsTransactionId();
+}
+
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeSetRoutingListener(JNIEnv
+                                                   *env, jclass,
+                                                   jobject listener
+) {
+    CHECK(g_framework,
+          ("Framework isn't created yet!"));
+    auto rf = jni::make_global_ref(listener);
+    frm()->GetRoutingManager().SetRouteBuildingListener(
+            [rf](
+                    routing::RouterResultCode e, storage::CountriesSet
+            const &countries) {
+                CallRoutingListener(rf,
+                                    static_cast
+                                            <int>(e), countries
+                );
+            });
+}
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeSetRouteProgressListener(JNIEnv
+                                                         *env, jclass,
+                                                         jobject listener
+) {
+    CHECK(g_framework,
+          ("Framework isn't created yet!"));
+    frm()->GetRoutingManager().
+            SetRouteProgressListener(
+            bind(&CallRouteProgressListener, jni::make_global_ref(listener), std::placeholders::_1)
+    );
+}
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeSetRoutingRecommendationListener(JNIEnv
+                                                                 *env, jclass,
+                                                                 jobject listener
+) {
+    CHECK(g_framework,
+          ("Framework isn't created yet!"));
+    frm()->GetRoutingManager().
+            SetRouteRecommendationListener(
+            bind(&CallRouteRecommendationListener, jni::make_global_ref(listener),
+                 std::placeholders::_1)
+    );
+}
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeSetRoutingLoadPointsListener(
+        JNIEnv
+        *, jclass,
+        jobject listener
+) {
+    CHECK(g_framework,
+          ("Framework isn't created yet!"));
+    if (listener != nullptr)
+        g_loadRouteHandler = bind(&CallSetRoutingLoadPointsListener, jni::make_global_ref(listener),
+                                  std::placeholders::_1);
+    else
+        g_loadRouteHandler = nullptr;
+}
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeRemoveRoute(JNIEnv
+                                            *env, jclass) {
+    frm()->GetRoutingManager().RemoveRoute(false /* deactivateFollowing */);
+}
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeBuildRoute(JNIEnv
+                                           *env, jclass) {
+    frm()->GetRoutingManager().
+
+            BuildRoute();
+
+}
 
 
-} // ex
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeLoadRoutePoints(JNIEnv
+                                                *, jclass) {
+    frm()->GetRoutingManager().
+            LoadRoutePoints(g_loadRouteHandler);
+}
+JNIEXPORT jboolean
+
+JNICALL
+Java_com_ftmap_maps_FTMap_nativeHasSavedRoutePoints(JNIEnv *, jclass) {
+    return frm()->GetRoutingManager().HasSavedRoutePoints();
+}
+
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeSaveRoutePoints(JNIEnv
+                                                *, jclass) {
+    frm()->GetRoutingManager().
+
+            SaveRoutePoints();
+
+}
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeDeleteSavedRoutePoints(JNIEnv
+                                                       *, jclass) {
+    frm()->GetRoutingManager().
+
+            DeleteSavedRoutePoints();
+
+}
+JNIEXPORT jint
+JNICALL
+Java_com_ftmap_maps_FTMap_nativeGetBestRouter(JNIEnv *env, jclass,
+                                              jdouble
+                                              srcLat,
+                                              jdouble srcLon,
+                                              jdouble
+                                              dstLat,
+                                              jdouble dstLon
+) {
+    return static_cast
+
+            <jint> (frm()
+
+                    ->
+
+                            GetRoutingManager()
+
+                    .
+                            GetBestRouter(
+                            mercator::FromLatLon(srcLat, srcLon),
+                            mercator::FromLatLon(dstLat, dstLon)
+                    ));
+}
+
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeFollowRoute(JNIEnv
+                                            *env, jclass) {
+    frm()->GetRoutingManager().
+
+            FollowRoute();
+
+}
+
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeRemoveRoutePoint(JNIEnv
+                                                 *env, jclass,
+                                                 jint markType, jint
+                                                 intermediateIndex) {
+    frm()->GetRoutingManager().RemoveRoutePoint(static_cast
+                                                        <RouteMarkType>(markType),
+                                                static_cast
+                                                        <size_t>(intermediateIndex)
+    );
+}
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeRemoveIntermediateRoutePoints(JNIEnv
+                                                              *env, jclass) {
+    frm()->GetRoutingManager().
+
+            RemoveIntermediateRoutePoints();
+
+}
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeSetRouter(JNIEnv
+                                          *env, jclass,
+                                          jint routerType
+) {
+    using Type = routing::RouterType;
+    Type type = Type::Vehicle;
+    switch (routerType) {
+        case 0:
+            break;
+        case 1:
+            type = Type::Pedestrian;
+            break;
+        case 2:
+            type = Type::Bicycle;
+            break;
+        case 3:
+            type = Type::Transit;
+            break;
+        default:
+            assert(false);
+            break;
+    }
+    g_framework->
+
+                    GetRoutingManager()
+
+            .
+                    SetRouter(type);
+}
+JNIEXPORT jboolean
+
+JNICALL
+Java_com_ftmap_maps_FTMap_nativeCouldAddIntermediatePoint(JNIEnv *env, jclass) {
+    return frm()->GetRoutingManager().CouldAddIntermediatePoint();
+}
+
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeCloseRouting(JNIEnv
+                                             *env, jclass) {
+    frm()->GetRoutingManager().CloseRouting(true /* remove route points */);
+}
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeAddRoutePoint(JNIEnv
+                                              *env, jclass,
+                                              jstring title,
+                                              jstring
+                                              subtitle,
+                                              jint markType,
+                                              jint
+                                              intermediateIndex,
+                                              jboolean isMyPosition,
+                                              jdouble
+                                              lat,
+                                              jdouble lon
+) {
+    RouteMarkData data;
+    data.
+            m_title = jni::ToNativeString(env, title);
+    data.
+            m_subTitle = jni::ToNativeString(env, subtitle);
+    data.
+            m_pointType = static_cast<RouteMarkType>(markType);
+    data.
+            m_intermediateIndex = static_cast<size_t>(intermediateIndex);
+    data.
+            m_isMyPosition = static_cast<bool>(isMyPosition);
+    data.
+            m_position = m2::PointD(mercator::FromLatLon(lat, lon));
+
+    frm()->GetRoutingManager().
+            AddRoutePoint(std::move(data)
+    );
+}
+JNIEXPORT jstring JNICALL Java_com_ftmap_maps_FTMap_nativeFormatLatLon(JNIEnv *env, jclass, jdouble
+lat,
+                                                                       jdouble lon,
+                                                                       jboolean
+                                                                       useDMSFormat) {
+    return
+            jni::ToJavaString(
+                    env, (useDMSFormat
+                          ?
+                          measurement_utils::FormatLatLonAsDMS(lat, lon,
+                                                               2)
+                          :
+                          measurement_utils::FormatLatLon(lat, lon,
+                                                          true /* withSemicolon */,
+                                                          6)));
+}
+
+JNIEXPORT jobjectArray
+
+JNICALL
+Java_com_ftmap_maps_FTMap_nativeGetRoutePoints(JNIEnv *env, jclass) {
+    auto const points = frm()->GetRoutingManager().GetRoutePoints();
+//com.ftmap.maps
+    static jclass const pointClazz = jni::GetGlobalClassRef(env,
+                                                            "com/ftmap/maps/RouteMarkData");
+    // Java signature : RouteMarkData(String title, String subtitle,
+    //                                @RoutePointInfo.RouteMarkType int pointType,
+    //                                int intermediateIndex, boolean isVisible, boolean isMyPosition,
+    //                                boolean isPassed, double lat, double lon)
+    static jmethodID const pointConstructor = jni::GetConstructorID(env, pointClazz,
+                                                                    "(Ljava/lang/String;Ljava/lang/String;IIZZZDD)V");
+    return jni::ToJavaArray(env, pointClazz, points, [&](JNIEnv *jEnv, RouteMarkData const &data) {
+        jni::TScopedLocalRef const title(env, jni::ToJavaString(env, data.m_title));
+        jni::TScopedLocalRef const subtitle(env, jni::ToJavaString(env, data.m_subTitle));
+        return env->NewObject(pointClazz, pointConstructor,
+                              title.get(), subtitle.get(),
+                              static_cast<jint>(data.m_pointType),
+                              static_cast<jint>(data.m_intermediateIndex),
+                              static_cast<jboolean>(data.m_isVisible),
+                              static_cast<jboolean>(data.m_isMyPosition),
+                              static_cast<jboolean>(data.m_isPassed),
+                              mercator::YToLat(data.m_position.y),
+                              mercator::XToLon(data.m_position.x));
+    });
+}
+
+JNIEXPORT jint
+
+JNICALL
+Java_com_ftmap_maps_FTMap_nativeOpenRoutePointsTransaction(JNIEnv *env, jclass) {
+    return frm()->GetRoutingManager().OpenRoutePointsTransaction();
+}
+
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeCancelRoutePointsTransaction(JNIEnv
+                                                             *env, jclass,
+                                                             jint transactionId
+) {
+    frm()->GetRoutingManager().
+            CancelRoutePointsTransaction(transactionId);
+
+}
+
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeApplyRoutePointsTransaction(JNIEnv
+                                                            *env, jclass,
+                                                            jint transactionId
+) {
+    frm()->GetRoutingManager().
+            ApplyRoutePointsTransaction(transactionId);
+}
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMapFragment_nativeSetRenderingInitializationFinishedListener(
+        JNIEnv
+        *env,
+        jclass clazz, jobject
+        listener) {
+    if (listener) {
+        g_framework->NativeFramework()->SetGraphicsContextInitializationHandler(
+                std::bind(&OnRenderingInitializationFinished,
+                          jni::make_global_ref(listener)
+                ));
+    } else {
+        g_framework->NativeFramework()->SetGraphicsContextInitializationHandler(nullptr);
+    }
+}
+JNIEXPORT jobjectArray
+
+JNICALL
+Java_com_ftmap_maps_FTMap_nativeGenerateNotifications(JNIEnv *env, jclass) {
+    ::Framework *fr = frm();
+    if (!fr->GetRoutingManager().IsRoutingActive())
+        return nullptr;
+
+    std::vector<std::string> notifications;
+    fr->GetRoutingManager().GenerateNotifications(notifications);
+    if (notifications.empty())
+        return nullptr;
+
+    return jni::ToJavaStringArray(env, notifications);
+}
+//JNIEXPORT jint JNICALL
+//Java_com_ftmap_maps_FTMap_nativeGetDrawScale(JNIEnv *env, jclass) {
+//    return static_cast<jint>(frm()->GetDrawScale());
+//}
+//JNIEXPORT void JNICALL
+//Java_com_ftmap_maps_FTMap_nativeClearApiPoints(JNIEnv *env, jclass clazz) {
+//    frm()->GetBookmarkManager().GetEditSession().ClearGroup(UserMark::Type::API);
+//}
+
+}

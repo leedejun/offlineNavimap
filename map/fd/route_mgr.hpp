@@ -46,10 +46,11 @@ namespace fd{
     class MapEngine;
     class RouteMgr;
     class RouteWrapper{
-        routing::Route route;
+//        routing::Route route;
+        std::shared_ptr<routing::Route> routePtr = nullptr;
         RouteMgr& routeMgr;
     public:
-        RouteWrapper(RouteMgr&,routing::Route const &);
+        RouteWrapper(RouteMgr&, routing::Route const &);
         ~RouteWrapper();
 
         void show(const std::string& fillColor, const std::string& outlineColor);
@@ -57,7 +58,8 @@ namespace fd{
         bool isRouteId(const std::string& routeId);
        void getRouteTime(const std::string& routeId);
 
-        routing::Route& getRoute(){ return route; }
+//        routing::Route& getRoute(){ return route; }
+        std::shared_ptr<routing::Route> getRoutePtr(){ return routePtr; }
     private:
         std::vector<dp::DrapeID> subrouteIds;
     };
@@ -78,7 +80,11 @@ namespace fd{
         double getRouteTime(const std::string& routeId);
         double getRouteDistance(const std::string& routeId);
         std::string getRouteInfo(const std::string& routeId);
+        void updatePreviewMode(const std::string& routeId);
+        void updatePreviewModeAll();
         void exitFollowRoute();
+        void removeRoute(const bool deactivateFollowing);
+        void closeRouting(const bool removeRoutePoints);
         ref_ptr<df::DrapeEngine> GetDrapeEngine();
     private:
         void showRoute(routing::Route const& route, std::string color);

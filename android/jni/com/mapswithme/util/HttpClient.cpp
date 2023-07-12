@@ -225,10 +225,11 @@ bool HttpClient::RunHttpRequest()
   {
     return false;
   }
-
+//com.ftmap.util
   static jmethodID const httpClientClassRun =
-    env->GetStaticMethodID(g_httpClientClazz, "run",
-        "(Lcom/mapswithme/util/HttpClient$Params;)Lcom/mapswithme/util/HttpClient$Params;");
+
+          env->GetStaticMethodID(g_httpClientClazz, "run",
+                                 "(Lcom/ftmap/util/HttpClient$Params;)Lcom/ftmap/util/HttpClient$Params;");
 
   jni::ScopedLocalRef<jobject> const response(env.get(), env->CallStaticObjectMethod(g_httpClientClazz,
                                               httpClientClassRun, httpParamsObject.get()));

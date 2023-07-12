@@ -8,19 +8,19 @@
 extern "C"
 {
 JNIEXPORT jboolean JNICALL
-Java_com_mapswithme_util_StringUtils_nativeIsHtml(JNIEnv * env, jclass thiz, jstring text)
+Java_com_ftmap_util_StringUtils_nativeIsHtml(JNIEnv * env, jclass thiz, jstring text)
 {
   return strings::IsHTML(jni::ToNativeString(env, text));
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_mapswithme_util_StringUtils_nativeContainsNormalized(JNIEnv * env, jclass thiz, jstring str, jstring substr)
+Java_com_ftmap_util_StringUtils_nativeContainsNormalized(JNIEnv * env, jclass thiz, jstring str, jstring substr)
 {
   return search::ContainsNormalized(jni::ToNativeString(env, str), jni::ToNativeString(env, substr));
 }
 
 JNIEXPORT jobjectArray JNICALL
-Java_com_mapswithme_util_StringUtils_nativeFilterContainsNormalized(JNIEnv * env, jclass thiz, jobjectArray src, jstring jSubstr)
+Java_com_ftmap_util_StringUtils_nativeFilterContainsNormalized(JNIEnv * env, jclass thiz, jobjectArray src, jstring jSubstr)
 {
   std::string substr = jni::ToNativeString(env, jSubstr);
   int const length = env->GetArrayLength(src);
@@ -37,7 +37,7 @@ Java_com_mapswithme_util_StringUtils_nativeFilterContainsNormalized(JNIEnv * env
 }
 
 JNIEXPORT jobject JNICALL
-Java_com_mapswithme_util_StringUtils_nativeFormatSpeedAndUnits(JNIEnv * env, jclass thiz, jdouble metersPerSecond)
+Java_com_ftmap_util_StringUtils_nativeFormatSpeedAndUnits(JNIEnv * env, jclass thiz, jdouble metersPerSecond)
 {
   static jclass const pairClass = jni::GetGlobalClassRef(env, "android/util/Pair");
   static jmethodID const pairCtor = jni::GetConstructorID(env, pairClass, "(Ljava/lang/Object;Ljava/lang/Object;)V");
@@ -51,7 +51,7 @@ Java_com_mapswithme_util_StringUtils_nativeFormatSpeedAndUnits(JNIEnv * env, jcl
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_mapswithme_util_StringUtils_nativeFormatDistance(JNIEnv *env, jclass thiz,
+Java_com_ftmap_util_StringUtils_nativeFormatDistance(JNIEnv *env, jclass thiz,
                                                           jdouble distanceInMeters)
 {
   std::string formattedDistance;

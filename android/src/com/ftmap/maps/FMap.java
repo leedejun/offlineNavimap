@@ -492,6 +492,13 @@ public abstract class FMap {
      * @param callback
      */
     public abstract void search(String keywords, SearchResultsCallback callback);
+    /**
+     * 沿途查询搜索
+     *
+     * @param keywords
+     * @param callback
+     */
+    public abstract void searchWay(String keywords,String wayRoute ,SearchResultsCallback callback);
 
     /**
      * 圆形范围检索
@@ -503,6 +510,7 @@ public abstract class FMap {
      * @param callback
      */
     public abstract void search(String keywords, double centerX, double centerY, double radius, SearchResultsCallback callback);
+    public abstract void search(String keywords, double lat, double lon, SearchResultsCallback callback);
 
 
     public abstract void PtoG(double screenX, double screenY, MapUtilsResultsCallback callback);
@@ -519,7 +527,7 @@ public abstract class FMap {
     public abstract void GetMapObject(double mercatorX, double mercatorY, MapUtilsResultsCallback callback);
 
     public abstract void OnMapClickListener(ClickListenerCallback callback);
-
+    public abstract void cancelSearch();
     /**
      * 查询poi分类
      * @param callback
@@ -582,10 +590,17 @@ public abstract class FMap {
 
     public abstract void followRoute( String routeId);
     /**
+     *推出导航
+     */
+
+    public abstract void exitRoute();
+    /**
      *结束导航
      */
 
-    public abstract void CloseRouting();
+    public abstract void closeRouting();
+    public abstract void updatePreviewMode(String routeId);
+    public abstract void updatePreviewModeAll();
 
     /**
      * 路径规划

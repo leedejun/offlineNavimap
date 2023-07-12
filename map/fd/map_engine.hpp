@@ -62,6 +62,10 @@ namespace fd{
         double getRouteDistance(const std::string& routeId);
         std::string getRouteInfo(const std::string& routeId);
         void exitFollowRoute();
+        void updatePreviewModeAll();
+        void updatePreviewMode(const std::string& routeId);
+        void removeRoute(const bool deactivateFollowing);
+        void closeRouting(const bool removeRoutePoints);
 
         //
         void getAvaliableRoute();

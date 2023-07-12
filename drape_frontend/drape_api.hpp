@@ -14,63 +14,117 @@
 
 namespace df
 {
-struct DrapeApiLineData
-{
-  DrapeApiLineData() = default;
+    struct DrapeApiLineData
+    {
+        DrapeApiLineData() = default;
 
-  DrapeApiLineData(std::vector<m2::PointD> const & points,
-                   dp::Color const & color)
-    : m_points(points)
-    , m_color(color)
-  {}
+        DrapeApiLineData(std::vector<m2::PointD> const & points,
+                         dp::Color const & color)
+                : m_points(points)
+                , m_color(color)
+        {}
 
-  DrapeApiLineData & ShowPoints(bool markPoints)
-  {
-    m_showPoints = true;
-    m_markPoints = markPoints;
-    return *this;
-  }
+        DrapeApiLineData & ShowPoints(bool markPoints)
+        {
+          m_showPoints = true;
+          m_markPoints = markPoints;
+          return *this;
+        }
 
-  DrapeApiLineData & Width(float width)
-  {
-    m_width = width;
-    return *this;
-  }
+        DrapeApiLineData & Width(float width)
+        {
+          m_width = width;
+          return *this;
+        }
 
-  DrapeApiLineData & ShowId()
-  {
-    m_showId = true;
-    return *this;
-  }
+        DrapeApiLineData & ShowId()
+        {
+          m_showId = true;
+          return *this;
+        }
 
-  std::vector<m2::PointD> m_points;
-  float m_width = 1.0f;
-  dp::Color m_color;
+        std::vector<m2::PointD> m_points;
+        float m_width = 1.0f;
+        dp::Color m_color;
 
-  bool m_showPoints = false;
-  bool m_markPoints = false;
-  bool m_showId = false;
-  bool m_showLine = true;
-};
+        bool m_showPoints = false;
+        bool m_markPoints = false;
+        bool m_showId = false;
+        bool m_showLine = true;
+    };
 
-class DrapeApi
-{
-public:
-  using TLines = std::unordered_map<std::string, DrapeApiLineData>;
+    struct DrapeApiPolygonData
+    {
+        DrapeApiPolygonData() = default;
 
-  DrapeApi() = default;
+        DrapeApiPolygonData(std::vector<m2::PointD> const & points,
+                            dp::Color const & color,
+                            dp::Color const & outlineColor,
+                            float outlineWidth)
+                : m_points(points)
+                , m_color(color)
+                , m_outlineColor(outlineColor)
+                , m_outlineWidth(outlineWidth)
+        {}
 
-  void SetDrapeEngine(ref_ptr<DrapeEngine> engine);
+        std::vector<m2::PointD> m_points;
+        dp::Color m_color;
+        dp::Color m_outlineColor;
+        float m_outlineWidth = 0.0f;
+    };
 
-  void AddLine(std::string const & id, DrapeApiLineData const & data);
-  void RemoveLine(std::string const & id);
-  void Clear();
-  void Invalidate();
+    struct DrapeApiCustomMarkData
+    {
+        DrapeApiCustomMarkData() = default;
+        DrapeApiCustomMarkData(m2::PointD const & center,
+                               m2::PointD const & size,
+                               std::string const & text,
+                               ref_ptr<void> textureData,
+                               int dataSize)
+                : m_center(center)
+                , m_size(size)
+                , m_text(text)
+                , m_textureData(textureData)
+                , m_dataSize(dataSize)
+        {
+        }
+        m2::PointD m_center;
+        m2::PointD m_size;
+        std::string m_text;
+        ref_ptr<void> m_textureData;
+        int m_dataSize;
+    };
 
-  // added by baixiaojun
-  DrapeApiLineData* GetData(std::string const & id);
-private:
-  DrapeEngineSafePtr m_engine;
-  TLines m_lines;
-};
+
+    class DrapeApi
+    {
+    public:
+        using TLines = std::unordered_map<std::string, DrapeApiLineData>;
+        using TPolygons = std::unordered_map<std::string, DrapeApiPolygonData>;
+        using TCustomMarks = std::unordered_map<std::string, DrapeApiCustomMarkData>;
+
+        DrapeApi() = default;
+
+        void SetDrapeEngine(ref_ptr<DrapeEngine> engine);
+
+        void AddLine(std::string const & id, DrapeApiLineData const & data);
+        void RemoveLine(std::string const & id);
+
+        void AddPolygon(std::string const & id, DrapeApiPolygonData const & data);
+        void RemovePolygon(std::string const & id);
+
+        void AddCustomMark(std::string const & id, DrapeApiCustomMarkData const & data);
+        void RemoveCustomMark(std::string const & id);
+
+        void Clear();
+        void Invalidate();
+
+        // added by baixiaojun
+        DrapeApiLineData* GetData(std::string const & id);
+    private:
+        DrapeEngineSafePtr m_engine;
+        TLines m_lines;
+        TPolygons m_polygons;
+        TCustomMarks m_marks;
+    };
 }  // namespace df

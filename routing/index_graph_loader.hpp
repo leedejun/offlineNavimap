@@ -28,6 +28,8 @@ public:
   virtual std::vector<RouteSegment::SpeedCamera> GetSpeedCameraInfo(Segment const & segment) = 0;
   virtual void Clear() = 0;
 
+    virtual void SetSearchClass(const int searchClass){}
+
   static std::unique_ptr<IndexGraphLoader> Create(
       VehicleType vehicleType, bool loadAltitudes, std::shared_ptr<NumMwmIds> numMwmIds,
       std::shared_ptr<VehicleModelFactoryInterface> vehicleModelFactory,

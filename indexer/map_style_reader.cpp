@@ -9,6 +9,7 @@ namespace
 {
 std::string const kSuffixDark = "_dark";
 std::string const kSuffixClear = "_clear";
+std::string const kSuffixCamouflage = "_camouflage";
 std::string const kSuffixVehicleDark = "_vehicle_dark";
 std::string const kSuffixVehicleClear = "_vehicle_clear";
 
@@ -33,6 +34,8 @@ std::string GetStyleRulesSuffix(MapStyle mapStyle)
     return kSuffixVehicleDark;
   case MapStyleVehicleClear:
     return kSuffixVehicleClear;
+  case MapStyleCamouflage:
+    return kSuffixCamouflage;
   case MapStyleMerged:
     return std::string();
 
@@ -58,7 +61,10 @@ std::string GetStyleResourcesSuffix(MapStyle mapStyle)
     return kSuffixDark;
   case MapStyleClear:
   case MapStyleVehicleClear:
+  case MapStyleCamouflage:
     return kSuffixClear;
+//  case MapStyleCamouflage:
+//    return kSuffixCamouflage;
   case MapStyleMerged:
     return std::string();
 

@@ -28,6 +28,7 @@ world  +
         bicycle_parking  -
         bicycle_rental  -
         biergarten  -
+        blood_bank  -
         brothel  -
         bureau_de_change  -
         bus_station  -
@@ -44,6 +45,7 @@ world  +
         community_centre  -
         courthouse  -
         dentist  -
+        dock  -
         doctors  -
         drinking_water  -
         driving_school  -
@@ -54,19 +56,32 @@ world  +
         food_court  -
         fountain  -
         fuel  -
+        func_class_1  -
+        func_class_2  -
+        func_class_3  -
+        func_class_4  -
+        func_class_5  -
+        fyjg  -
         grave_yard  +
             christian  -
             {}
+        gsservices  -
+        gssfz  -
         hospital  -
         hunting_stand  -
+        hystation  -
         ice_cream  -
         internet_cafe  -
+        jmzs  -
         kindergarten  -
+        kystation  -
         library  -
+        ljbridge  -
         marketplace  -
         motorcycle_parking  -
         nightclub  -
         nursing_home  -
+        park1  -
         parking  +
             fee  -
             multi-storey  -
@@ -93,6 +108,7 @@ world  +
             taoist  -
             {}
         police  -
+        post  -
         post_box  -
         post_office  -
         prison  -
@@ -105,6 +121,7 @@ world  +
         shelter  -
         shower  -
         speed_trap  -
+        square  -
         taxi  -
         telephone  -
         theatre  -
@@ -121,6 +138,9 @@ world  +
         waste_basket  -
         waste_disposal  -
         water_point  -
+        wlky  -
+        wlyq  -
+        zzl  -
         {}
     area:highway  +
         cycleway  -
@@ -856,7 +876,10 @@ world  +
         bakery  -
         beauty  -
         beverages  -
+        bhscls  -
+        bhsdls  -
         bicycle  -
+        blls  -
         bookmaker  -
         books  -
         butcher  -
@@ -867,6 +890,7 @@ world  +
             {}
         chemist  -
         chocolate  -
+        cjscls  -
         clothes  -
         coffee  -
         computer  -
@@ -889,6 +913,7 @@ world  +
         hairdresser  -
         hardware  -
         jewelry  -
+        jzjcls  -
         kiosk  -
         laundry  -
         mall  -
@@ -903,7 +928,9 @@ world  +
         outdoor  -
         pawnbroker  -
         pet  -
+        pfscls  -
         photo  -
+        rzdls  -
         seafood  -
         shoes  -
         sports  -

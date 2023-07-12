@@ -12,9 +12,9 @@ routing::RoutingOptions::Road makeValue(jint option)
 
 extern "C"
 {
-
+//com.ftmap.maps
 JNIEXPORT jboolean JNICALL
-Java_com_mapswithme_maps_routing_RoutingOptions_nativeHasOption(JNIEnv * env, jclass clazz, jint option)
+Java_com_ftmap_maps_RoutingOptions_nativeHasOption(JNIEnv * env, jclass clazz, jint option)
 {
   CHECK(g_framework, ("Framework isn't created yet!"));
   routing::RoutingOptions routingOptions = routing::RoutingOptions::LoadCarOptionsFromSettings();
@@ -23,7 +23,7 @@ Java_com_mapswithme_maps_routing_RoutingOptions_nativeHasOption(JNIEnv * env, jc
 }
 
 JNIEXPORT void JNICALL
-Java_com_mapswithme_maps_routing_RoutingOptions_nativeAddOption(JNIEnv * env, jclass clazz, jint option)
+Java_com_ftmap_maps_RoutingOptions_nativeAddOption(JNIEnv * env, jclass clazz, jint option)
 {
   CHECK(g_framework, ("Framework isn't created yet!"));
   routing::RoutingOptions routingOptions = routing::RoutingOptions::LoadCarOptionsFromSettings();
@@ -34,7 +34,7 @@ Java_com_mapswithme_maps_routing_RoutingOptions_nativeAddOption(JNIEnv * env, jc
 
 
 JNIEXPORT void JNICALL
-Java_com_mapswithme_maps_routing_RoutingOptions_nativeRemoveOption(JNIEnv * env, jclass clazz, jint option)
+Java_com_ftmap_maps_RoutingOptions_nativeRemoveOption(JNIEnv * env, jclass clazz, jint option)
 {
   CHECK(g_framework, ("Framework isn't created yet!"));
   routing::RoutingOptions routingOptions = routing::RoutingOptions::LoadCarOptionsFromSettings();

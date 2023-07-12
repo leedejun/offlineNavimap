@@ -20,6 +20,8 @@
 using namespace base;
 using namespace std;
 
+int change_0531 =0;
+
 namespace routing
 {
 bool IsUTurn(Segment const & u, Segment const & v)
@@ -365,6 +367,20 @@ void IndexGraph::ReconstructJointSegment(astar::VertexData<JointSegment, RouteWe
                      isOutgoing, parents))
     {
       continue;
+    }
+
+    auto const & road = m_geometry->GetRoad(firstChild.GetFeatureId());
+    if(m_searchClass==5){
+      if(road.GetFuncClass()<5)
+      {
+        if(change_0531==0)
+          change_0531=1;
+      }
+    } else if(m_searchClass==4){
+      if(road.GetFuncClass()>4)
+      {
+        continue;
+      }
     }
 
     RouteWeight summaryWeight;
