@@ -82,38 +82,62 @@ namespace dp
           return true;
         }
 
-        bool LoadDataFromMemory(uint8_t bytesPerPixel, TLoadingCompletion const & completionHandler,
-                                TLoadingFailure const & failureHandler, ref_ptr<void> memoryData, int dataSize)
+        bool LoadDataByPath(std::string const & path,
+                      uint8_t bytesPerPixel, TLoadingCompletion const & completionHandler,
+                      TLoadingFailure const & failureHandler)
+        {
+            ASSERT(completionHandler != nullptr, ());
+            ASSERT(failureHandler != nullptr, ());
+
+            std::vector<unsigned char> rawData;
+            try
+            {
+                ReaderPtr<Reader> reader = GetPlatform().GetReader(path);
+                CHECK_LESS(reader.Size(), static_cast<uint64_t>(std::numeric_limits<size_t>::max()), ());
+                size_t const size = static_cast<size_t>(reader.Size());
+                rawData.resize(size);
+                reader.Read(0, &rawData[0], size);
+            }
+            catch (RootException & e)
+            {
+                failureHandler(e.what());
+                return false;
+            }
+
+            int w, h, bpp;
+            unsigned char * data =
+                    stbi_load_from_memory(&rawData[0], static_cast<int>(rawData.size()), &w, &h, &bpp, 0);
+
+            uint8_t constexpr kSupportedBPP = 4;
+            CHECK_EQUAL(bpp, kSupportedBPP, ("Incorrect texture format"));
+            if (bytesPerPixel != bpp)
+            {
+                std::vector<unsigned char> convertedData(static_cast<size_t>(w * h * bytesPerPixel));
+                uint32_t const pixelsCount = static_cast<uint32_t>(w * h);
+                for (uint32_t i = 0; i < pixelsCount; i++)
+                {
+                    unsigned char const * p = data + i * bpp;
+                    for (uint8_t b = 0; b < bytesPerPixel; b++)
+                        convertedData[i * bytesPerPixel + b] = p[b];
+                }
+                stbi_image_free(data);
+                completionHandler(convertedData.data(), static_cast<uint32_t>(w), static_cast<uint32_t>(h));
+                return true;
+            }
+
+            completionHandler(data, static_cast<uint32_t>(w), static_cast<uint32_t>(h));
+            stbi_image_free(data);
+            return true;
+        }
+
+        bool LoadFromImg(uint8_t bytesPerPixel, TLoadingCompletion const & completionHandler,
+                                TLoadingFailure const & failureHandler, ref_ptr<void> ImgData, int w, int h)
         {
           ASSERT(completionHandler != nullptr, ());
           ASSERT(failureHandler != nullptr, ());
-
-          int w, h, bpp;
-          unsigned char * data =
-                  stbi_load_from_memory(static_cast<unsigned char*>(memoryData.get()), static_cast<int>(dataSize), &w, &h, &bpp, 0);
-
-          uint8_t constexpr kSupportedBPP = 4;
-          CHECK_EQUAL(bpp, kSupportedBPP, ("Incorrect texture format"));
-          ASSERT(glm::isPowerOfTwo(w), (w));
-          ASSERT(glm::isPowerOfTwo(h), (h));
-
-          if (bytesPerPixel != bpp)
-          {
-            std::vector<unsigned char> convertedData(static_cast<size_t>(w * h * bytesPerPixel));
-            uint32_t const pixelsCount = static_cast<uint32_t>(w * h);
-            for (uint32_t i = 0; i < pixelsCount; i++)
-            {
-              unsigned char const * p = data + i * bpp;
-              for (uint8_t b = 0; b < bytesPerPixel; b++)
-                convertedData[i * bytesPerPixel + b] = p[b];
-            }
-            stbi_image_free(data);
-            completionHandler(convertedData.data(), static_cast<uint32_t>(w), static_cast<uint32_t>(h));
-            return true;
-          }
-
-          completionHandler(data, static_cast<uint32_t>(w), static_cast<uint32_t>(h));
-          stbi_image_free(data);
+//          ASSERT(glm::isPowerOfTwo(w), (w));
+//          ASSERT(glm::isPowerOfTwo(h), (h));
+          completionHandler((unsigned char *)ImgData.get(), static_cast<uint32_t>(w), static_cast<uint32_t>(h));
           return true;
         }
 
@@ -138,20 +162,43 @@ namespace dp
     }
 
     StaticTexture::StaticTexture(ref_ptr<dp::GraphicsContext> context,
-                                 std::string const & textureName, std::string const & skinPathName,
-                                 dp::TextureFormat format, ref_ptr<HWTextureAllocator> allocator, ref_ptr<void> data, int dataSize)
-            : m_textureName(textureName)
-            , m_skinPathName(skinPathName)
+                                 std::string const & id, std::string const & path,
+                                 dp::TextureFormat format, ref_ptr<HWTextureAllocator> allocator,
+                                 bool isByPath)
+            : m_textureName(id)
+            , m_texturePath(path)
+            , m_skinPathName("")
             , m_format(format)
     {
-      if(data)
-      {
-        m_isLoadingCorrect = LoadFromMemory(context, allocator, data, dataSize);
-      }
-      else
-      {
-        m_isLoadingCorrect = Load(context, allocator);
-      }
+        m_isLoadingCorrect = LoadByPath(context, allocator, path);
+    }
+
+    bool StaticTexture::LoadByPath(ref_ptr<dp::GraphicsContext> context, ref_ptr<HWTextureAllocator> allocator, std::string const & path)
+    {
+        auto completionHandler = [this, &allocator, context](unsigned char * data, uint32_t width,
+                                                             uint32_t height)
+        {
+            Texture::Params p;
+            p.m_allocator = allocator;
+            p.m_format = m_format;
+            p.m_width = width;
+            p.m_height = height;
+            p.m_wrapSMode = TextureWrapping::Repeat;
+            p.m_wrapTMode = TextureWrapping::Repeat;
+
+            Create(context, p, make_ref(data));
+        };
+
+        auto failureHandler = [this, context](std::string const & reason)
+        {
+            LOG(LERROR, (reason));
+            Fail(context);
+        };
+
+        uint8_t const bytesPerPixel = GetBytesPerPixel(m_format);
+
+        return LoadDataByPath(path, bytesPerPixel,
+                           completionHandler, failureHandler);
     }
 
     bool StaticTexture::Load(ref_ptr<dp::GraphicsContext> context, ref_ptr<HWTextureAllocator> allocator)
@@ -181,7 +228,7 @@ namespace dp
                       completionHandler, failureHandler);
     }
 
-    bool StaticTexture::LoadFromMemory(ref_ptr<dp::GraphicsContext> context, ref_ptr<HWTextureAllocator> allocator, ref_ptr<void> data, int dataSize)
+    bool StaticTexture::LoadFromImgData(ref_ptr<dp::GraphicsContext> context, ref_ptr<HWTextureAllocator> allocator, ref_ptr<void> data, int w, int h)
     {
       auto completionHandler = [this, &allocator, context](unsigned char * data, uint32_t width,
                                                            uint32_t height)
@@ -204,8 +251,8 @@ namespace dp
       };
 
       uint8_t const bytesPerPixel = GetBytesPerPixel(m_format);
-      return LoadDataFromMemory(bytesPerPixel,
-                                completionHandler, failureHandler, data, dataSize);
+      return LoadFromImg(bytesPerPixel,
+                                completionHandler, failureHandler, data, w, h);
     }
 
     void StaticTexture::Invalidate(ref_ptr<dp::GraphicsContext> context,
@@ -226,7 +273,7 @@ namespace dp
 
     void StaticTexture::Create(ref_ptr<dp::GraphicsContext> context, Params const & params)
     {
-      ASSERT(Base::IsPowerOfTwo(params.m_width, params.m_height), (params.m_width, params.m_height));
+//      ASSERT(Base::IsPowerOfTwo(params.m_width, params.m_height), (params.m_width, params.m_height));
 
       Base::Create(context, params);
     }
@@ -234,7 +281,7 @@ namespace dp
     void StaticTexture::Create(ref_ptr<dp::GraphicsContext> context, Params const & params,
                                ref_ptr<void> data)
     {
-      ASSERT(Base::IsPowerOfTwo(params.m_width, params.m_height), (params.m_width, params.m_height));
+//      ASSERT(Base::IsPowerOfTwo(params.m_width, params.m_height), (params.m_width, params.m_height));
 
       Base::Create(context, params, data);
     }

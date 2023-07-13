@@ -76,23 +76,30 @@ namespace df
     struct DrapeApiCustomMarkData
     {
         DrapeApiCustomMarkData() = default;
-        DrapeApiCustomMarkData(m2::PointD const & center,
-                               m2::PointD const & size,
+        DrapeApiCustomMarkData(std::string const & id,
+                               m2::PointD const & center,
+                               m2::PointD const & displaySize,
                                std::string const & text,
-                               ref_ptr<void> textureData,
-                               int dataSize)
-                : m_center(center)
-                , m_size(size)
+                               std::string const & path,
+                               dp::Color const & color,
+                               int fontSize)
+                :
+                m_id(id)
+                , m_center(center)
+                , m_displaySize(displaySize)
                 , m_text(text)
-                , m_textureData(textureData)
-                , m_dataSize(dataSize)
+                , m_path(path)
+                , m_color(color)
+                , m_fontSize(fontSize)
         {
         }
+        std::string m_id;
         m2::PointD m_center;
-        m2::PointD m_size;
+        m2::PointD m_displaySize; //mark 显示的像素大小
         std::string m_text;
-        ref_ptr<void> m_textureData;
-        int m_dataSize;
+        std::string m_path;
+        dp::Color m_color;
+        int m_fontSize = 24;
     };
 
 

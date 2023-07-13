@@ -171,14 +171,8 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
 //            FTMap.nativeDeleteSavedRoutePoints();
 //            FTMap.nativeCloseRouting();
 //            FMap.INSTANCE.updatePreviewModeAll();
-            Bitmap icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.turn_icons0);
-            int width = icon.getWidth();
-               int height = icon.getHeight();
-               int[] pixels = new int[width*height];
-
-            icon.getPixels(pixels, 0, width, 0, 0, width, height); //把bitmap转换为int数组中
             //该函数为native函数
-           FMap.INSTANCE.addCustomMaker("id","name",pixels,width,height);
+           FMap.INSTANCE.addCustomMark("id","/storage/emulated/0/Geo/20230224154439/26266ceec19.png","fdtest_poi", "#00FF00", 16);
 //            FMap.INSTANCE.followRoute("route-1");
         } else if (id == R.id.btnSearchPoi) {
             String aa = "116.35772,39.99226;116.358599,39.992297;116.358888,39.992307;116.359097,39.992317;116.359706,39.992325;116.360235,39.992344;116.361254,39.992373;116.36153,39.992377;116.361531,39.992377";

@@ -126,8 +126,9 @@ namespace dp
 
         //2023.6.6: add by lidejun
         void AddCustomTexture(ref_ptr<dp::GraphicsContext> context,
-                              std::string const & textureName,
-                              dp::TextureFormat format, ref_ptr<void> data, int dataSize);
+                              std::string const & id,
+                              std::string const & path,
+                              dp::TextureFormat format);
 
         ref_ptr<Texture> GetCustomTexture(std::string const & textureName);
 

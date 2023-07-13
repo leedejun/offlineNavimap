@@ -638,13 +638,17 @@ public class FTMap extends FMap implements View.OnTouchListener {
                 .run();
     }
     @Override
-    public void addCustomMaker(String makerId, String makerName, int[] iconBitmap, int width, int height) {
-        cmd("addCustomMaker")
-                .set("makerId", makerId)
-                .set("makerName", makerName)
-                .set("iconBitmap", iconBitmap)
-                .set("width", width)
-                .set("height", height)
+    public void addCustomMark(String id, String path, String text, String color, int fontSize) {
+        cmd("addCustomMark")
+                .set("id", id)
+                .set("lat", 43.59062286906408)
+                .set("lon", 116.39126521640469)
+                .set("path", path)
+                .set("text", text)
+                .set("color", color)
+                .set("fontSize", fontSize)
+                .set("diaplayWidth", 64)
+                .set("diaplayHeight", 64)
                 .run()
                 .get("result");
     }

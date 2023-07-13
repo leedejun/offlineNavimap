@@ -1086,29 +1086,20 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         ENGINE().removeRoute(true);
     } else if (cmdName == "closeRouting") {
         ENGINE().closeRouting(true);
-    } else if (cmdName == "addCustomMaker") {
-        std::string iconName = cmd.getStr(msg, "iconName");
-        jintArray jarr = (jintArray)cmd.getObj(msg,"iconBitmap");
-        int w = 32;
-        int h = 32;
-        int *arr = env->GetIntArrayElements(jarr,NULL);
-        int n = w*h; // 数组的长度
-        std::vector<unsigned char> img(n * 4);
-        for (int i = 0; i < n; i++) {
-            img[i * 4] = arr[i] & 0xFF; // 取a[i]的最低8位
-            img[i * 4 + 1] = (arr[i] >> 8) & 0xFF; // 右移8位后取最低8位
-            img[i * 4 + 2] = (arr[i] >> 16) & 0xFF; // 右移16位后取最低8位
-            img[i * 4 + 3] = (arr[i] >> 24) & 0xFF; // 右移24位后取最低8位
-        }
-        m2::PointD center = {116.39126521640469, 43.59062286906408};
-             m2::PointD markSize = {64.0f, 64.0f};
-             std::string text = "fdtest_poi";
-             ref_ptr<void> textureData = img.data();
-             int dataSize = 0;
-             df::DrapeApiCustomMarkData markData(center, markSize, text, textureData, dataSize);
-             g_framework->NativeFramework()->GetDrapeApi().AddCustomMark(iconName, markData);
-        env->ReleaseIntArrayElements(jarr, arr, 0);
-
+    } else if (cmdName == "addCustomMark") {
+        std::string id = cmd.getStr(msg, "id");
+        std::string path = cmd.getStr(msg, "path");
+        std::string text = cmd.getStr(msg, "text");
+        dp::Color color = stringToDpColor(cmd.getStr(msg, "color"));
+        int fontSize = cmd.getInt(msg, "fontSize");
+        double lon = cmd.getDouble(msg, "lon");
+        double lat = cmd.getDouble(msg, "lat");
+        int diaplayWidth = cmd.getInt(msg, "diaplayWidth");
+        int diaplayHeight = cmd.getInt(msg, "diaplayHeight");
+        m2::PointD center = {lon, lat};
+        m2::PointD markSize = {(double)diaplayWidth, (double)diaplayHeight};
+        df::DrapeApiCustomMarkData markData(id, center, markSize, text, path, color, fontSize);
+        g_framework->NativeFramework()->GetDrapeApi().AddCustomMark(id, markData);
     } else if (cmdName == "addDrawItem") {
         std::string type = cmd.getStr(msg, "type");
         if (type == "line") {

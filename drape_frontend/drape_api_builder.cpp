@@ -262,22 +262,21 @@ namespace df
                 mvp.m_depthTestEnabled = false;
                 mvp.m_minVisibleScale = 1;
                 mvp.m_format = dp::TextureFormat::RGBA8;
-                mvp.m_textureName = id;
-                mvp.m_markPixSize = data.m_size;
+                mvp.m_id = id;
+                mvp.m_markPixSize = data.m_displaySize;
                 mvp.m_depth = 16432;
                 mvp.m_rank = 150;
                 mvp.m_anchor = dp::Bottom;
+                mvp.m_path = data.m_path;
+                mvp.m_color = data.m_color;
+                mvp.m_fontSize = data.m_fontSize;
+                mvp.m_text = data.m_text;
                 MarkShape(data.m_center, mvp).Draw(context, make_ref(&batcher), textures);
-
-
                 //text
+                if(!data.m_text.empty())
                 {
-                    uint32_t constexpr kFontSize = 24;
-                    dp::FontDecl font(dp::Color(255,0,0,255), kFontSize);
-                    size_t index = 0;
-                    std::string s;
-                    s = id;
-                    BuildText(context, s, font, dp::Top, property->m_center, property->m_center, textures, batcher);
+                    dp::FontDecl font(data.m_color, data.m_fontSize);
+                    BuildText(context, data.m_text, font, dp::Top, property->m_center, property->m_center, textures, batcher);
                 }
 
             }

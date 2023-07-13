@@ -74,11 +74,12 @@ namespace df
         bool m_prioritized = false;
         dp::Anchor m_anchor = dp::Center;
         m2::PointF m_offset = m2::PointF(0.0f, 0.0f);
-        ref_ptr<void> m_textureData;
-        int m_textureDataSize;
-        std::string m_textureName;
+        std::string m_text;
+        std::string m_path;
         dp::TextureFormat m_format;
         m2::PointF m_markPixSize = m2::PointF(0.0f, 0.0f);
+        dp::Color m_color;
+        int m_fontSize;
     };
 
     struct AreaViewParams : CommonViewParams

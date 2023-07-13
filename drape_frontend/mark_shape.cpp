@@ -173,13 +173,12 @@ namespace df
     void MarkShape::Draw(ref_ptr<dp::GraphicsContext> context, ref_ptr<dp::Batcher> batcher,
                          ref_ptr<dp::TextureManager> textures) const
     {
-        if(textures->GetCustomTexture(m_params.m_textureName)==nullptr)
+        if(textures->GetCustomTexture(m_params.m_id)==nullptr)
         {
             textures->AddCustomTexture(context,
-                                       m_params.m_textureName,
-                                       m_params.m_format,
-                                       m_params.m_textureData,
-                                       m_params.m_textureDataSize);
+                                       m_params.m_id,
+                                       m_params.m_path,
+                                       m_params.m_format);
         }
 
         glsl::vec2 const pt = glsl::ToVec2(ConvertToLocal(m_pt, m_params.m_tileCenter, kShapeCoordScalar));
@@ -187,7 +186,7 @@ namespace df
         m2::PointF const pixelSize = m_params.m_markPixSize;
         Batch<SV>(context, batcher,
                   CreateOverlayHandle(pixelSize),
-                  position, m_params, textures->GetCustomTexture(m_params.m_textureName), textures);
+                  position, m_params, textures->GetCustomTexture(m_params.m_id), textures);
     }
 
 }

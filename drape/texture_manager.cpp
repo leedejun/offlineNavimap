@@ -503,24 +503,25 @@ namespace dp
     }
 
     void TextureManager::AddCustomTexture(ref_ptr<dp::GraphicsContext> context,
-                                          std::string const & textureName,
-                                          dp::TextureFormat format, ref_ptr<void> data, int dataSize)
+                                          std::string const & id,
+                                          std::string const & path,
+                                          dp::TextureFormat format)
     {
-      std::map<std::string, drape_ptr<Texture>>::iterator itor = m_customTexes.find(textureName);
+      std::map<std::string, drape_ptr<Texture>>::iterator itor = m_customTexes.find(id);
 
       if (itor!=m_customTexes.end())
       {
         return;
       }
 
-      drape_ptr<Texture> customTexture = make_unique_dp<StaticTexture>(context, textureName,
-                                                                       StaticTexture::kDefaultResource,format, make_ref(m_textureAllocator), data, dataSize);
+      drape_ptr<Texture> customTexture = make_unique_dp<StaticTexture>(context, id,
+                                                                       path,format, make_ref(m_textureAllocator), true);
 
 
 //  drape_ptr<Texture> customTexture = make_unique_dp<StaticTexture>(context, "traffic-arrow", m_resPostfix,
 //                                                        dp::TextureFormat::RGBA8, make_ref(m_textureAllocator));
 
-      m_customTexes.emplace(textureName, std::move(customTexture));
+      m_customTexes.emplace(id, std::move(customTexture));
     }
 
     ref_ptr<Texture> TextureManager::GetCustomTexture(std::string const & textureName)
