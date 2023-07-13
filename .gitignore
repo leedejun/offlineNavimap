@@ -8,3 +8,5 @@ tools/
 
 data/
 build/
+build_version.hpp
+coding\SHA1.cpp
