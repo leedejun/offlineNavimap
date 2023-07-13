@@ -93,7 +93,7 @@ public abstract class FMap {
         return this.naviRoute;
     }
 
-
+    public abstract void addCustomMaker(String id, String name, int[] pixels, int width, int height);
 
 
     public class NaviRoute {

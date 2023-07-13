@@ -637,6 +637,17 @@ public class FTMap extends FMap implements View.OnTouchListener {
                 })
                 .run();
     }
+    @Override
+    public void addCustomMaker(String makerId, String makerName, int[] iconBitmap, int width, int height) {
+        cmd("addCustomMaker")
+                .set("makerId", makerId)
+                .set("makerName", makerName)
+                .set("iconBitmap", iconBitmap)
+                .set("width", width)
+                .set("height", height)
+                .run()
+                .get("result");
+    }
 
     private void initMap(FragmentActivity ctx, int resId) {
         LocationHelper.INSTANCE.initialize(null);

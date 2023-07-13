@@ -7,6 +7,8 @@ package com.ftmap.app;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -169,7 +171,15 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
 //            FTMap.nativeDeleteSavedRoutePoints();
 //            FTMap.nativeCloseRouting();
 //            FMap.INSTANCE.updatePreviewModeAll();
-            FMap.INSTANCE.followRoute("route-1");
+            Bitmap icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.turn_icons0);
+            int width = icon.getWidth();
+               int height = icon.getHeight();
+               int[] pixels = new int[width*height];
+
+            icon.getPixels(pixels, 0, width, 0, 0, width, height); //把bitmap转换为int数组中
+            //该函数为native函数
+           FMap.INSTANCE.addCustomMaker("id","name",pixels,width,height);
+//            FMap.INSTANCE.followRoute("route-1");
         } else if (id == R.id.btnSearchPoi) {
             String aa = "116.35772,39.99226;116.358599,39.992297;116.358888,39.992307;116.359097,39.992317;116.359706,39.992325;116.360235,39.992344;116.361254,39.992373;116.36153,39.992377;116.361531,39.992377";
             String bb = "116.344908,39.985187;116.344908,39.985187;116.344916,39.985074;116.345086,39.985081;116.346582,39.985129;116.346574,39.985238;116.346564,39.985408;116.346564,39.985558;116.346553,39.985698;116.344458,39.985651;116.344268,39.985642;116.343503,39.985624;116.342653,39.985605;116.342352,39.985605;116.342014,39.985595;116.341744,39.985587;116.341663,39.985587;116.340647,39.985558;116.339737,39.985529;116.339311,39.985521;116.338710,39.985503;116.338442,39.985562;116.338251,39.985583;116.338112,39.985573;116.337195,39.985554;116.335768,39.985499;116.334853,39.985460;116.334612,39.985449;116.334561,39.985460;116.334451,39.985460;116.333442,39.985472;116.333075,39.985464;116.332595,39.985464;116.332514,39.985484;116.332455,39.985534;116.332404,39.985684;116.332404,39.985725;116.332356,39.986195;116.332326,39.986345;116.332320,39.986382;116.332205,39.986370;";

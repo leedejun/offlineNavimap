@@ -1088,7 +1088,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         ENGINE().closeRouting(true);
     } else if (cmdName == "addCustomMaker") {
         std::string iconName = cmd.getStr(msg, "iconName");
-        jintArray jarr = (jintArray)cmd.getObj(msg,"");
+        jintArray jarr = (jintArray)cmd.getObj(msg,"iconBitmap");
         int w = 32;
         int h = 32;
         int *arr = env->GetIntArrayElements(jarr,NULL);
