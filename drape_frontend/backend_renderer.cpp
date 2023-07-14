@@ -586,7 +586,14 @@ namespace df
                                     MessagePriority::Normal);
           break;
         }
-
+        case Message::Type::DrapeApiRemoveBatch:
+        {
+          ref_ptr<DrapeApiRemoveBatchMessage> msg = message;
+          m_commutator->PostMessage(ThreadsCommutator::RenderThread,
+                                    make_unique_dp<DrapeApiRemoveBatchMessage>(msg->GetIdList(), msg->NeedRemoveAll()),
+                                    MessagePriority::Normal);
+          break;
+        }
         case Message::Type::SetCustomFeatures:
         {
           ref_ptr<SetCustomFeaturesMessage> msg = message;

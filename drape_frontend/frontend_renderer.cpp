@@ -984,6 +984,15 @@ void FrontendRenderer::AcceptMessage(ref_ptr<Message> message)
         m_drapeApiRenderer->RemoveRenderProperty(msg->GetId());
       break;
     }
+    case Message::Type::DrapeApiRemoveBatch:
+    {
+        ref_ptr<DrapeApiRemoveBatchMessage> msg = message;
+        if (msg->NeedRemoveAll())
+            m_drapeApiRenderer->Clear();
+        else
+            m_drapeApiRenderer->RemoveRenderPropertyBatch(msg->GetIdList());
+        break;
+    }
 
   case Message::Type::SetTrackedFeatures:
     {

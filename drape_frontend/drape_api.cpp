@@ -132,6 +132,23 @@ namespace df
                                     MessagePriority::Normal);
     }
 
+    void DrapeApi::RemoveCustomMarkBatch(std::vector<std::string> const & idList)
+    {
+        DrapeEngineLockGuard lock(m_engine);
+        if (!lock)
+            return;
+
+        auto & threadCommutator = lock.Get()->m_threadCommutator;
+        for (int i = 0; i < idList.size(); ++i)
+        {
+            m_marks.erase(idList.at(i));
+        }
+
+        threadCommutator->PostMessage(ThreadsCommutator::ResourceUploadThread,
+                                      make_unique_dp<DrapeApiRemoveBatchMessage>(idList),
+                                      MessagePriority::Normal);
+    }
+
     void DrapeApi::Clear()
     {
       DrapeEngineLockGuard lock(m_engine);

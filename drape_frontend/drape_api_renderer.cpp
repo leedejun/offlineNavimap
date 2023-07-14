@@ -39,6 +39,21 @@ namespace df
                          m_properties.end());
     }
 
+    void DrapeApiRenderer::RemoveRenderPropertyBatch(std::vector<std::string> const & idList)
+    {
+      std::set<std::string> idset;
+      for (int i = 0; i < idList.size(); ++i)
+      {
+        idset.insert(idList.at(i));
+      }
+      //批量删除
+      m_properties.erase(std::remove_if(m_properties.begin(), m_properties.end(),
+                                        [&idset](auto const & p){
+        std::set<std::string>::iterator itor = idset.find(p->m_id);
+        return itor!=idset.end();
+      }),m_properties.end());
+    }
+
     void DrapeApiRenderer::Clear()
     {
       m_properties.clear();

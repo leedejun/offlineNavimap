@@ -20,6 +20,7 @@ public:
   void AddRenderProperties(ref_ptr<dp::GraphicsContext> context, ref_ptr<gpu::ProgramManager> mng,
                            std::vector<drape_ptr<DrapeApiRenderProperty>> && properties);
   void RemoveRenderProperty(std::string const & id);
+  void RemoveRenderPropertyBatch(std::vector<std::string> const & idList);
   void Clear();
 
   void Render(ref_ptr<dp::GraphicsContext> context, ref_ptr<gpu::ProgramManager> mng, ScreenBase const & screen,

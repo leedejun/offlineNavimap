@@ -122,6 +122,7 @@ namespace df
 
         void AddCustomMark(std::string const & id, DrapeApiCustomMarkData const & data);
         void RemoveCustomMark(std::string const & id);
+        void RemoveCustomMarkBatch(std::vector<std::string> const & idList);
 
         void Clear();
         void Invalidate();

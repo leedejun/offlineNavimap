@@ -732,6 +732,7 @@ void Framework::RegisterAllMaps() {
     //init local rect;
     m2::RectD localRect;
     m2::AnyRectD rect;
+    bool useCountryDataRang = false;
     bool useHistoryRect = false;
     if (settings::Get("ScreenClipRect", rect) &&
         df::GetWorldRect().IsRectInside(rect.GetGlobalRect())) {
@@ -751,6 +752,7 @@ void Framework::RegisterAllMaps() {
         if (!useHistoryRect && id.GetInfo()->GetType()==MwmInfo::COUNTRY)
         {
             localRect.Add(id.GetInfo()->m_bordersRect);
+            useCountryDataRang = true;
         }
         minFormat = min(minFormat, static_cast<int>(id.GetInfo()->m_version.GetFormat()));
         if (needStatisticsUpdate) {
@@ -768,7 +770,7 @@ void Framework::RegisterAllMaps() {
 //                                          system_clock::now().time_since_epoch()).count()));
     }
 
-    if (!useHistoryRect)
+    if (useCountryDataRang && localRect.IsValid())
     {
         m2::AnyRectD dataRect = m2::AnyRectD(localRect);
         settings::Set("ScreenClipRect", dataRect);

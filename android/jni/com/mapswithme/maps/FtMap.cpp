@@ -1089,12 +1089,12 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
     } else if (cmdName == "removeCustomMark") {
         jobject array = cmd.getObj(msg, "customMarkList");
         int length = json.length(array);
+        std::vector<std::string> idList;
         for (int i = 0; i < length; i++) {
             std::string markIdStr = json.getString(array, i);
-
-            g_framework->NativeFramework()->GetDrapeApi().RemoveCustomMark(markIdStr);
+            idList.push_back(markIdStr);
         }
-
+        g_framework->NativeFramework()->GetDrapeApi().RemoveCustomMarkBatch(idList);
     } else if (cmdName == "addCustomMark") {
         std::string id = cmd.getStr(msg, "id");
         std::string path = cmd.getStr(msg, "path");

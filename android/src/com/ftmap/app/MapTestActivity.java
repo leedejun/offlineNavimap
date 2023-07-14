@@ -172,7 +172,7 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
 //            FTMap.nativeCloseRouting();
 //            FMap.INSTANCE.updatePreviewModeAll();
             //该函数为native函数
-           FMap.INSTANCE.addCustomMark("id","/storage/emulated/0/Geo/20230713201103/ec86e5d21fe.png",
+           FMap.INSTANCE.addCustomMark("1","/storage/emulated/0/Geo/20230713201103/ec86e5d21fe.png",
                    39.988965,116.3676281,"fdtest_poi", "#00FF00", 16);
 //            FMap.INSTANCE.followRoute("route-1");
         } else if (id == R.id.btnSearchPoi) {

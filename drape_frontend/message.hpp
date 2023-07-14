@@ -82,6 +82,7 @@ namespace df
             DrapeApiAddPolygons,
             DrapeApiAddCustomMarks,
             DrapeApiRemove,
+            DrapeApiRemoveBatch,
             DrapeApiFlush,
             SetCustomFeatures,
             RemoveCustomFeatures,

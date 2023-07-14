@@ -1277,6 +1277,24 @@ namespace df
         bool m_removeAll;
     };
 
+    class DrapeApiRemoveBatchMessage : public Message
+    {
+    public:
+        explicit DrapeApiRemoveBatchMessage(std::vector<std::string> const  idList, bool removeAll = false)
+                : m_idList(idList)
+                , m_removeAll(removeAll)
+        {}
+
+        Type GetType() const override { return Type::DrapeApiRemoveBatch; }
+
+        std::vector<std::string> const & GetIdList() const { return m_idList; }
+        bool NeedRemoveAll() const { return m_removeAll; }
+
+    private:
+        std::vector<std::string> m_idList;
+        bool m_removeAll;
+    };
+
     class DrapeApiFlushMessage : public Message
     {
     public:
