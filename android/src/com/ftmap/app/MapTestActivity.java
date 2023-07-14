@@ -185,10 +185,10 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
                 Log.d("Search", s1);
             });
         } else if (id == R.id.btShowRoute) {
-            ArrayList<String> objects = new ArrayList<>();
-            objects.add("id");
-            objects.add("id");
-//            FMap.INSTANCE.removeCustomMark(objects);
+            ArrayList<Long> objects = new ArrayList<>();
+            objects.add(1l);
+            objects.add(2l);
+            FMap.INSTANCE.removeCustomMark(objects);
 //            FMap.INSTANCE.showRoute("route-1", "#ff0000", "#00ff00");
         } else if (id == R.id.btHideRoute) {
             FMap.INSTANCE.updatePreviewModeAll();
