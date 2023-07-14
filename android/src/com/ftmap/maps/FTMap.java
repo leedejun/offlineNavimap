@@ -638,11 +638,11 @@ public class FTMap extends FMap implements View.OnTouchListener {
                 .run();
     }
     @Override
-    public void addCustomMark(String id, String path, String text, String color, int fontSize) {
+    public void addCustomMark(String id, String path,double lat, double lon,String text, String color, int fontSize) {
         cmd("addCustomMark")
                 .set("id", id)
-                .set("lat", 43.59062286906408)
-                .set("lon", 116.39126521640469)
+                .set("lat", lat)
+                .set("lon", lon)
                 .set("path", path)
                 .set("text", text)
                 .set("color", color)
@@ -651,6 +651,35 @@ public class FTMap extends FMap implements View.OnTouchListener {
                 .set("diaplayHeight", 64)
                 .run()
                 .get("result");
+    }
+    @Override
+    public void removeCustomMark(String id) {
+
+        String idStr = String.valueOf(id);
+        try {
+            JSONArray array = new JSONArray();
+            array.put(idStr);
+            FTMap.cmd("removeCustomMark").set("customMarkList", array).run();
+        } catch (Exception e) {
+
+        }
+
+
+
+    }
+    @Override
+    public void removeCustomMark(List<Long> idList) {
+        try {
+            JSONArray array = new JSONArray();
+            for (int i = 0; i < idList.size(); i++) {
+                long id = idList.get(i);
+                String idStr = String.valueOf(id);
+                array.put(idStr);
+            }
+            FTMap.cmd("removeCustomMark").set("customMarkList", array).run();
+        } catch (Exception e) {
+
+        }
     }
 
     private void initMap(FragmentActivity ctx, int resId) {

@@ -1086,20 +1086,32 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         ENGINE().removeRoute(true);
     } else if (cmdName == "closeRouting") {
         ENGINE().closeRouting(true);
+    } else if (cmdName == "removeCustomMark") {
+        jobject array = cmd.getObj(msg, "customMarkList");
+        int length = json.length(array);
+        for (int i = 0; i < length; i++) {
+            std::string markIdStr = json.getString(array, i);
+
+            g_framework->NativeFramework()->GetDrapeApi().RemoveCustomMark(markIdStr);
+        }
+
     } else if (cmdName == "addCustomMark") {
         std::string id = cmd.getStr(msg, "id");
         std::string path = cmd.getStr(msg, "path");
         std::string text = cmd.getStr(msg, "text");
         dp::Color color = stringToDpColor(cmd.getStr(msg, "color"));
         int fontSize = cmd.getInt(msg, "fontSize");
-        double lon = cmd.getDouble(msg, "lon");
-        double lat = cmd.getDouble(msg, "lat");
+//        double lon = cmd.getDouble(msg, "lon");
+//        double lat = cmd.getDouble(msg, "lat");
+        m2::PointD mercator = mercator::FromLatLon(
+                ms::LatLon(cmd.getDouble(msg, "lat"), cmd.getDouble(msg, "lon")));
         int diaplayWidth = cmd.getInt(msg, "diaplayWidth");
         int diaplayHeight = cmd.getInt(msg, "diaplayHeight");
-        m2::PointD center = {lon, lat};
+//        m2::PointD center = {lon, lat};
         m2::PointD markSize = {(double)diaplayWidth, (double)diaplayHeight};
-        df::DrapeApiCustomMarkData markData(id, center, markSize, text, path, color, fontSize);
+        df::DrapeApiCustomMarkData markData(id, mercator, markSize, text, path, color, fontSize);
         g_framework->NativeFramework()->GetDrapeApi().AddCustomMark(id, markData);
+        cmd.set(msg, "result", id.c_str());
     } else if (cmdName == "addDrawItem") {
         std::string type = cmd.getStr(msg, "type");
         if (type == "line") {

@@ -93,8 +93,9 @@ public abstract class FMap {
         return this.naviRoute;
     }
 
-    public abstract void addCustomMark(String id, String path, String text, String color, int fontSize);
-
+    public abstract void addCustomMark(String id, String path,double lat, double lon,String text, String color, int fontSize);
+    public abstract void removeCustomMark(String id) ;
+    public abstract void removeCustomMark(List<Long> idList);
 
     public class NaviRoute {
 
