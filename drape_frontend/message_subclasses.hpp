@@ -828,6 +828,21 @@ namespace df
         m2::RectD m_rect;
     };
 
+    class SetMyDefaultPositionMessage : public Message
+    {
+    public:
+        explicit SetMyDefaultPositionMessage(m2::PointD const & p)
+                : m_p(p)
+        {}
+
+        Type GetType() const override { return Type::SetMyDefaultPosition;  }
+
+        m2::PointD const & GetPosition() const { return m_p; }
+
+    private:
+        m2::PointD m_p;
+    };
+
     class DeactivateRouteFollowingMessage : public Message
     {
     public:

@@ -71,6 +71,7 @@ namespace df
             RequestSymbolsSize,
             RecoverContextDependentResources,
             SetVisibleViewport,
+            SetMyDefaultPosition,
             EnableTraffic,
             FlushTrafficGeometry,
             RegenerateTraffic,

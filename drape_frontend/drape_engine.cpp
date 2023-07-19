@@ -178,6 +178,13 @@ void DrapeEngine::SetVisibleViewport(m2::RectD const & rect) const
                                   MessagePriority::Normal);
 }
 
+void DrapeEngine::SetMyDefaultPosition(m2::PointD const & lonlat) const
+{
+  m_threadCommutator->PostMessage(ThreadsCommutator::RenderThread,
+                                  make_unique_dp<SetMyDefaultPositionMessage>(lonlat),
+                                  MessagePriority::Normal);
+}
+
 void DrapeEngine::Invalidate()
 {
   m_threadCommutator->PostMessage(ThreadsCommutator::RenderThread,

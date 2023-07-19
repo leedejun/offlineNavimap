@@ -217,6 +217,11 @@ m2::PointD const & MyPositionController::Position() const
   return m_position;
 }
 
+void MyPositionController::SetDefaultPosition(m2::PointD const & position)
+{
+  m_position = position;
+}
+
 double MyPositionController::GetErrorRadius() const
 {
   return m_errorRadius;

@@ -151,6 +151,7 @@ namespace android
     std::string GetOutdatedCountriesString();
 
     void SetMyPositionModeListener(location::TMyPositionModeChanged const & fn);
+    void SetMyDefaultPosition(m2::PointD const & position);
     location::EMyPositionMode GetMyPositionMode();
     void OnMyPositionModeChanged(location::EMyPositionMode mode);
     void SwitchMyPositionNextMode();

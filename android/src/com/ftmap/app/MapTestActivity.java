@@ -177,30 +177,31 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
 
 
 
-            FMap.LineItem lineItem = (FMap.LineItem) FMap.INSTANCE.createDrawItem(FMap.DrawItemType.LINE);
-            String aa = "116.35772,39.99226;116.358599,39.992297;116.358888,39.992307;116.359097,39.992317;116.359706,39.992325;116.360235,39.992344;116.361254,39.992373;116.36153,39.992377;116.361531,39.992377";
-            StringBuilder stringBuffer = new StringBuilder();
-            stringBuffer.append("[");
-            stringBuffer.append("116.35772");
-            stringBuffer.append(",");
-            stringBuffer.append("39.99226");
-            stringBuffer.append(",");
-            stringBuffer.append("116.361531");
-            stringBuffer.append(",");
-            stringBuffer.append("39.992377");
-            stringBuffer.append("]");
-            JSONArray  array = null;
-            try {
-                array = new JSONArray(stringBuffer.toString());
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            lineItem.points(array);
-            lineItem.icon("2A");
-            lineItem.width(20);
-            lineItem.color("#0f0f0f");
-            lineItem.id("11222");
+//            FMap.LineItem lineItem = (FMap.LineItem) FMap.INSTANCE.createDrawItem(FMap.DrawItemType.LINE);
+//            String aa = "116.35772,39.99226;116.358599,39.992297;116.358888,39.992307;116.359097,39.992317;116.359706,39.992325;116.360235,39.992344;116.361254,39.992373;116.36153,39.992377;116.361531,39.992377";
+//            StringBuilder stringBuffer = new StringBuilder();
+//            stringBuffer.append("[");
+//            stringBuffer.append("116.35772");
+//            stringBuffer.append(",");
+//            stringBuffer.append("39.99226");
+//            stringBuffer.append(",");
+//            stringBuffer.append("116.361531");
+//            stringBuffer.append(",");
+//            stringBuffer.append("39.992377");
+//            stringBuffer.append("]");
+//            JSONArray  array = null;
+//            try {
+//                array = new JSONArray(stringBuffer.toString());
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//            lineItem.points(array);
+//            lineItem.icon("2A");
+//            lineItem.width(20);
+//            lineItem.color("#0f0f0f");
+//            lineItem.id("11222");
 //            long uplinedate = lineItem.uplinedate();
+
             FMap.INSTANCE.followRoute("route-1");
         } else if (id == R.id.btnSearchPoi) {
             String aa = "116.35772,39.99226;116.358599,39.992297;116.358888,39.992307;116.359097,39.992317;116.359706,39.992325;116.360235,39.992344;116.361254,39.992373;116.36153,39.992377;116.361531,39.992377";
@@ -215,8 +216,14 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
             ArrayList<Long> objects = new ArrayList<>();
             objects.add(1l);
             objects.add(2l);
-            FMap.INSTANCE.removeCustomMark(objects);
-//            FMap.INSTANCE.showRoute("route-1", "#ff0000", "#00ff00");
+//            FMap.INSTANCE.removeCustomMark(objects);
+            FMap.INSTANCE.showRoute("route-0", "#0000ff", "#00ff00");
+            FMap.INSTANCE.showRoute("route-1", "#ff0000", "#00ff00");
+            FMap.INSTANCE.showRoute("route-2", "#00ff00", "#00ff00");
+
+//            FMap.INSTANCE.showRoute("a", "#ff0000", "#00ff00");
+//            FMap.INSTANCE.showRoute("b", "#00ff00", "#00ff00");
+//            FMap.INSTANCE.showRoute("c", "#0000ff", "#00ff00");
         } else if (id == R.id.btHideRoute) {
             FMap.INSTANCE.updatePreviewModeAll();
 //            RoutingInfo mRoutingInfo=      FTMap.nativeGetRouteFollowingInfo();
@@ -251,8 +258,10 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
             FTMapPoint startPoint = new FTMapPoint();
             Location lastLocation = LocationHelper.INSTANCE.getLastKnownLocation();
             startPoint.setName("我的位置");
-            startPoint.setLat(lastLocation.getLatitude());
-            startPoint.setLon(lastLocation.getLongitude());
+            startPoint.setLat(40.10768D);
+            startPoint.setLon(116.40152D);
+//            startPoint.setLat(lastLocation.getLatitude());
+//            startPoint.setLon(lastLocation.getLongitude());
             startPoint.setMyPosition(true);
             FTMapPoint endPoint = new FTMapPoint();
             endPoint.setName("北京饭店");
@@ -265,7 +274,7 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
             FMap.INSTANCE.routing(points, "Vehicle", (result) -> {
                 String s1 = result.toString();
                 Log.d("routing", s1);
-                FMap.INSTANCE.updatePreviewModeAll();
+//                FMap.INSTANCE.updatePreviewModeAll();
                 try {
                     JSONArray var2 = result.getJSONArray("result");
                 } catch (Exception var3) {

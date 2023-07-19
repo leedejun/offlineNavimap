@@ -877,6 +877,14 @@ void FrontendRenderer::AcceptMessage(ref_ptr<Message> message)
       break;
     }
 
+    case Message::Type::SetMyDefaultPosition:
+    {
+      ref_ptr<SetMyDefaultPositionMessage> msg = message;
+      m2::PointD position = msg->GetPosition();
+      m_myPositionController->SetDefaultPosition(position);
+      break;
+    }
+
   case Message::Type::Invalidate:
     {
       m_myPositionController->ResetRoutingNotFollowTimer();

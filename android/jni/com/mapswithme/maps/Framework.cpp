@@ -139,6 +139,12 @@ namespace android
         m_myPositionModeSignal(mode, routingActive);
     }
 
+    void Framework::SetMyDefaultPosition(m2::PointD const & position)
+    {
+        ref_ptr<df::DrapeEngine> engine = m_work.GetDrapeEngine();
+        if (engine)
+            engine->SetMyDefaultPosition(position);
+    }
 
     bool Framework::DestroySurfaceOnDetach()
     {

@@ -81,6 +81,7 @@ public:
   void SetListener(ref_ptr<Listener> listener);
 
   m2::PointD const & Position() const;
+  void SetDefaultPosition(m2::PointD const & position);
   double GetErrorRadius() const;
   double GetHorizontalAccuracy() const;
 
