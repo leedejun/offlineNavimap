@@ -1237,6 +1237,9 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         mark->setPos(mercatorPoint);
         mark->setIcon(icon);
         userMarks.UpdateUserPointMark(markId);
+    } else if (cmdName == "getZoomlevel") {
+       int zoomlevel = g_framework->NativeFramework()->GetDrawScale();
+       cmd.set(msg, "zoomlevel", zoomlevel);
     }
     return nullptr;
 }

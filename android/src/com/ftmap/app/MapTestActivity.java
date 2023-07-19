@@ -249,7 +249,7 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
             FMap.INSTANCE.closeRouting();
             FTMapRoutePoint mFTMapRoutePoint = new FTMapRoutePoint();
             FTMapPoint startPoint = new FTMapPoint();
-            Location lastLocation = LocationHelper.INSTANCE.getSavedLocation();
+            Location lastLocation = LocationHelper.INSTANCE.getLastKnownLocation();
             startPoint.setName("我的位置");
             startPoint.setLat(lastLocation.getLatitude());
             startPoint.setLon(lastLocation.getLongitude());
