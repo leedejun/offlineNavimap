@@ -39,10 +39,10 @@ namespace fd{
                 callback("ok", routeIds);
             }
         };
-        auto onRmRode = [&](routing::RouterResultCode code) {
+        auto onRmRode = [&,callback,this](routing::RouterResultCode code) {
 
         };
-        auto onNeedMap = [&](uint64_t, std::set<std::string> const &) {
+        auto onNeedMap = [&,callback,this](uint64_t, std::set<std::string> const &) {
             callback("needMap",std::vector<std::string>());
         };
 
