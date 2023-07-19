@@ -176,5 +176,12 @@ namespace df
       threadCommutator->PostMessage(ThreadsCommutator::ResourceUploadThread,
                                     make_unique_dp<DrapeApiAddLinesMessage>(m_lines),
                                     MessagePriority::Normal);
+
+      threadCommutator->PostMessage(ThreadsCommutator::ResourceUploadThread,
+                                      make_unique_dp<DrapeApiAddPolygonsMessage>(m_polygons),
+                                      MessagePriority::Normal);
+      threadCommutator->PostMessage(ThreadsCommutator::ResourceUploadThread,
+                                      make_unique_dp<DrapeApiAddCustomMarksMessage>(m_marks),
+                                      MessagePriority::Normal);
     }
 }  // namespace df
