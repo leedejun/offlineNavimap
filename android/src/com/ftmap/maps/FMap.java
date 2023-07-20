@@ -560,6 +560,8 @@ public abstract class FMap {
      * @param zoom 缩放级别，-1代表保持当前级别不变
      */
     public abstract void setViewCenter(double lat, double lon, int zoom);
+    public abstract void setMyDefaultPosition(double lat, double lon);
+    public abstract int getZoomlevel();
 
     public abstract void showRoute(String routeId, String fillColor, String outlineColor);
     public abstract void hideRoute(String routeId);

@@ -201,7 +201,8 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
 //            lineItem.color("#0f0f0f");
 //            lineItem.id("11222");
 //            long uplinedate = lineItem.uplinedate();
-
+            int zoomlevel = FMap.INSTANCE.getZoomlevel();
+            Log.d("zoomlevel", zoomlevel+"");
             FMap.INSTANCE.followRoute("route-1");
         } else if (id == R.id.btnSearchPoi) {
             String aa = "116.35772,39.99226;116.358599,39.992297;116.358888,39.992307;116.359097,39.992317;116.359706,39.992325;116.360235,39.992344;116.361254,39.992373;116.36153,39.992377;116.361531,39.992377";
@@ -247,10 +248,10 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
             pointItem.icon("ftmap-chechang");
             pointItem.radius(100.0D);
 //            long poiIdBack = pointItem.uppoidate();
-            LocationState.nativeSwitchToNextMode();
-            if (!LocationHelper.INSTANCE.isActive())
-                LocationHelper.INSTANCE.start();
-//            FMap.INSTANCE.setViewCenter(39.90768D, 116.40152D, -1);
+//            LocationState.nativeSwitchToNextMode();
+//            if (!LocationHelper.INSTANCE.isActive())
+//                LocationHelper.INSTANCE.start();
+            FMap.INSTANCE.setMyDefaultPosition(39.90768D, 116.40152D);
         } else if (id == R.id.btnRoute) {
             FMap.INSTANCE.removeRoute();
             FMap.INSTANCE.closeRouting();
@@ -282,6 +283,10 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
 
             });
         } else if (id == R.id.btnZoomIn) {
+                            FMap.INSTANCE.getRouteInfo("route-1", (result) -> {
+                    String a1 = result.toString();
+                    Log.d("getRouteInfo", a1);
+                });
             RoutingInfo routingInfo = FTMap.nativeGetRouteFollowingInfo();
 //                bb = routingInfo.toString();
         } else if (id == R.id.btnZoomOut) {

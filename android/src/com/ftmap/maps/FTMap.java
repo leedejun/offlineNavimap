@@ -23,7 +23,9 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import com.ftmap.app.MapTestApplication;
+
 public class FTMap extends FMap implements View.OnTouchListener {
     private Handler mMainLoopHandler;
     private final Object mMainQueueToken = new Object();
@@ -428,12 +430,12 @@ public class FTMap extends FMap implements View.OnTouchListener {
                 }
             } else {
                 if (_title.equals("")) {
-                this._markId = (long) FTMap.cmd("addDrawItem")
-                        .set("type", "point")
-                        .set("icon", this.icon())
-                        .set("x", this._pos.x)
-                        .set("y", this._pos.y)
-                        .run().get("result");
+                    this._markId = (long) FTMap.cmd("addDrawItem")
+                            .set("type", "point")
+                            .set("icon", this.icon())
+                            .set("x", this._pos.x)
+                            .set("y", this._pos.y)
+                            .run().get("result");
                 } else {
                     this._markId = (long) FTMap.cmd("addDrawItem")
                             .set("type", "textPoint")
@@ -605,7 +607,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
             return false;
         Boolean result = (Boolean) cmd("initPlatform")
                 .set("thisInstance", this)
-                .set("context",getApp().getApplicationContext())
+                .set("context", getApp().getApplicationContext())
                 .set("apkPath", StorageUtils.getApkPath(app))
                 .set("storagePath", settingsPath)
                 .set("filesPath", filesPath)
@@ -637,8 +639,9 @@ public class FTMap extends FMap implements View.OnTouchListener {
                 })
                 .run();
     }
+
     @Override
-    public void addCustomMark(String id, String path,double lat, double lon,String text, String color, int fontSize) {
+    public void addCustomMark(String id, String path, double lat, double lon, String text, String color, int fontSize) {
         cmd("addCustomMark")
                 .set("id", id)
                 .set("lat", lat)
@@ -652,6 +655,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
                 .run()
                 .get("result");
     }
+
     @Override
     public void removeCustomMark(String id) {
 
@@ -665,8 +669,8 @@ public class FTMap extends FMap implements View.OnTouchListener {
         }
 
 
-
     }
+
     @Override
     public void removeCustomMark(List<Long> idList) {
         try {
@@ -703,7 +707,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
 
     @Override
     public boolean init(Application app, FragmentActivity ctx, int mapResId, String appId) {
-        if (!this.initEngine(app, appId,ctx))
+        if (!this.initEngine(app, appId, ctx))
             return false;
         this.initMap(ctx, mapResId);
         return true;
@@ -783,20 +787,28 @@ public class FTMap extends FMap implements View.OnTouchListener {
         res.set("_command", p);
         return res;
     }
+
     @Framework.RouterType
     public static native int nativeGetRouter();
+
     @Framework.RouterType
     public static native int nativeGetLastUsedRouter();
 
     public static native void nativeRunFirstLaunchAnimation();
+
     // Navigation.
     public static native boolean nativeIsRouteFinished();
 
     public static native int nativeInvalidRoutePointsTransactionId();
+
     public static native void nativeSetRoutingListener(Framework.RoutingListener listener);
+
     public static native void nativeSetRouteProgressListener(Framework.RoutingProgressListener listener);
+
     public static native void nativeSetRoutingRecommendationListener(Framework.RoutingRecommendationListener listener);
-    public static native void nativeSetRoutingLoadPointsListener( @Nullable Framework.RoutingLoadPointsListener listener);
+
+    public static native void nativeSetRoutingLoadPointsListener(@Nullable Framework.RoutingLoadPointsListener listener);
+
     @NonNull
     public static native TransitRouteInfo nativeGetTransitRouteInfo();
 
@@ -844,6 +856,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
                                                   @RoutePointInfo.RouteMarkType int markType,
                                                   int intermediateIndex, boolean isMyPosition,
                                                   double lat, double lon);
+
     public static native String nativeFormatLatLon(double lat, double lon, boolean useDmsFormat);
 
     @NonNull
@@ -852,9 +865,10 @@ public class FTMap extends FMap implements View.OnTouchListener {
     public static native int nativeOpenRoutePointsTransaction();
 
     public static native void nativeCancelRoutePointsTransaction(int transactionId);
+
     public static native void nativeApplyRoutePointsTransaction(int transactionId);
 
-//    public static native int nativeGetDrawScale();
+    //    public static native int nativeGetDrawScale();
     @Nullable
 //    public static native String[] nativeGenerateNotifications();
     /**
@@ -880,6 +894,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
                 })
                 .run();
     }
+
     /**
      * 普通沿途检索
      *
@@ -887,7 +902,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
      * @param callback
      */
     @Override
-    public void searchWay(String query,String wayRoute, SearchResultsCallback callback) {
+    public void searchWay(String query, String wayRoute, SearchResultsCallback callback) {
         Location lastLocation = LocationHelper.INSTANCE.getSavedLocation();
         Location lastKnownLocation = LocationHelper.INSTANCE.getLastKnownLocation();
 //        116.35772,39.99226
@@ -918,6 +933,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
                 .run();
 
     }
+
     public void search(String keywords, double lat, double lon, SearchResultsCallback callback) {
 
         cmd("search")
@@ -991,10 +1007,12 @@ public class FTMap extends FMap implements View.OnTouchListener {
                 })
                 .run();
     }
+
     @Override
     public void updatePreviewMode(String routeId) {
         cmd("updatePreviewMode").set("routeId", routeId).run();
     }
+
     @Override
     public void updatePreviewModeAll() {
         cmd("updatePreviewModeAll").run();
@@ -1050,6 +1068,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
     public void cancelSearch() {
         FTMap.cmd("cancelSearch").run();
     }
+
     @Override
     public void removeDrawItem(long id) {
         String idStr = String.valueOf(id);
@@ -1119,8 +1138,18 @@ public class FTMap extends FMap implements View.OnTouchListener {
     }
 
     @Override
+    public int getZoomlevel() {
+        int mZoomlevel = (int) FTMap.cmd("getZoomlevel").run().get("zoomlevel");
+        return mZoomlevel;
+    }
+
+    @Override
     public void setViewCenter(double lat, double lon, int zoom) {
         FTMap.cmd("setViewCenter").set("lat", lat).set("lon", lon).set("zoom", zoom).run();
+    }
+    @Override
+    public void setMyDefaultPosition(double lat, double lon) {
+        FTMap.cmd("setMyDefaultPosition").set("lat", lat).set("lon", lon).run();
     }
 
     @Override
@@ -1166,6 +1195,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
     public void followRoute(String routeId) {
         FTMap.cmd("followRoute").set("routeId", routeId).run();
     }
+
     @Override
     public void exitRoute() {
         FTMap.cmd("exitRoute").run();

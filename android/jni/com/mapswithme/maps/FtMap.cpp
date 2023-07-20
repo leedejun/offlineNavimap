@@ -1241,10 +1241,10 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
        int zoomlevel = g_framework->NativeFramework()->GetDrawScale();
        cmd.set(msg, "zoomlevel", zoomlevel);
     }else if (cmdName == "setMyDefaultPosition") {
-        double x = cmd.getDouble(msg, "x");
-        double y = cmd.getDouble(msg, "y");
-        m2::PointD mercatorPoint = mercator::FromLatLon(y, x);
-        g_framework->SetMyDefaultPosition(mercatorPoint);
+        double lat = cmd.getDouble(msg, "lat");
+        double lon = cmd.getDouble(msg, "lon");
+        m2::PointD mercatorPT = mercator::FromLatLon(lat, lon);
+        g_framework->SetMyDefaultPosition(mercatorPT);
     }
     return nullptr;
 }
