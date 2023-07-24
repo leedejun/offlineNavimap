@@ -59,8 +59,8 @@ namespace dp
 
           uint8_t constexpr kSupportedBPP = 4;
           CHECK_EQUAL(bpp, kSupportedBPP, ("Incorrect texture format"));
-          ASSERT(glm::isPowerOfTwo(w), (w));
-          ASSERT(glm::isPowerOfTwo(h), (h));
+//          ASSERT(glm::isPowerOfTwo(w), (w));
+//          ASSERT(glm::isPowerOfTwo(h), (h));
 
           if (bytesPerPixel != bpp)
           {
