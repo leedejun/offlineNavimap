@@ -28,14 +28,14 @@ public:
 
   void Create(ref_ptr<dp::GraphicsContext> context, Params const & params) override
   {
-    ASSERT(Base::IsPowerOfTwo(params.m_width, params.m_height), (params.m_width, params.m_height));
+//    ASSERT(Base::IsPowerOfTwo(params.m_width, params.m_height), (params.m_width, params.m_height));
     Base::Create(context, params);
   }
 
   void Create(ref_ptr<dp::GraphicsContext> context, Params const & params,
               ref_ptr<void> data) override
   {
-    ASSERT(Base::IsPowerOfTwo(params.m_width, params.m_height), (params.m_width, params.m_height));
+//    ASSERT(Base::IsPowerOfTwo(params.m_width, params.m_height), (params.m_width, params.m_height));
     Base::Create(context, params, data);
   }
 

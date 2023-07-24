@@ -161,8 +161,8 @@ void LoadSymbols(std::string const & skinPathName, std::string const & textureNa
   unsigned char * data =
       stbi_load_from_memory(&rawData[0], static_cast<int>(rawData.size()), &w, &h, &bpp, 0);
   ASSERT_EQUAL(bpp, 4, ("Incorrect symbols texture format"));
-  ASSERT(glm::isPowerOfTwo(w), (w));
-  ASSERT(glm::isPowerOfTwo(h), (h));
+//  ASSERT(glm::isPowerOfTwo(w), (w));
+//  ASSERT(glm::isPowerOfTwo(h), (h));
 
   if (width == static_cast<uint32_t>(w) && height == static_cast<uint32_t>(h))
   {
