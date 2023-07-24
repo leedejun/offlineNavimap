@@ -110,8 +110,7 @@ public class MediaPlayerWrapper
     public static MediaPlayerWrapper from(@NonNull Context context)
     {
         MapTestApplication app = (MapTestApplication) context.getApplicationContext();
-//        return app.getMediaPlayer();
-        return null;
+        return app.getMediaPlayer();
     }
 
     private static class InitPlayerTask extends AsyncTask<Integer, Void, InitializationResult>

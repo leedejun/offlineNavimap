@@ -5,6 +5,9 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.ftmap.base.MediaPlayerWrapper;
+import com.ftmap.maps.sound.TtsPlayer;
+
 
 public class MapTestApplication extends Application
 {
@@ -12,6 +15,10 @@ public class MapTestApplication extends Application
 
   private static MapTestApplication sSelf;
   private boolean mFirstLaunch;
+
+  @SuppressWarnings("NullableProblems")
+  @NonNull
+  private MediaPlayerWrapper mPlayer;
 
   public MapTestApplication()
   {
@@ -40,6 +47,8 @@ public class MapTestApplication extends Application
   {
     super.onCreate();
 
+    mPlayer = new MediaPlayerWrapper(this);
+    initNativeFramework();
   }
 
   public void setFirstLaunch(boolean isFirstLaunch)
@@ -64,7 +73,7 @@ public class MapTestApplication extends Application
 //    ThemeSwitcher.INSTANCE.initialize(this);
 //    SearchEngine.INSTANCE.initialize(null);
 //    BookmarkManager.loadBookmarks();
-//    TtsPlayer.INSTANCE.initialize(this);
+    TtsPlayer.INSTANCE.initialize(this);
 //    ThemeSwitcher.INSTANCE.restart(false);
 
 //    RoutingController.get().initialize(null);
@@ -81,5 +90,11 @@ public class MapTestApplication extends Application
 
   public static Context getContext() {
     return context;
+  }
+
+  @NonNull
+  public MediaPlayerWrapper getMediaPlayer()
+  {
+    return mPlayer;
   }
 }

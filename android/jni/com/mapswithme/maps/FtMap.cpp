@@ -1751,10 +1751,10 @@ Java_com_ftmap_maps_FTMap_nativeGenerateNotifications(JNIEnv *env, jclass) {
 
     return jni::ToJavaStringArray(env, notifications);
 }
-//JNIEXPORT jint JNICALL
-//Java_com_ftmap_maps_FTMap_nativeGetDrawScale(JNIEnv *env, jclass) {
-//    return static_cast<jint>(frm()->GetDrawScale());
-//}
+JNIEXPORT jint JNICALL
+Java_com_ftmap_maps_FTMap_nativeGetDrawScale(JNIEnv *env, jclass) {
+    return static_cast<jint>(frm()->GetDrawScale());
+}
 //JNIEXPORT void JNICALL
 //Java_com_ftmap_maps_FTMap_nativeClearApiPoints(JNIEnv *env, jclass clazz) {
 //    frm()->GetBookmarkManager().GetEditSession().ClearGroup(UserMark::Type::API);

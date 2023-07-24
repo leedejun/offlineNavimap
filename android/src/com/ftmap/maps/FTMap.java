@@ -868,9 +868,9 @@ public class FTMap extends FMap implements View.OnTouchListener {
 
     public static native void nativeApplyRoutePointsTransaction(int transactionId);
 
-    //    public static native int nativeGetDrawScale();
+        public static native int nativeGetDrawScale();
     @Nullable
-//    public static native String[] nativeGenerateNotifications();
+    public static native String[] nativeGenerateNotifications();
     /**
      * 普通poi检索
      *

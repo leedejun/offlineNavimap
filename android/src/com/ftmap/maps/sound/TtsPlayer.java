@@ -199,12 +199,13 @@ public enum TtsPlayer implements Initializable<Context>
   {
     if (MediaPlayerWrapper.from(context).isPlaying())
       return;
-    // It's necessary to call Framework.nativeGenerateTurnNotifications() even if TtsPlayer is invalid.
-//    final String[] turnNotifications = FTMap.nativeGenerateNotifications();
 
-//    if (turnNotifications != null && isReady())
-//      for (String textToSpeak : turnNotifications)
-//        speak(textToSpeak);
+    // It's necessary to call Framework.nativeGenerateTurnNotifications() even if TtsPlayer is invalid.
+    final String[] turnNotifications = FTMap.nativeGenerateNotifications();
+
+    if (turnNotifications != null && isReady())
+      for (String textToSpeak : turnNotifications)
+        speak(textToSpeak);
   }
 
   public void stop()
@@ -234,27 +235,27 @@ public enum TtsPlayer implements Initializable<Context>
 
   private boolean getUsableLanguages(List<LanguageData> outList)
   {
-//    Resources resources = MapTestApplication.get().getResources();
-//    String[] codes = resources.getStringArray(R.array.tts_languages_supported);
-//    String[] names = resources.getStringArray(R.array.tts_language_names);
-//
-//    for (int i = 0; i < codes.length; i++)
-//    {
-//      try
-//      {
-//        outList.add(new LanguageData(codes[i], names[i], mTts));
-//      }
-//      catch (LanguageData.NotAvailableException ignored) {
-//        LOGGER.e(TAG, "Failed to get usable languages " + ignored.getMessage());
-//      }
-//      catch (IllegalArgumentException e)
-//      {
-//        LOGGER.e(TAG, "Failed to get usable languages", e);
-//        reportFailure(e, "getUsableLanguages()");
-//        lockDown();
-//        return false;
-//      }
-//    }
+    Resources resources = MapTestApplication.get().getResources();
+    String[] codes = resources.getStringArray(R.array.tts_languages_supported);
+    String[] names = resources.getStringArray(R.array.tts_language_names);
+
+    for (int i = 0; i < codes.length; i++)
+    {
+      try
+      {
+        outList.add(new LanguageData(codes[i], names[i], mTts));
+      }
+      catch (LanguageData.NotAvailableException ignored) {
+        LOGGER.e(TAG, "Failed to get usable languages " + ignored.getMessage());
+      }
+      catch (IllegalArgumentException e)
+      {
+        LOGGER.e(TAG, "Failed to get usable languages", e);
+        reportFailure(e, "getUsableLanguages()");
+        lockDown();
+        return false;
+      }
+    }
 
     return true;
   }
