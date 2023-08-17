@@ -18,7 +18,7 @@ std::string CountryNameGetter::Get(std::string const & key) const
 {
   ASSERT(!key.empty(), ());
 
-  if (m_getCurLang == nullptr)
+  if (m_getCurLang == nullptr || key.empty())
     return std::string();
 
   return (*m_getCurLang)(key);

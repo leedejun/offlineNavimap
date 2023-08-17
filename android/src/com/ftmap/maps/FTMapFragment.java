@@ -86,9 +86,9 @@ public class FTMapFragment extends Fragment
     private long mFirstClick;
     private long mSecondClick;
     private boolean isDoubleClick = false;
-    private int MAX_LONG_PRESS_TIME = 350;// 长按/双击最长等待时间
+    private int MAX_LONG_PRESS_TIME = 500;// 长按/双击最长等待时间
     private int MAX_SINGLE_CLICK_TIME = 50;// 单击最长等待时间
-    private int MAX_MOVE_FOR_CLICK = 50;// 最长改变距离,超过则算移动
+    private int MAX_MOVE_FOR_CLICK = 10;// 最长改变距离,超过则算移动
 
     private Handler mBaseHandler = new Handler();
 
@@ -371,7 +371,11 @@ public class FTMapFragment extends Fragment
                         jsonObject.put("clickTypr", "doubleClick");
                         jsonObject.put("screenX", mDownX);
                         jsonObject.put("screenY", mDownX);
+                        if (MapClickListener!=null)
                         MapClickListener.Callback(jsonObject);
+                        else{
+
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -494,7 +498,7 @@ public class FTMapFragment extends Fragment
         FTMap.cmd("changeSurface").set("w", w).set("h", h).run();
     }
 
-    public static OnMapClickListener MapClickListener;
+    public static OnMapClickListener MapClickListener = new TempMapClickListener();
 
     public static void setOnMapClickListener(OnMapClickListener listener) {
         MapClickListener = listener;
@@ -502,6 +506,12 @@ public class FTMapFragment extends Fragment
 
     public interface OnMapClickListener {
         void Callback(JSONObject dataStr);
+    }
+
+    public static  class TempMapClickListener implements OnMapClickListener{
+        @Override
+        public void Callback(JSONObject dataStr) {
+        }
     }
 
     private static void nativeOnTouch(int actionType, int id1, float x1, float y1, int id2, float x2, float y2, int maskedPointer) {

@@ -147,7 +147,8 @@ public final class Config
 
   public static boolean isTtsEnabled()
   {
-    return getBool(KEY_TTS_ENABLED, true);
+//    return true;
+   return getBool(KEY_TTS_ENABLED, true);
   }
 
   public static void setTtsEnabled(boolean enabled)
@@ -352,18 +353,18 @@ public final class Config
     return getBool("NY");
   }
 
-  private static native boolean nativeGetBoolean(String name, boolean defaultValue);
-  private static native void nativeSetBoolean(String name, boolean value);
-  private static native int nativeGetInt(String name, int defaultValue);
-  private static native void nativeSetInt(String name, int value);
-  private static native long nativeGetLong(String name, long defaultValue);
-  private static native void nativeSetLong(String name, long value);
-  private static native double nativeGetDouble(String name, double defaultValue);
-  private static native void nativeSetDouble(String name, double value);
-  private static native String nativeGetString(String name, String defaultValue);
-  private static native void nativeSetString(String name, String value);
-  private static native boolean nativeGetLargeFontsSize();
-  private static native void nativeSetLargeFontsSize(boolean value);
-  private static native boolean nativeGetTransliteration();
-  private static native void nativeSetTransliteration(boolean value);
+  public static native boolean nativeGetBoolean(String name, boolean defaultValue);
+  public static native void nativeSetBoolean(String name, boolean value);
+  public static native int nativeGetInt(String name, int defaultValue);
+  public static native void nativeSetInt(String name, int value);
+  public static native long nativeGetLong(String name, long defaultValue);
+  public static native void nativeSetLong(String name, long value);
+  public static native double nativeGetDouble(String name, double defaultValue);
+  public static native void nativeSetDouble(String name, double value);
+  public static native String nativeGetString(String name, String defaultValue);
+  public static native void nativeSetString(String name, String value);
+  public static native boolean nativeGetLargeFontsSize();
+  public static native void nativeSetLargeFontsSize(boolean value);
+  public static native boolean nativeGetTransliteration();
+  public static native void nativeSetTransliteration(boolean value);
 }

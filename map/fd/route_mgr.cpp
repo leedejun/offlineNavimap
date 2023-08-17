@@ -36,14 +36,19 @@ namespace fd{
                     auto wrapper = std::make_shared<RouteWrapper>(*this, *route);
                     caculatedRoutes.push_back(wrapper);
                 }
-                callback("ok", routeIds);
+                callback("NoError", routeIds);
             }
         };
         auto onRmRode = [&,callback,this](routing::RouterResultCode code) {
-
+            std::vector<std::string> routeIds;
+            std::string codeStr = DebugPrint(code);
+            routeIds.push_back( codeStr);
+            callback(codeStr,routeIds);
         };
         auto onNeedMap = [&,callback,this](uint64_t, std::set<std::string> const &) {
-            callback("needMap",std::vector<std::string>());
+            std::vector<std::string> routeIds;
+            routeIds.push_back( "NeedMoreMaps");
+            callback("NeedMoreMaps",std::vector<std::string>());
         };
 
         routingSession.BuildRoute2(routing::Checkpoints(move(points)), onReady, onNeedMap,

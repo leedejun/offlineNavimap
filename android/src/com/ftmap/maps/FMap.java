@@ -524,6 +524,7 @@ public abstract class FMap {
     public abstract void FromLatLon(double lat, double lon, MapUtilsResultsCallback callback);
 
     public abstract void GetFeatureID(double mercatorX, double mercatorY, MapUtilsResultsCallback callback);
+    public abstract void nativeCompassUpdated(double north, boolean forceRedraw);
 
     public abstract void GetMapObject(double mercatorX, double mercatorY, MapUtilsResultsCallback callback);
 

@@ -27,6 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.ftmap.base.MediaPlayerWrapper;
 import com.ftmap.maps.BuildConfig;
 import com.ftmap.maps.FMap;
 import com.ftmap.maps.FTMap;
@@ -53,6 +54,7 @@ import com.ftmap.maps.search.SearchResult;
 import com.ftmap.maps.sound.TtsPlayer;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -68,6 +70,7 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
     private TextView mapZoomTv;
     private Boolean firstEnter = false;
     private int mMyPositionMode;
+    private  MediaPlayerWrapper mPlayer;
     private MapTestActivity.MapButtonClickListener mMapButtonClickListener;
 
     public MapTestActivity() {
@@ -82,9 +85,13 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
         LocationHelper.INSTANCE.onEnteredIntoFirstRun();
         if (!LocationHelper.INSTANCE.isActive())
             LocationHelper.INSTANCE.start();
+        LocationHelper.INSTANCE.addListener(this);
+        mPlayer = new MediaPlayerWrapper(this.getApplication());
+        FMap.INSTANCE.FromLatLon(0.0,0.0,(results) -> {
 
+        });
 
-        this.initOnMapClickListener();
+//        this.initOnMapClickListener();
         this.findViewById(id.btnSearchPoi).setOnClickListener(this);
         this.findViewById(id.btnLocate).setOnClickListener(this);
         this.findViewById(id.btnRoute).setOnClickListener(this);
@@ -146,6 +153,30 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
         });
         String a = "提交11";
     }
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+    @Override
+    protected void onResume() {
+        FTMap.nativeOnTransit(true);
+        super.onResume();
+    }
+    @Override
+    protected void onPause() {
+        FTMap.nativeOnTransit(false);
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        FTMap.nativeOnTransit(false);
+        super.onDestroy();
+    }
 
     private void runSearch(String keyword) {
         SearchEngine.INSTANCE.cancel();
@@ -172,8 +203,9 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
 //            FTMap.nativeCloseRouting();
 //            FMap.INSTANCE.updatePreviewModeAll();
             //该函数为native函数
-//           FMap.INSTANCE.addCustomMark("1","/storage/emulated/0/Geo/20230713201103/ec86e5d21fe.png",
-//                   39.988965,116.3676281,"fdtest_poi", "#00FF00", 16);
+//            03300356c92.png
+//           FMap.INSTANCE.addCustomMark("1","/storage/emulated/0/MapsWithMe/pictures/xushuichi.png",
+//                   39.988965,116.3676281,"fdtest_poi", "#00FF00",16);
 
 
 
@@ -201,8 +233,8 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
 //            lineItem.color("#0f0f0f");
 //            lineItem.id("11222");
 //            long uplinedate = lineItem.uplinedate();
-            int zoomlevel = FMap.INSTANCE.getZoomlevel();
-            Log.d("zoomlevel", zoomlevel+"");
+//            int zoomlevel = FMap.INSTANCE.getZoomlevel();
+//            Log.d("zoomlevel", zoomlevel+"");
             FMap.INSTANCE.followRoute("route-1");
         } else if (id == R.id.btnSearchPoi) {
             String aa = "116.35772,39.99226;116.358599,39.992297;116.358888,39.992307;116.359097,39.992317;116.359706,39.992325;116.360235,39.992344;116.361254,39.992373;116.36153,39.992377;116.361531,39.992377";
@@ -218,9 +250,9 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
             objects.add(1l);
             objects.add(2l);
 //            FMap.INSTANCE.removeCustomMark(objects);
-            FMap.INSTANCE.showRoute("route-0", "#0000ff", "#00ff00");
+//            FMap.INSTANCE.showRoute("route-0", "#0000ff", "#00ff00");
             FMap.INSTANCE.showRoute("route-1", "#ff0000", "#00ff00");
-            FMap.INSTANCE.showRoute("route-2", "#00ff00", "#00ff00");
+//            FMap.INSTANCE.showRoute("route-2", "#00ff00", "#00ff00");
 
 //            FMap.INSTANCE.showRoute("a", "#ff0000", "#00ff00");
 //            FMap.INSTANCE.showRoute("b", "#00ff00", "#00ff00");
@@ -247,11 +279,12 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
             pointItem.id("111111");
             pointItem.icon("ftmap-chechang");
             pointItem.radius(100.0D);
+            TtsPlayer.setEnabled(false);
 //            long poiIdBack = pointItem.uppoidate();
 //            LocationState.nativeSwitchToNextMode();
 //            if (!LocationHelper.INSTANCE.isActive())
 //                LocationHelper.INSTANCE.start();
-            FMap.INSTANCE.setMyDefaultPosition(39.90768D, 116.40152D);
+//            FMap.INSTANCE.setMyDefaultPosition(39.90768D, 116.40152D);
         } else if (id == R.id.btnRoute) {
             FMap.INSTANCE.removeRoute();
             FMap.INSTANCE.closeRouting();
@@ -259,10 +292,10 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
             FTMapPoint startPoint = new FTMapPoint();
             Location lastLocation = LocationHelper.INSTANCE.getLastKnownLocation();
             startPoint.setName("我的位置");
-            startPoint.setLat(40.10768D);
-            startPoint.setLon(116.40152D);
-//            startPoint.setLat(lastLocation.getLatitude());
-//            startPoint.setLon(lastLocation.getLongitude());
+//            startPoint.setLat(40.10768D);
+//            startPoint.setLon(116.40152D);
+            startPoint.setLat(lastLocation.getLatitude());
+            startPoint.setLon(lastLocation.getLongitude());
             startPoint.setMyPosition(true);
             FTMapPoint endPoint = new FTMapPoint();
             endPoint.setName("北京饭店");
@@ -283,14 +316,17 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
 
             });
         } else if (id == R.id.btnZoomIn) {
-                            FMap.INSTANCE.getRouteInfo("route-1", (result) -> {
-                    String a1 = result.toString();
-                    Log.d("getRouteInfo", a1);
-                });
+//                            FMap.INSTANCE.getRouteInfo("route-1", (result) -> {
+//                    String a1 = result.toString();
+//                    Log.d("getRouteInfo", a1);
+//                });
             RoutingInfo routingInfo = FTMap.nativeGetRouteFollowingInfo();
+            Log.d("routingInfo", routingInfo.nextStreet);
 //                bb = routingInfo.toString();
+            TtsPlayer.INSTANCE.playTurnNotifications(mPlayer);
         } else if (id == R.id.btnZoomOut) {
             FMap.INSTANCE.zoom(false);
+            TtsPlayer.setEnabled(true);
         } else if (id == R.id.btnStyleClear) {
             FMap.INSTANCE.setMapStyle("clear");
         } else if (id == R.id.btnStyleDark) {
@@ -358,14 +394,23 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
         RoutingInfo routingInfo = FTMap.nativeGetRouteFollowingInfo();
         if (routingInfo != null) {
             String s = routingInfo.toString();
+
+            String distToTurn = routingInfo.distToTurn;
+            String turnUnits = routingInfo.turnUnits;
+            String nextStreet = routingInfo.nextStreet;
+//            String distToTarget = routingInfo.distToTarget;
+//            int totalTimeInSeconds = routingInfo.totalTimeInSeconds;
+//            String targetUnits = routingInfo.targetUnits;
             Log.d("移动了定位", s);
-            Toast.makeText(this, s, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, distToTurn+"----"+turnUnits+"---"+nextStreet, Toast.LENGTH_LONG).show();
         }
 
-        TtsPlayer.INSTANCE.playTurnNotifications(this.getApplicationContext());
+        TtsPlayer.INSTANCE.playTurnNotifications(mPlayer);
     }
 
     public void onCompassUpdated(long time, double north) {
+        FMap.INSTANCE.nativeCompassUpdated(north,false);
+
     }
 
     public void onLocationError(int errorCode) {
@@ -401,4 +446,5 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
         private MapButtons() {
         }
     }
+
 }

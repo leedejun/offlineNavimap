@@ -479,11 +479,13 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
             // 初始化飞度引擎
             ENGINE(g_framework->NativeFramework());
         }
-
+        measurement_utils::Units const u = measurement_utils::Units::Metric;
+        settings::Set(settings::kMeasurementUnits, u);
+        g_framework->SetupMeasurementSystem();
 
 //        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_RULER), 30, 1942,
 //                                 static_cast<dp::Anchor>(dp::Anchor::LeftBottom));
-        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_COMPASS), 670, 1180,
+        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_COMPASS), 665, 740,
                                  static_cast<dp::Anchor>(dp::Anchor::Center));
 //        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_COPYRIGHT), 150, 1942,
 //                                 static_cast<dp::Anchor>(dp::Anchor::LeftBottom));
@@ -547,6 +549,12 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         g_framework->Scale(::Framework::SCALE_MAG);
     } else if (cmdName == "scaleMinus") {
         g_framework->Scale(::Framework::SCALE_MIN);
+    } else if (cmdName == "nativeCompassUpdated") {
+        double north  =  cmd.getDouble(msg, "north");
+        bool forceRedraw  = cmd.getBool(msg, "forceRedraw");
+        location::CompassInfo info;
+        info.m_bearing = north;
+        g_framework->OnCompassUpdated(info, forceRedraw);
     } else if (cmdName == "IsDrapeEngineCreated") {
         cmd.set(msg, "result", g_framework->IsDrapeEngineCreated());
     } else if (cmdName == "destroySurfaceOnDetach") {
@@ -1012,6 +1020,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
                 json.append(routeIdList, json.toJNIString(routeIds[i]));
             }
             json.setObject(result, "routeIdList", routeIdList);
+            json.setObject(result, "routeCode", json.toJNIString(code));
             cmd.asyncCall(tmpMsg, result);
         });
 
@@ -1759,5 +1768,12 @@ Java_com_ftmap_maps_FTMap_nativeGetDrawScale(JNIEnv *env, jclass) {
 //Java_com_ftmap_maps_FTMap_nativeClearApiPoints(JNIEnv *env, jclass clazz) {
 //    frm()->GetBookmarkManager().GetEditSession().ClearGroup(UserMark::Type::API);
 //}
-
+JNIEXPORT void JNICALL
+Java_com_ftmap_maps_FTMap_nativeOnTransit(JNIEnv *, jclass, jboolean foreground)
+{
+    if (static_cast<bool>(foreground))
+        g_framework->NativeFramework()->EnterForeground();
+    else
+        g_framework->NativeFramework()->EnterBackground();
+}
 }

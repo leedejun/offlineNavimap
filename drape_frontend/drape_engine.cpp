@@ -55,6 +55,7 @@ DrapeEngine::DrapeEngine(Params && params)
 
   std::vector<PostprocessRenderer::Effect> effects;
 
+
   bool enabledAntialiasing;
   if (!settings::Get(dp::kSupportedAntialiasing, enabledAntialiasing))
     enabledAntialiasing = false;

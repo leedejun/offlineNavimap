@@ -110,6 +110,7 @@ public class MediaPlayerWrapper
     public static MediaPlayerWrapper from(@NonNull Context context)
     {
         MapTestApplication app = (MapTestApplication) context.getApplicationContext();
+
         return app.getMediaPlayer();
     }
 

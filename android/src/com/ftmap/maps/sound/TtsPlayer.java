@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.ftmap.app.MapTestActivity;
 import com.ftmap.app.MapTestApplication;
 import com.ftmap.base.Initializable;
 import com.ftmap.base.MediaPlayerWrapper;
@@ -42,7 +43,7 @@ public enum TtsPlayer implements Initializable<Context>
 
   private static final Logger LOGGER = LoggerFactory.INSTANCE.getLogger(LoggerFactory.Type.MISC);
   private static final String TAG = TtsPlayer.class.getSimpleName();
-  private static final Locale DEFAULT_LOCALE = Locale.US;
+  private static final Locale DEFAULT_LOCALE = Locale.SIMPLIFIED_CHINESE;
   private static final float SPEECH_RATE = 1.2f;
 
   private TextToSpeech mTts;
@@ -88,6 +89,7 @@ public enum TtsPlayer implements Initializable<Context>
   {
     try
     {
+//       Locale locale = new Locale("en", "US");
       mTts.setLanguage(lang.locale);
       nativeSetTurnNotificationsLocale(lang.internalCode);
       Config.setTtsLanguage(lang.internalCode);
@@ -157,7 +159,7 @@ public enum TtsPlayer implements Initializable<Context>
           return;
         }
 
-        refreshLanguages();
+        refreshLanguages(context);
         mTts.setSpeechRate(SPEECH_RATE);
         mInitializing = false;
       }
@@ -195,10 +197,12 @@ public enum TtsPlayer implements Initializable<Context>
       }
   }
 
-  public void playTurnNotifications(@NonNull Context context)
+  public void playTurnNotifications(@NonNull MediaPlayerWrapper context)
   {
-    if (MediaPlayerWrapper.from(context).isPlaying())
+    if (context.isPlaying())
       return;
+
+//    speak("飞度科技");
 
     // It's necessary to call Framework.nativeGenerateTurnNotifications() even if TtsPlayer is invalid.
     final String[] turnNotifications = FTMap.nativeGenerateNotifications();
@@ -233,9 +237,9 @@ public enum TtsPlayer implements Initializable<Context>
     nativeEnableTurnNotifications(enabled);
   }
 
-  private boolean getUsableLanguages(List<LanguageData> outList)
+  private boolean getUsableLanguages(List<LanguageData> outList,Context context)
   {
-    Resources resources = MapTestApplication.get().getResources();
+    Resources resources = context.getResources();
     String[] codes = resources.getStringArray(R.array.tts_languages_supported);
     String[] names = resources.getStringArray(R.array.tts_language_names);
 
@@ -260,9 +264,9 @@ public enum TtsPlayer implements Initializable<Context>
     return true;
   }
 
-  private @Nullable LanguageData refreshLanguagesInternal(List<LanguageData> outList)
+  private @Nullable LanguageData refreshLanguagesInternal(List<LanguageData> outList,Context context)
   {
-    if (!getUsableLanguages(outList))
+    if (!getUsableLanguages(outList,context))
       return null;
 
     if (outList.isEmpty())
@@ -287,21 +291,21 @@ public enum TtsPlayer implements Initializable<Context>
     return res;
   }
 
-  public @NonNull List<LanguageData> refreshLanguages()
+  public @NonNull List<LanguageData> refreshLanguages(Context context)
   {
     List<LanguageData> res = new ArrayList<>();
     if (mUnavailable || mTts == null)
       return res;
 
-    LanguageData lang = refreshLanguagesInternal(res);
+    LanguageData lang = refreshLanguagesInternal(res,context);
     setLanguage(lang);
 
     setEnabled(Config.isTtsEnabled());
     return res;
   }
 
-  private native static void nativeEnableTurnNotifications(boolean enable);
-  private native static boolean nativeAreTurnNotificationsEnabled();
-  private native static void nativeSetTurnNotificationsLocale(String code);
-  private native static String nativeGetTurnNotificationsLocale();
+  public native static void nativeEnableTurnNotifications(boolean enable);
+  public native static boolean nativeAreTurnNotificationsEnabled();
+  public native static void nativeSetTurnNotificationsLocale(String code);
+  public native static String nativeGetTurnNotificationsLocale();
 }

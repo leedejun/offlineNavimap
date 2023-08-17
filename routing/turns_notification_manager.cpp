@@ -92,6 +92,7 @@ void NotificationManager::GenerateTurnNotifications(vector<TurnItemDist> const &
 
   TurnItemDist const & firstTurn = turns.front();
   string firstNotification = GenerateFirstTurnSound(firstTurn.m_turnItem, firstTurn.m_distMeters);
+//  firstNotification = "飞度科技";
   if (m_nextTurnNotificationProgress == PronouncedNotification::Nothing)
     return;
   if (firstNotification.empty())

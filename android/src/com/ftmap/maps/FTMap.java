@@ -1,6 +1,8 @@
 package com.ftmap.maps;
 
 import android.app.Application;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
@@ -642,6 +644,9 @@ public class FTMap extends FMap implements View.OnTouchListener {
 
     @Override
     public void addCustomMark(String id, String path, double lat, double lon, String text, String color, int fontSize) {
+        Bitmap bitmap= BitmapFactory.decodeFile(path);
+        int height= bitmap.getHeight();
+        int width= bitmap.getWidth();
         cmd("addCustomMark")
                 .set("id", id)
                 .set("lat", lat)
@@ -650,8 +655,8 @@ public class FTMap extends FMap implements View.OnTouchListener {
                 .set("text", text)
                 .set("color", color)
                 .set("fontSize", fontSize)
-                .set("diaplayWidth", 64)
-                .set("diaplayHeight", 64)
+                .set("diaplayWidth", width)
+                .set("diaplayHeight", height)
                 .run()
                 .get("result");
     }
@@ -867,6 +872,8 @@ public class FTMap extends FMap implements View.OnTouchListener {
     public static native void nativeCancelRoutePointsTransaction(int transactionId);
 
     public static native void nativeApplyRoutePointsTransaction(int transactionId);
+
+    public static native void nativeOnTransit(boolean foreground);
 
         public static native int nativeGetDrawScale();
     @Nullable
@@ -1097,6 +1104,10 @@ public class FTMap extends FMap implements View.OnTouchListener {
         } catch (Exception e) {
 
         }
+    }
+    @Override
+    public void nativeCompassUpdated(double north, boolean forceRedraw) {
+        FTMap.cmd("nativeCompassUpdated").set("north", north).set("forceRedraw",forceRedraw).run();
     }
 
     @Override
