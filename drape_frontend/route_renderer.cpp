@@ -604,9 +604,11 @@ void RouteRenderer::RenderRoute(ref_ptr<dp::GraphicsContext> context, ref_ptr<gp
     }
 
     // Render markers.
+    context->Clear(dp::ClearBits::DepthBit, dp::kClearBitsStoreAll);
     RenderSubrouteMarkers(context, mng, subroute, screen, frameValues);
 
     // Render arrows.
+    context->Clear(dp::ClearBits::DepthBit, dp::kClearBitsStoreAll);
     RenderSubrouteArrows(context, mng, subroute, screen, frameValues);
   }
 
