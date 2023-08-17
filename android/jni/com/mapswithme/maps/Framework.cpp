@@ -300,7 +300,9 @@ namespace android
       }
       else
       {
-        m_work.SetRenderingDisabled(destroySurface);
+//      m_work.SetRenderingDisabled(destroySurface);
+        //Fixed: after touching "Home" key, reload and render map again.
+        m_work.SetRenderingDisabled(false);
         auto factory = m_oglContextFactory->CastFactory<AndroidOGLContextFactory>();
         factory->ResetSurface();
       }
