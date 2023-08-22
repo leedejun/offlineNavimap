@@ -595,6 +595,7 @@ void RouteRenderer::RenderRoute(ref_ptr<dp::GraphicsContext> context, ref_ptr<gp
 {
   for (auto const & subroute : m_subroutes)
   {
+    context->Clear(dp::ClearBits::DepthBit, dp::kClearBitsStoreAll);
     // Render subroutes.
     for (size_t i = 0; i < subroute.m_subrouteData.size(); ++i)
     {
@@ -606,10 +607,6 @@ void RouteRenderer::RenderRoute(ref_ptr<dp::GraphicsContext> context, ref_ptr<gp
 
     // Render arrows.
     RenderSubrouteArrows(context, mng, subroute, screen, frameValues);
-
-    //Fixed bug: The case of drawing multiple paths
-    //Fixed bug: When there is no arrows on a path.
-    context->Clear(dp::ClearBits::DepthBit, dp::kClearBitsStoreAll);
   }
 
   // Render preview.

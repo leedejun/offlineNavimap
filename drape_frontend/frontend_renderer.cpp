@@ -1693,7 +1693,7 @@ void FrontendRenderer::RenderRouteLayer(ScreenBase const & modelView)
   {
     CHECK(m_context != nullptr, ());
     DEBUG_LABEL(m_context, "Route Layer");
-    m_context->Clear(dp::ClearBits::DepthBit, dp::kClearBitsStoreAll);
+    //m_context->Clear(dp::ClearBits::DepthBit, dp::kClearBitsStoreAll);
     m_routeRenderer->RenderRoute(m_context, make_ref(m_gpuProgramManager), modelView,
                                  m_trafficRenderer->HasRenderData(), m_frameValues);
   }
