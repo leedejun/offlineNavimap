@@ -42,7 +42,7 @@ namespace df
     {
         properties.reserve(lines.size());
 
-        uint32_t constexpr kMaxSize = 5000;
+        uint32_t constexpr kMaxSize = 65535;
         uint32_t constexpr kFontSize = 14;
         FeatureID fakeFeature;
 
@@ -126,7 +126,7 @@ namespace df
                                         std::vector<drape_ptr<DrapeApiRenderProperty>> & properties)
     {
         properties.reserve(polygons.size());
-        uint32_t constexpr kMaxSize = 5000;
+        uint32_t constexpr kMaxSize = 65535;
         for (auto const & polygon : polygons)
         {
             std::string id = polygon.first;
