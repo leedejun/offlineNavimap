@@ -172,6 +172,8 @@ set(
         route_shape.hpp
         rule_drawer.cpp
         rule_drawer.hpp
+        raster_tile_shape.cpp
+        raster_tile_shape.hpp
         scenario_manager.cpp
         scenario_manager.hpp
         screen_animations.cpp

@@ -31,6 +31,10 @@
 #ifdef DRAW_TILE_NET
 #include "drape_frontend/line_shape.hpp"
 #include "drape_frontend/text_shape.hpp"
+#include "drape_frontend/raster_tile_shape.hpp"
+#include "base/string_format.hpp"
+#include "platform/platform.hpp"
+#include <iostream>
 
 #include "base/string_utils.hpp"
 #endif
@@ -584,8 +588,102 @@ void RuleDrawer::DrawTileNet()
   if (CheckCancelled())
     return;
 
-  auto const key = m_context->GetTileKey();
-  auto const tileRect = key.GetGlobalRect();
+  auto key = m_context->GetTileKey();
+  auto tileRect = key.GetGlobalRect();
+
+  if (key.m_zoomLevel==1)
+  {
+    tileRect = key.GetGlobalRectSmall();
+  }
+
+  m2::PointD tileCenter = tileRect.Center();
+  double lon = mercator::XToLon(tileCenter.x);
+  double lat = mercator::YToLat(tileCenter.y);
+
+
+  double n = std::pow(2, key.m_zoomLevel-1);
+  double xtile = n * (double(lon + 180.0) / double(360.0));
+  double ytile = n * (1.0 - (log(tan(lat * math::pi / double(180.0)) + double(1.0) / cos(lat * M_PI / double(180.0))) / math::pi)) / double(2.0);
+  int webX = (int) std::floor(xtile);
+  int webY = (int) std::floor(ytile);
+
+  //add test draw raster tile
+  {
+    //RasterTileShape tileShape;
+    std::string tileRootDir = "/storage/emulated/0/MapsWithMe/tiles/";
+    std::string strZ = strings::ToString(key.m_zoomLevel-1);
+
+    if (key.m_zoomLevel==1)
+    {
+      n = std::pow(2, key.m_zoomLevel);
+      xtile = n * (double(lon + 180.0) / double(360.0));
+      ytile = n * (1.0 - (log(tan(lat * math::pi / double(180.0)) + double(1.0) / cos(lat * M_PI / double(180.0))) / math::pi)) / double(2.0);
+      webX = (int) std::floor(xtile);
+      webY = (int) std::floor(ytile);
+      strZ = strings::ToString(key.m_zoomLevel);
+    }
+//    int x = key.m_x;
+//    int y = key.m_y;
+//    int const worldSizeDivisor = 1 << (key.m_zoomLevel);
+//    int halfWorldSizeDivisor = worldSizeDivisor/2;
+////     if(key.m_zoomLevel <=1)
+////     {
+////       if(x==-1 && y==0)
+////       {
+////        x = 0;
+////        y = 0;
+////       }
+////       else if(x==0 && y==0)
+////       {
+////         x = 1;
+////         y = 0;
+////       }
+////       else if(x==-1 && y==-1)
+////       {
+////        x = 0;
+////        y = 1;
+////       }
+////       else if(x==0 && y==-1)
+////       {
+////        x = 1;
+////        y = 1;
+////       }
+////
+////     }
+////     else
+//    {
+//      if (key.m_zoomLevel>0)
+//      {
+//        x = key.m_x + halfWorldSizeDivisor;
+//        y = halfWorldSizeDivisor - key.m_y-1;
+//      }
+//    }
+
+    std::string strX = strings::ToString(webX);
+    std::string strY = strings::ToString(webY);
+    std::string texturePath = tileRootDir + strZ + "/" + strX + "/" + strY + ".png";
+    // std::string texturePath = tileRootDir + strZ + "/" + strY + "/" + strX + ".png";
+    if (Platform::IsFileExistsByFullPath(texturePath))
+    {
+      std::cout << "texturePath: " << texturePath << std::endl;
+      RasterTileViewParams params;
+      params.m_tileCenter = m_globalRect.Center();
+      params.m_depthTestEnabled = false;
+      params.m_minVisibleScale = 1;
+      params.m_baseGtoPScale = 1.0f;
+      params.m_texturePath = texturePath;
+      params.m_id = strZ + "_" + strX + "_" + strY;
+      params.m_tileRect = tileRect;
+      params.m_format = dp::TextureFormat::RGBA8;
+
+      auto tileShape = make_unique_dp<RasterTileShape>(params);
+      tileShape->Prepare(m_context->GetTextureManager());
+      TMapShapes overlayShapes;
+      overlayShapes.push_back(std::move(tileShape));
+      m_context->FlushOverlays(std::move(overlayShapes));
+    }
+  }
+
 
   std::vector<m2::PointD> path;
   path.reserve(4);

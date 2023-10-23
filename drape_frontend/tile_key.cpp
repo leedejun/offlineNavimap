@@ -102,6 +102,20 @@ m2::RectD TileKey::GetGlobalRect(bool clipByDataMaxZoom) const
   return m2::RectD(startX, startY, startX + rectSize, startY + rectSize);
 }
 
+m2::RectD TileKey::GetGlobalRectSmall(bool clipByDataMaxZoom) const
+{
+    int const zoomLevel = clipByDataMaxZoom ? ClipTileZoomByMaxDataZoom(m_zoomLevel)+1 : m_zoomLevel+1;
+    ASSERT_GREATER(zoomLevel, 0, ());
+    double const worldSizeDivisor = 1 << (zoomLevel - 1);
+    // Mercator SizeX and SizeY are equal.
+    double const rectSize = mercator::Bounds::kRangeX / worldSizeDivisor;
+
+    double const startX = m_x * rectSize;
+    double const startY = m_y * rectSize;
+
+    return m2::RectD(startX, startY, startX + rectSize, startY + rectSize);
+}
+
 m2::PointI TileKey::GetTileCoords() const
 {
   return m2::PointI(m_x, m_y);
