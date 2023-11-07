@@ -461,6 +461,12 @@ JNICALL
 Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
     std::string cmdName = cmd.getStr(msg, "_command");
     if (cmdName == "initPlatform") {
+        GetPlatform().BeginPerformAnalysis();
+        std::stringstream ss;
+        ss<<"开始加载地图。"<<std::endl;
+        std::string  str = ss.str();
+        LOG(LINFO, (str));
+
         jobject instance = cmd.getObj(msg, "thisInstance");
         jobject context = cmd.getObj(msg, "context");
         jstring apkPath = cmd.getNativeStr(msg, "apkPath");
@@ -714,6 +720,12 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         g_framework->NativeFramework()->GetSearchAPI().SearchEverywhere(params);
 
     } else if (cmdName == "search") {
+        GetPlatform().BeginPerformAnalysis();
+        std::stringstream ss;
+        ss<<"开始搜索poi。"<<std::endl;
+        std::string  str = ss.str();
+        LOG(LINFO, (str));
+
         auto tmpMsg = env->NewGlobalRef(msg);
         auto onResults = [&, tmpMsg](search::Results const &results,
                                      std::vector<search::ProductInfo> const &productInfo) {
@@ -756,6 +768,13 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
             json.setString(item, "data", stream.str().c_str());
             json.append(array, item);
             cmd.asyncCall(tmpMsg, array);
+
+
+            GetPlatform().EndPerformAnalysis();
+            std::stringstream ss1;
+            ss1<<"搜索poi总耗时："<<GetPlatform().CostPerformAnalysis()<<" 秒。"<<std::endl;
+            std::string  str1 = ss1.str();
+            LOG(LINFO, (str1));
         };
         search::EverywhereSearchParams params;
         params.m_query = cmd.getStr(msg, "query");
@@ -974,6 +993,12 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         }
 
     } else if (cmdName == "route") {
+        GetPlatform().BeginPerformAnalysis();
+        std::stringstream ss;
+        ss<<"开始算路。"<<std::endl;
+        std::string  str = ss.str();
+        LOG(LINFO, (str));
+
         ENGINE().clearRoutes();
         jobject array = cmd.getObj(msg, "points");
         std::string type = cmd.getStr(msg, "type");
@@ -1022,6 +1047,13 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
             json.setObject(result, "routeIdList", routeIdList);
             json.setObject(result, "routeCode", json.toJNIString(code));
             cmd.asyncCall(tmpMsg, result);
+
+
+            GetPlatform().EndPerformAnalysis();
+            std::stringstream ss1;
+            ss1<<"算路总耗时："<<GetPlatform().CostPerformAnalysis()<<" 秒。"<<std::endl;
+            std::string  str1 = ss1.str();
+            LOG(LINFO, (str1));
         });
 
 

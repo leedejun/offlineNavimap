@@ -5,6 +5,7 @@
 #include "drape_frontend/stylist.hpp"
 #include "drape_frontend/traffic_renderer.hpp"
 #include "drape_frontend/visual_params.hpp"
+#include "drape_frontend/downloadrastertiles.hpp"
 
 #include "drape/drape_diagnostics.hpp"
 
@@ -700,6 +701,17 @@ void RuleDrawer::DrawRasterTile()
       overlayShapes.push_back(std::move(tileShape));
       m_context->FlushOverlays(std::move(overlayShapes));
     }
+    else
+    {
+      //没有的瓦片，开始下瓦片
+      std::string textureDir = tileRootDir + strZ + "/" + strX + "/";
+      if(Platform::MkDirRecursively(textureDir))
+      {
+//        DownloadRasterTiles::Instance().Download(key, std::move(texturePath));
+      }
+      
+    }
+
   }
 }
 #endif

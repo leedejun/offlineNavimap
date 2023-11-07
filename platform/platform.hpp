@@ -22,6 +22,12 @@
 
 #include "defines.hpp"
 
+#include <chrono>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
+
 DECLARE_EXCEPTION(FileAbsentException, RootException);
 DECLARE_EXCEPTION(FileSystemException, RootException);
 
@@ -134,6 +140,8 @@ protected:
 
   platform::BatteryLevelTracker m_batteryTracker;
 
+  std::chrono::high_resolution_clock::time_point m_start, m_end;
+
 public:
   Platform();
   virtual ~Platform() = default;
@@ -141,6 +149,39 @@ public:
   static bool IsFileExistsByFullPath(std::string const & filePath);
   static void DisableBackupForFile(std::string const & filePath);
   static bool RemoveFileIfExists(std::string const & filePath);
+
+  std::ofstream m_logfile;
+
+  void InitPerformAnalysis()
+  {
+//    m_logfile.open("/storage/emulated/0/MapsWithMe/log.txt", std::ios::out | std::ios::trunc );
+  }
+
+  void BeginPerformAnalysis()
+  {
+    m_start = std::chrono::high_resolution_clock::now();
+//    if (!m_logfile.is_open())
+//    {
+//      m_logfile.open("/storage/emulated/0/MapsWithMe/log.txt", std::ios::out | std::ios::trunc );
+//    }
+  }
+
+  void EndPerformAnalysis()
+  {
+    m_end = std::chrono::high_resolution_clock::now();
+  }
+
+  double CostPerformAnalysis()
+  {
+    std::chrono::duration<double> diff = std::chrono::duration_cast<std::chrono::duration<double>> (m_end - m_start);
+    return diff.count();
+  }
+
+  void CoutPerformAnalysis(std::string const & info)
+  {
+//    m_logfile << info << std::endl;
+//    m_logfile.close();
+  }
 
   /// @returns path to current working directory.
   /// @note In case of an error returns an empty std::string.

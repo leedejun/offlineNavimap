@@ -64,6 +64,8 @@ set(
         custom_features_context.hpp
         debug_rect_renderer.cpp
         debug_rect_renderer.hpp
+        downloadrastertiles.cpp
+        downloadrastertiles.hpp
         drape_api.cpp
         drape_api.hpp
         drape_api_builder.cpp

@@ -397,6 +397,7 @@ android {
       shrinkResources true
       proguardFile('proguard-mwm.txt')
       resValue 'string', 'app_id', android.defaultConfig.applicationId
+      debuggable true
 //      firebaseCrashlytics {
 //        nativeSymbolUploadEnabled true
 //      }
