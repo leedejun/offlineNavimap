@@ -1,8 +1,35 @@
 #include "drape_frontend/downloadrastertiles.hpp"
+#include "geometry/mercator.hpp"
+#include "base/string_format.hpp"
+#include <iostream>
+#include "3party/httplib/httplib.h"
+#include "coding/file_writer.hpp"
+
+
+
 namespace df
 {
 
-    std::string const kRasterTilesDownloadServer = "https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}";
+//    std::string const kRasterTilesDownloadServer = "https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}";
+////    std::string const kRasterTilesDownloadServer = "https://webst01.is.autonavi.com/appmaptile?style=6";
+//    std::string const kRasterTilesDownloadServer = "https://webst01.is.autonavi.com";
+//    std::string const kRasterTilesDownloadStylesServer = "/appmaptile?style=6";
+
+
+//    std::string const kRasterTilesDownloadHost = "http://192.168.3.252";
+    std::string const kRasterTilesDownloadHost = "192.168.3.252";
+    std::string const kRasterTilesDownloadStyles = "/styles/basic";
+    int const kRasterTilesDownloadPort = 8000;
+
+//    http://192.168.3.252:8000/styles/basic/{z}/{x}/{y}.png
+
+//    http://mt1.google.cn/vt/lyrs=s&x={x}&y={y}&z={z}
+
+//    std::string const kRasterTilesDownloadServer = "http://mt1.google.cn";
+//    std::string const kRasterTilesDownloadStylesServer ="/vt/lyrs=s";
+
+
+
 
     DownloadRasterTiles::DownloadRasterTiles()
     {
@@ -33,70 +60,99 @@ namespace df
         m_registeredIds.erase(id);
     }
 
-    std::string BuildRasterTilesDownloadUrl(TileKey const & id)
+    void DownloadRasterTiles::RemoveDownloadingByTileId(TileKey const & id)
     {
-        if (kRasterTilesDownloadServer.empty())
-            return {};
-        return kRasterTilesDownloadServer;
+        m_downloadingIds.erase(id);
     }
 
-    void DownloadRasterTiles::Download(TileKey const & id,std::string const& tmpPath, DownloadStartCallback && startHandler,
-                               DownloadFinishCallback && finishHandler)
+    std::string DownloadRasterTiles::BuildRasterTilesDownloadUrl(TileKey const & id)
     {
-        if (IsDownloading(id) || HasDownloaded(id))
-        return;
-        
+        if (kRasterTilesDownloadHost.empty())
+            return {};
+
+
+        auto tileRect = id.GetGlobalRect();
+        if (id.m_zoomLevel==1)
+        {
+            tileRect = id.GetGlobalRectSmall();
+        }
+
+        m2::PointD tileCenter = tileRect.Center();
+        double lon = mercator::XToLon(tileCenter.x);
+        double lat = mercator::YToLat(tileCenter.y);
+
+        double n = std::pow(2, id.m_zoomLevel-1);
+        double xtile = n * (double(lon + 180.0) / double(360.0));
+        double ytile = n * (1.0 - (log(tan(lat * math::pi / double(180.0)) + double(1.0) / cos(lat * M_PI / double(180.0))) / math::pi)) / double(2.0);
+        int webX = (int) std::floor(xtile);
+        int webY = (int) std::floor(ytile);
+        std::string strZ = strings::ToString(id.m_zoomLevel-1);
+
+        if (id.m_zoomLevel==1)
+        {
+            n = std::pow(2, id.m_zoomLevel);
+            xtile = n * (double(lon + 180.0) / double(360.0));
+            ytile = n * (1.0 - (log(tan(lat * math::pi / double(180.0)) + double(1.0) / cos(lat * M_PI / double(180.0))) / math::pi)) / double(2.0);
+            webX = (int) std::floor(xtile);
+            webY = (int) std::floor(ytile);
+            strZ = strings::ToString(id.m_zoomLevel);
+        }
+
+        std::stringstream ss;
+        ss<<kRasterTilesDownloadStyles<<"/"<<strZ<<"/"<<webX<<"/"<<webY<<".png";
+//        ss<<kRasterTilesDownloadStylesServer<<"&x="<<webX<<""
+//                                      <<"&y="<<webY<<""
+//                                      <<"&z="<<strZ<<"";
+
+
+        return ss.str();
+    }
+
+    void DownloadRasterTiles::Download(TileKey const & id,std::string const& tmpPath
+                               ,DownloadFinishCallback && finishHandler)
+    {
+
+        DownloadRasterTiles::DownloadResult result;
+        std::string description = "";
+        std::string filePath = tmpPath;
+        if (IsDownloading(id))
+        {
+            description = "IsDownloading";
+            result = DownloadRasterTiles::DownloadResult::IsDownloading;
+            return;
+        }
+
+        if (HasDownloaded(id))
+        {
+            description = "HasDownloaded";
+            result = DownloadRasterTiles::DownloadResult::HasDownloaded;
+            return;
+        }
         m_downloadingIds.insert(id);
         auto const path = std::move(tmpPath);
+        httplib::Client client(kRasterTilesDownloadHost.c_str(), kRasterTilesDownloadPort); //http
+        if (auto res = client.Get(BuildRasterTilesDownloadUrl(id).c_str())) {
+            if(res->status==200)
+            {
+                description=res->body;
+                result = DownloadRasterTiles::DownloadResult::Success;
+            }
+            else
+            {
+                description=res->reason;
+                result = DownloadRasterTiles::DownloadResult::ServerError;
+            }
 
-        platform::RemoteFile remoteFile(BuildRasterTilesDownloadUrl(id));
-        platform::RemoteFile::Result result = remoteFile.Download(path);
-        if (result.m_status ==platform::RemoteFile::Status::Ok)
-        {
-            m_downloadingIds.erase(id);
-            RegisterByTileId(id);
+        } else {
+            std::cout << res.error() << std::endl;
+            description= res.error();
+            result = DownloadRasterTiles::DownloadResult::NetworkError;
         }
-        
-        // remoteFile.DownloadAsync(path, [startHandler = std::move(startHandler)](std::string const &)
-        // {
-        //     if (startHandler)
-        //     startHandler();
-        // }, [this, id, finishHandler = std::move(finishHandler)] (platform::RemoteFile::Result && result,
-        //                                                         std::string const & filePath) mutable
-        // {
-        //     GetPlatform().RunTask(Platform::Thread::Network, [this, id, result = std::move(result), filePath,
-        //                                                 finishHandler = std::move(finishHandler)]() mutable
-        //     {
-        //     m_downloadingIds.erase(id);
 
-        //     DownloadResult downloadResult;
-        //     switch (result.m_status)
-        //     {
-        //     case platform::RemoteFile::Status::Ok:
-        //         downloadResult = DownloadResult::Success;
-        //         break;
-        //     case platform::RemoteFile::Status::Forbidden:
-        //         downloadResult = DownloadResult::AuthError;
-        //         break;
-        //     case platform::RemoteFile::Status::NotFound:
-        //         downloadResult = DownloadResult::ServerError;
-        //         break;
-        //     case platform::RemoteFile::Status::NetworkError:
-        //         if (result.m_httpCode == 402)
-        //         downloadResult = DownloadResult::NeedPayment;
-        //         else
-        //         downloadResult = DownloadResult::NetworkError;
-        //         break;
-        //     case platform::RemoteFile::Status::DiskError:
-        //         downloadResult = DownloadResult::DiskError;
-        //         break;
-        //     }
-
-        //     if (finishHandler)
-        //         finishHandler(downloadResult, result.m_description, filePath);
-        //     });
-        // });
-
+        if(finishHandler)
+        {
+            finishHandler(result, description, filePath);
+        }
     }
 
 }

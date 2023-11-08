@@ -705,9 +705,73 @@ void RuleDrawer::DrawRasterTile()
     {
       //没有的瓦片，开始下瓦片
       std::string textureDir = tileRootDir + strZ + "/" + strX + "/";
+      std::cout << "texturePath: " << texturePath << std::endl;
+      RasterTileViewParams params;
+      params.m_tileCenter = m_globalRect.Center();
+      params.m_depthTestEnabled = false;
+      params.m_minVisibleScale = 1;
+      params.m_baseGtoPScale = 1.0f;
+      params.m_texturePath = texturePath;
+      params.m_id = strZ + "_" + strX + "_" + strY;
+      params.m_tileRect = tileRect;
+      params.m_format = dp::TextureFormat::RGBA8;
       if(Platform::MkDirRecursively(textureDir))
       {
-//        DownloadRasterTiles::Instance().Download(key, std::move(texturePath));
+       DownloadRasterTiles::Instance().Download(key, std::move(texturePath),
+                                                [=, this] (
+                                                        DownloadRasterTiles::DownloadResult result,
+                                                        std::string const & description,
+                                                        std::string const & filePath) mutable
+         {
+           DownloadRasterTiles::Instance().RemoveDownloadingByTileId(key);
+           switch (result)
+           {
+               case DownloadRasterTiles::DownloadResult::Success:
+               {
+                  try
+                  {
+                      FileWriter w(filePath);
+                      w.Write(description.c_str(), description.size());
+                  }
+                  catch (FileWriter::Exception const & exception)
+                  {
+                      LOG(LWARNING, ("Exception while writing file:", filePath, "reason:", exception.what()));
+                      return;
+                  }
+                  DownloadRasterTiles::Instance().RegisterByTileId(key);
+                  auto tileShape = make_unique_dp<RasterTileShape>(params);
+                  tileShape->Prepare(m_context->GetTextureManager());
+                  TMapShapes overlayShapes;
+                  overlayShapes.push_back(std::move(tileShape));
+                  m_context->FlushOverlays(std::move(overlayShapes));
+              }
+              break;
+               case DownloadRasterTiles::DownloadResult::HasDownloaded:
+               {
+                   auto tileShape = make_unique_dp<RasterTileShape>(params);
+                   tileShape->Prepare(m_context->GetTextureManager());
+                   TMapShapes overlayShapes;
+                   overlayShapes.push_back(std::move(tileShape));
+                   m_context->FlushOverlays(std::move(overlayShapes));
+               }
+               break;
+               case DownloadRasterTiles::DownloadResult::IsDownloading:
+               {
+               }
+                   break;
+              case DownloadRasterTiles::DownloadResult::NetworkError:
+                  break;
+              case DownloadRasterTiles::DownloadResult::ServerError:
+                  break;
+              case DownloadRasterTiles::DownloadResult::AuthError:
+                  break;
+              case DownloadRasterTiles::DownloadResult::DiskError:
+                  break;
+              case DownloadRasterTiles::DownloadResult::NeedPayment:
+                      break;
+          }
+
+         });
       }
       
     }

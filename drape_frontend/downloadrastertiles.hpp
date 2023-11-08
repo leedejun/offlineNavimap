@@ -17,17 +17,19 @@ namespace df
         enum class DownloadResult
         {
             Success,
+            HasDownloaded,
+            IsDownloading,
             NetworkError,
             ServerError,
             AuthError,
             DiskError,
-            NeedPayment
+            NeedPayment,
         };
         using DownloadStartCallback = std::function<void()>;
-        using DownloadFinishCallback = std::function<void(DownloadResult result,
-                                                    std::string const & description,
-                                                    std::string const & filePath)>;
-
+        using DownloadFinishCallback = std::function<void(
+                DownloadResult result,
+                std::string const & description,
+                std::string const & filePath)>;
         DownloadRasterTiles();
         virtual ~DownloadRasterTiles() = default;
         static DownloadRasterTiles & Instance();
@@ -35,10 +37,14 @@ namespace df
         bool HasDownloaded(TileKey const & id) const;
         void RegisterByTileId(TileKey const & id);
         void UnregisterByTileId(TileKey const & id);
-        void Download(TileKey const & id, std::string const& tmpPath, DownloadStartCallback && startHandler,
-                               DownloadFinishCallback && finishHandler);
+        void RemoveDownloadingByTileId(TileKey const & id);
 
+        // void Download(TileKey const & id, std::string const& tmpPath, DownloadStartCallback && startHandler,
+        //                        DownloadFinishCallback && finishHandler);
+
+        void Download(TileKey const & id, std::string const& filePath, DownloadFinishCallback && finishHandler);
     private:
+        std::string BuildRasterTilesDownloadUrl(TileKey const & id);
         std::set<TileKey> m_downloadingIds;
         std::set<TileKey> m_registeredIds;
     };
