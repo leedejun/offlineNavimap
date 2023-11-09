@@ -4,6 +4,7 @@
 #include <iostream>
 #include "3party/httplib/httplib.h"
 #include "coding/file_writer.hpp"
+#include <pthread.h>
 
 
 
@@ -18,7 +19,7 @@ namespace df
 
 //    std::string const kRasterTilesDownloadHost = "http://192.168.3.252";
     std::string const kRasterTilesDownloadHost = "192.168.3.252";
-    std::string const kRasterTilesDownloadStyles = "/styles/basic";
+    std::string const kRasterTilesDownloadStyles = "/tiles/satellite";
     int const kRasterTilesDownloadPort = 8000;
 
 //    http://192.168.3.252:8000/styles/basic/{z}/{x}/{y}.png
@@ -40,28 +41,35 @@ namespace df
         return downloadRasterTiles;
     }
 
-    bool DownloadRasterTiles::IsDownloading(TileKey const & id) const
+    bool DownloadRasterTiles::IsDownloading(TileKey const & id)
     {
-        return m_downloadingIds.find(id) != m_downloadingIds.cend();
+        std::lock_guard<std::mutex> lock(m_downloadingMutex);
+        bool ret = (m_downloadingIds.find(id) != m_downloadingIds.cend());
+        return ret;
     }
 
-    bool DownloadRasterTiles::HasDownloaded(TileKey const & id) const
+    bool DownloadRasterTiles::HasDownloaded(TileKey const & id)
     {
-        return m_registeredIds.find(id) != m_registeredIds.cend();
+        std::lock_guard<std::mutex> lock(m_registeredMutex);
+        bool ret = (m_registeredIds.find(id) != m_registeredIds.cend());
+        return ret;
     }
 
     void DownloadRasterTiles::RegisterByTileId(TileKey const & id)
     {
+        std::lock_guard<std::mutex> lock(m_registeredMutex);
         m_registeredIds.insert(id);
     }
 
     void DownloadRasterTiles::UnregisterByTileId(TileKey const & id)
     {
+        std::lock_guard<std::mutex> lock(m_registeredMutex);
         m_registeredIds.erase(id);
     }
 
     void DownloadRasterTiles::RemoveDownloadingByTileId(TileKey const & id)
     {
+        std::lock_guard<std::mutex> lock(m_downloadingMutex);
         m_downloadingIds.erase(id);
     }
 
@@ -112,46 +120,53 @@ namespace df
                                ,DownloadFinishCallback && finishHandler)
     {
 
-        DownloadRasterTiles::DownloadResult result;
-        std::string description = "";
-        std::string filePath = tmpPath;
-        if (IsDownloading(id))
-        {
-            description = "IsDownloading";
-            result = DownloadRasterTiles::DownloadResult::IsDownloading;
-            return;
-        }
+        try {
 
-        if (HasDownloaded(id))
-        {
-            description = "HasDownloaded";
-            result = DownloadRasterTiles::DownloadResult::HasDownloaded;
-            return;
-        }
-        m_downloadingIds.insert(id);
-        auto const path = std::move(tmpPath);
-        httplib::Client client(kRasterTilesDownloadHost.c_str(), kRasterTilesDownloadPort); //http
-        if (auto res = client.Get(BuildRasterTilesDownloadUrl(id).c_str())) {
-            if(res->status==200)
-            {
-                description=res->body;
-                result = DownloadRasterTiles::DownloadResult::Success;
-            }
-            else
-            {
-                description=res->reason;
-                result = DownloadRasterTiles::DownloadResult::ServerError;
+            DownloadRasterTiles::DownloadResult result;
+            std::string description = "";
+            std::string filePath = tmpPath;
+            if (IsDownloading(id)) {
+                description = "IsDownloading";
+                result = DownloadRasterTiles::DownloadResult::IsDownloading;
+                return;
             }
 
-        } else {
-            std::cout << res.error() << std::endl;
-            description= res.error();
-            result = DownloadRasterTiles::DownloadResult::NetworkError;
-        }
+            if (HasDownloaded(id)) {
+                description = "HasDownloaded";
+                result = DownloadRasterTiles::DownloadResult::HasDownloaded;
+                return;
+            }
 
-        if(finishHandler)
-        {
-            finishHandler(result, description, filePath);
+            {
+                std::lock_guard<std::mutex> lock(m_downloadingMutex);
+                m_downloadingIds.insert(id);
+            }
+
+            auto const path = std::move(tmpPath);
+            httplib::Client client(kRasterTilesDownloadHost.c_str(),
+                                   kRasterTilesDownloadPort); //http
+            if (auto res = client.Get(BuildRasterTilesDownloadUrl(id).c_str())) {
+                if (res->status == 200) {
+                    description = res->body;
+                    result = DownloadRasterTiles::DownloadResult::Success;
+                } else {
+                    description = res->reason;
+                    result = DownloadRasterTiles::DownloadResult::ServerError;
+                }
+
+            } else {
+                std::cout << res.error() << std::endl;
+                description = res.error();
+                result = DownloadRasterTiles::DownloadResult::NetworkError;
+            }
+
+            if (finishHandler) {
+                finishHandler(id, result, description, filePath);
+            }
+        }
+        catch (std::exception& e) {
+            std::cout << "Error: " << e.what() << std::endl;
+            LOG(LWARNING, ("Error: ", e.what()));
         }
     }
 

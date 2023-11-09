@@ -717,13 +717,14 @@ void RuleDrawer::DrawRasterTile()
       params.m_format = dp::TextureFormat::RGBA8;
       if(Platform::MkDirRecursively(textureDir))
       {
-       DownloadRasterTiles::Instance().Download(key, std::move(texturePath),
+       DownloadRasterTiles::Instance().Download(std::move(key), std::move(texturePath),
                                                 [=, this] (
+                                                        TileKey const & id,
                                                         DownloadRasterTiles::DownloadResult result,
                                                         std::string const & description,
                                                         std::string const & filePath) mutable
          {
-           DownloadRasterTiles::Instance().RemoveDownloadingByTileId(key);
+           DownloadRasterTiles::Instance().RemoveDownloadingByTileId(id);
            switch (result)
            {
                case DownloadRasterTiles::DownloadResult::Success:
@@ -738,7 +739,7 @@ void RuleDrawer::DrawRasterTile()
                       LOG(LWARNING, ("Exception while writing file:", filePath, "reason:", exception.what()));
                       return;
                   }
-                  DownloadRasterTiles::Instance().RegisterByTileId(key);
+                  DownloadRasterTiles::Instance().RegisterByTileId(id);
                   auto tileShape = make_unique_dp<RasterTileShape>(params);
                   tileShape->Prepare(m_context->GetTextureManager());
                   TMapShapes overlayShapes;

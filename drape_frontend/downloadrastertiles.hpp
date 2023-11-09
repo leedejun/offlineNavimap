@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <mutex>
 
 namespace df
 {
@@ -27,14 +28,15 @@ namespace df
         };
         using DownloadStartCallback = std::function<void()>;
         using DownloadFinishCallback = std::function<void(
+                TileKey const & id,
                 DownloadResult result,
                 std::string const & description,
                 std::string const & filePath)>;
         DownloadRasterTiles();
         virtual ~DownloadRasterTiles() = default;
         static DownloadRasterTiles & Instance();
-        bool IsDownloading(TileKey const & id) const;
-        bool HasDownloaded(TileKey const & id) const;
+        bool IsDownloading(TileKey const & id);
+        bool HasDownloaded(TileKey const & id);
         void RegisterByTileId(TileKey const & id);
         void UnregisterByTileId(TileKey const & id);
         void RemoveDownloadingByTileId(TileKey const & id);
@@ -47,5 +49,8 @@ namespace df
         std::string BuildRasterTilesDownloadUrl(TileKey const & id);
         std::set<TileKey> m_downloadingIds;
         std::set<TileKey> m_registeredIds;
+        std::mutex m_downloadingMutex;
+        std::mutex m_registeredMutex;
+
     };
 }  // namespace df
