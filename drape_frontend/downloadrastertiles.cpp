@@ -5,6 +5,8 @@
 #include "3party/httplib/httplib.h"
 #include "coding/file_writer.hpp"
 #include <pthread.h>
+#include "coding/url.hpp"
+#include "platform/platform.hpp"
 
 
 
@@ -105,6 +107,15 @@ namespace df
             webY = (int) std::floor(ytile);
             strZ = strings::ToString(id.m_zoomLevel);
         }
+        else if (id.m_zoomLevel>17)
+        {
+            n = std::pow(2, 16);
+            xtile = n * (double(lon + 180.0) / double(360.0));
+            ytile = n * (1.0 - (log(tan(lat * math::pi / double(180.0)) + double(1.0) / cos(lat * M_PI / double(180.0))) / math::pi)) / double(2.0);
+            webX = (int) std::floor(xtile);
+            webY = (int) std::floor(ytile);
+            strZ = strings::ToString(16);
+        }
 
         std::stringstream ss;
         ss<<kRasterTilesDownloadStyles<<"/"<<strZ<<"/"<<webX<<"/"<<webY<<".png";
@@ -163,6 +174,25 @@ namespace df
             if (finishHandler) {
                 finishHandler(id, result, description, filePath);
             }
+
+//            GetPlatform().RunTask(Platform::Thread::Network, [](){
+//                //test
+//                //std::string strUrl = "https://api.mapbox.com/v4/mapbox.terrain-rgb/10/843/386.pngraw?access_token=pk.eyJ1IjoibGlkZWp1bjE1MjA0NiIsImEiOiJjazd5a29hNTkwM2M0M29rMWsyMjNtc3M4In0.C7zUhNE5qBpfRMDkTp-MOw";
+//                //strUrl = url::UrlEncode(strUrl);
+//                std::string strUrl = "http://192.168.3.19:8000/styles/basic/12/3372/1550.png";
+//                platform::HttpClient request(strUrl);
+//                if (request.RunHttpRequest() && !request.WasRedirected() &&
+//                    request.ErrorCode() == 200) {
+//                    auto const &response = request.ServerResponse();
+//                    CHECK(!response.empty(), ());
+//                    {
+//                        LOG(LINFO, ("response: ", response));
+//                    }
+//                } else {
+//                    LOG(LWARNING, (request.ErrorCode(), request.ServerResponse()));
+//                }
+//            });
+
         }
         catch (std::exception& e) {
             std::cout << "Error: " << e.what() << std::endl;

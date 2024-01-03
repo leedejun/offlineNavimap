@@ -677,6 +677,16 @@ void RuleDrawer::DrawRasterTile()
       webY = (int) std::floor(ytile);
       strZ = strings::ToString(key.m_zoomLevel);
     }
+    else if (key.m_zoomLevel>17)
+    {
+      n = std::pow(2, 16);
+      xtile = n * (double(lon + 180.0) / double(360.0));
+      ytile = n * (1.0 - (log(tan(lat * math::pi / double(180.0)) + double(1.0) / cos(lat * M_PI / double(180.0))) / math::pi)) / double(2.0);
+      webX = (int) std::floor(xtile);
+      webY = (int) std::floor(ytile);
+      strZ = strings::ToString(16);
+    }
+    
 
     std::string strX = strings::ToString(webX);
     std::string strY = strings::ToString(webY);
@@ -687,13 +697,17 @@ void RuleDrawer::DrawRasterTile()
       std::cout << "texturePath: " << texturePath << std::endl;
       RasterTileViewParams params;
       params.m_tileCenter = m_globalRect.Center();
-      params.m_depthTestEnabled = false;
+      params.m_depthTestEnabled = true;
+      params.m_depth = 0.001;
       params.m_minVisibleScale = 1;
       params.m_baseGtoPScale = 1.0f;
       params.m_texturePath = texturePath;
       params.m_id = strZ + "_" + strX + "_" + strY;
       params.m_tileRect = tileRect;
       params.m_format = dp::TextureFormat::RGBA8;
+      params.strZ = strZ;
+      params.strX = strX;
+      params.strY = strY;
 
       auto tileShape = make_unique_dp<RasterTileShape>(params);
       tileShape->Prepare(m_context->GetTextureManager());
@@ -708,13 +722,17 @@ void RuleDrawer::DrawRasterTile()
       std::cout << "texturePath: " << texturePath << std::endl;
       RasterTileViewParams params;
       params.m_tileCenter = m_globalRect.Center();
-      params.m_depthTestEnabled = false;
+      params.m_depthTestEnabled = true;
+      params.m_depth = 0.001;
       params.m_minVisibleScale = 1;
       params.m_baseGtoPScale = 1.0f;
       params.m_texturePath = texturePath;
       params.m_id = strZ + "_" + strX + "_" + strY;
       params.m_tileRect = tileRect;
       params.m_format = dp::TextureFormat::RGBA8;
+      params.strZ = strZ;
+      params.strX = strX;
+      params.strY = strY;
       if(Platform::MkDirRecursively(textureDir))
       {
        DownloadRasterTiles::Instance().Download(std::move(key), std::move(texturePath),

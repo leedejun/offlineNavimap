@@ -79,9 +79,9 @@ void TileInfo::ReadFeatures(MapDataProvider const & model)
     drawer.DrawRasterTile();
 #endif
 
-    model.ReadFeatures(std::bind<void>(std::ref(drawer), _1), m_featureInfo);
+   model.ReadFeatures(std::bind<void>(std::ref(drawer), _1), m_featureInfo);
 #ifdef DRAW_TILE_NET
-    drawer.DrawTileNet();
+   drawer.DrawTileNet();
 #endif
   }
 #if defined(DRAPE_MEASURER_BENCHMARK) && defined(TILES_STATISTIC)

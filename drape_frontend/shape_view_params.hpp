@@ -102,6 +102,9 @@ namespace df
         std::string m_texturePath;
         dp::TextureFormat m_format;
         m2::RectD m_tileRect;
+        std::string strZ;
+        std::string strX;
+        std::string strY;
     };
 
     struct LineViewParams : CommonViewParams
