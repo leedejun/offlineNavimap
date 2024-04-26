@@ -120,8 +120,8 @@ void SingleVehicleWorldGraph::GetEdgeList(
   auto & indexGraph = GetIndexGraph(parent.GetMwmId());
   indexGraph.GetEdgeList(parentVertexData, parent, isOutgoing, jointEdges, parentWeights, parents);
 
-  if (m_mode != WorldGraphMode::JointSingleMwm)
-    CheckAndProcessTransitFeatures(parent, jointEdges, parentWeights, isOutgoing);
+//  if (m_mode != WorldGraphMode::JointSingleMwm)
+//    CheckAndProcessTransitFeatures(parent, jointEdges, parentWeights, isOutgoing);
 }
 
 LatLonWithAltitude const & SingleVehicleWorldGraph::GetJunction(Segment const & segment,

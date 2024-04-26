@@ -283,13 +283,13 @@ public enum LocationHelper implements Initializable<Void>
     // the core to the platform code (https://jira.mail.ru/browse/MAPSME-3675),
     // because calling the native method 'nativeIsRouteFinished'
     // too often can result in poor UI performance.
-    if (RoutingController.get().isNavigating() && FTMap.nativeIsRouteFinished())
+    if (/*RoutingController.get().isNavigating() && */FTMap.nativeIsRouteFinished())
     {
       mLogger.d(TAG, "End point is reached");
       restart();
       if (mUiCallback != null)
         mUiCallback.onRoutingFinish();
-      RoutingController.get().cancel();
+//      RoutingController.get().cancel();
     }
   }
 

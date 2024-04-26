@@ -476,7 +476,7 @@ namespace routing {
 //    if (absentFetcher)
 //      absentFetcher->GenerateRequest(checkpoints);
 
-            // Run basic request.
+            // Run basic request. 三条路
             code = router->CalculateRouteKsp(checkpoints, startDirection, adjustToPrevRoute,
                                              delegateProxy->GetDelegate(), vec_route, 3);
 

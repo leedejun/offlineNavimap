@@ -409,6 +409,7 @@ public abstract class FMap {
 
         public long uppoidate();
         public long uplinedate();
+        public long upareadate();
     }
 
     /**
@@ -451,9 +452,13 @@ public abstract class FMap {
      * 面绘制对象
      */
     public interface AreaItem extends DrawItem {
-        public void points(List<Point> points);
-
-        public List<Point> points();
+        public void points(JSONArray points);
+        public JSONArray points();
+        public void outlineWidth(double v);
+        public double outlineWidth();
+        public void outlineColor(String s);
+        public String outlineColor();
+        public long upareadate();
     }
 
     public enum DrawItemType {
@@ -552,6 +557,8 @@ public abstract class FMap {
     public abstract void removeLineItem(List<Long> id);
     public abstract void removeMarkItem(long id);
     public abstract void removeMarkItem(List<Long> id);
+    public abstract void removeAreaItem(long id);
+    public abstract void removeAreaItem(List<Long> id);
 
     /**
      * 定位到指定坐标

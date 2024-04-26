@@ -237,6 +237,7 @@ public:
                                       std::vector<std::unique_ptr<OnlineAbsentCountriesFetcher>> &&vec_fetcher);
 
 private:
+    //三条路
     std::shared_ptr<AsyncRouter> m_vec_router[3];
   std::shared_ptr<AsyncRouter> m_router;
 //    std::unique_ptr<AsyncRouter> m_router;

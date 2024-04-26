@@ -50,7 +50,7 @@ namespace fd{
             routeIds.push_back( "NeedMoreMaps");
             callback("NeedMoreMaps",std::vector<std::string>());
         };
-
+        //三条路
         routingSession.BuildRoute2(routing::Checkpoints(move(points)), onReady, onNeedMap,
                                    onRmRode,3);
     }

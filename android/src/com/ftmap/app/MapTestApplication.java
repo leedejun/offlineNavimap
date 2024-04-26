@@ -4,7 +4,6 @@ import android.app.Application;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-
 import com.ftmap.base.MediaPlayerWrapper;
 import com.ftmap.maps.sound.TtsPlayer;
 
@@ -73,7 +72,7 @@ public class MapTestApplication extends Application
 //    ThemeSwitcher.INSTANCE.initialize(this);
 //    SearchEngine.INSTANCE.initialize(null);
 //    BookmarkManager.loadBookmarks();
-    TtsPlayer.INSTANCE.initialize(this);
+//    TtsPlayer.INSTANCE.initialize(this);
 //    ThemeSwitcher.INSTANCE.restart(false);
 
 //    RoutingController.get().initialize(null);

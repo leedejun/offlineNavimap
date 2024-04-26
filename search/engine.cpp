@@ -125,6 +125,7 @@ weak_ptr<ProcessorHandle> Engine::Search(SearchParams const & params)
   shared_ptr<ProcessorHandle> handle(new ProcessorHandle());
   PostMessage(Message::TYPE_TASK, [this, params, handle](Processor & processor)
               {
+                  LOG(LINFO, (" DoSearch(params, handle, processor)"));
                 DoSearch(params, handle, processor);
               });
   return handle;

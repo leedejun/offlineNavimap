@@ -307,6 +307,11 @@ public class FTMap extends FMap implements View.OnTouchListener {
             this._color = v;
         }
 
+        @Override()
+        public String color() {
+            return this._color;
+        }
+
         @Override
         public String icon() {
             return this._icon;
@@ -315,11 +320,6 @@ public class FTMap extends FMap implements View.OnTouchListener {
         @Override
         public void icon(String v) {
             this._icon = v;
-        }
-
-        @Override()
-        public String color() {
-            return this._color;
         }
 
         @Override()
@@ -349,6 +349,10 @@ public class FTMap extends FMap implements View.OnTouchListener {
         }
 
         public long uplinedate() {
+            long l = Long.parseLong(this.id());
+            return l;
+        }
+        public long upareadate() {
             long l = Long.parseLong(this.id());
             return l;
         }
@@ -550,15 +554,50 @@ public class FTMap extends FMap implements View.OnTouchListener {
     }
 
     private class AreaItemImpl extends DrawItemImpl implements AreaItem {
-        private List<Point> _points;
+        private JSONArray _points;
+        private double _outlineWidth;
+        private String _outlineColor;
+
 
         @Override()
-        public void points(List<Point> points) {
+        public void points(JSONArray points) {
             this._points = points;
         }
 
-        public List<Point> points() {
+        @Override()
+        public JSONArray points() {
             return this._points;
+        }
+
+        @Override()
+        public void outlineWidth(double v) {
+            this._outlineWidth = v;
+        }
+
+        @Override()
+        public double outlineWidth() {
+            return this._outlineWidth;
+        }
+        @Override()
+        public void outlineColor(String v) {
+            this._outlineColor = v;
+        }
+
+        @Override()
+        public String outlineColor() {
+            return this._outlineColor;
+        }
+        public long upareadate(){
+            FTMap.cmd("addDrawItem")
+                    .set("type", "area")
+                    .set("id", this.id())
+                    .set("color", this.color())
+                    .set("outlineWidth", this.outlineWidth())
+                    .set("outlineColor", this.outlineColor())
+                    .set("points", this.points())
+                    .run();
+            long l = Long.parseLong(this.id());
+            return l;
         }
     }
 
@@ -644,21 +683,26 @@ public class FTMap extends FMap implements View.OnTouchListener {
 
     @Override
     public void addCustomMark(String id, String path, double lat, double lon, String text, String color, int fontSize) {
-        Bitmap bitmap= BitmapFactory.decodeFile(path);
-        int height= bitmap.getHeight();
-        int width= bitmap.getWidth();
-        cmd("addCustomMark")
-                .set("id", id)
-                .set("lat", lat)
-                .set("lon", lon)
-                .set("path", path)
-                .set("text", text)
-                .set("color", color)
-                .set("fontSize", fontSize)
-                .set("diaplayWidth", width)
-                .set("diaplayHeight", height)
-                .run()
-                .get("result");
+        if (path != null && !path.equals("")) {
+            Bitmap bitmap = BitmapFactory.decodeFile(path);
+            if (bitmap != null) {
+                int height = bitmap.getHeight();
+                int width = bitmap.getWidth();
+                cmd("addCustomMark")
+                        .set("id", id)
+                        .set("lat", lat)
+                        .set("lon", lon)
+                        .set("path", path)
+                        .set("text", text)
+                        .set("color", color)
+                        .set("fontSize", fontSize)
+                        .set("diaplayWidth", width)
+                        .set("diaplayHeight", height)
+                        .run()
+                        .get("result");
+            }
+        }
+
     }
 
     @Override
@@ -832,6 +876,8 @@ public class FTMap extends FMap implements View.OnTouchListener {
 
     public static native RoutingInfo nativeGetRouteFollowingInfo();
 
+    public static native String nativeFindCountry(double lat, double lon);
+
     public static native void nativeCloseRouting();
 
     @Framework.RouterType
@@ -875,9 +921,11 @@ public class FTMap extends FMap implements View.OnTouchListener {
 
     public static native void nativeOnTransit(boolean foreground);
 
-        public static native int nativeGetDrawScale();
+    public static native int nativeGetDrawScale();
+
     @Nullable
     public static native String[] nativeGenerateNotifications();
+
     /**
      * 普通poi检索
      *
@@ -1095,6 +1143,17 @@ public class FTMap extends FMap implements View.OnTouchListener {
     }
 
     @Override
+    public void removeAreaItem(long id) {
+        String idStr = String.valueOf(id);
+        try {
+            JSONArray array = new JSONArray();
+            array.put(idStr);
+            FTMap.cmd("removeAreaItem").set("areaIdList", array).run();
+        } catch (Exception e) {
+
+        }
+    }
+    @Override
     public void removeLineItem(long id) {
         String idStr = String.valueOf(id);
         try {
@@ -1105,9 +1164,10 @@ public class FTMap extends FMap implements View.OnTouchListener {
 
         }
     }
+
     @Override
     public void nativeCompassUpdated(double north, boolean forceRedraw) {
-        FTMap.cmd("nativeCompassUpdated").set("north", north).set("forceRedraw",forceRedraw).run();
+        FTMap.cmd("nativeCompassUpdated").set("north", north).set("forceRedraw", forceRedraw).run();
     }
 
     @Override
@@ -1120,6 +1180,20 @@ public class FTMap extends FMap implements View.OnTouchListener {
                 array.put(idStr);
             }
             FTMap.cmd("removeMarkItem").set("markIdList", array).run();
+        } catch (Exception e) {
+
+        }
+    }
+    @Override
+    public void removeAreaItem(List<Long> idList) {
+        try {
+            JSONArray array = new JSONArray();
+            for (int i = 0; i < idList.size(); i++) {
+                long id = idList.get(i);
+                String idStr = String.valueOf(id);
+                array.put(idStr);
+            }
+            FTMap.cmd("removeAreaItem").set("areaIdList", array).run();
         } catch (Exception e) {
 
         }
@@ -1158,6 +1232,7 @@ public class FTMap extends FMap implements View.OnTouchListener {
     public void setViewCenter(double lat, double lon, int zoom) {
         FTMap.cmd("setViewCenter").set("lat", lat).set("lon", lon).set("zoom", zoom).run();
     }
+
     @Override
     public void setMyDefaultPosition(double lat, double lon) {
         FTMap.cmd("setMyDefaultPosition").set("lat", lat).set("lon", lon).run();

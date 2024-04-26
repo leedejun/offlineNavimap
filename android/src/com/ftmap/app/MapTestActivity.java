@@ -185,7 +185,7 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
     }
 
     public void onResultsUpdate(@NonNull SearchResult[] results, long timestamp, boolean isHotel) {
-        Log.d("Search", results.toString());
+        Log.d("Search111", results.toString());
     }
 
     public void onResultsEnd(long timestamp) {
@@ -207,44 +207,59 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
 //           FMap.INSTANCE.addCustomMark("1","/storage/emulated/0/MapsWithMe/pictures/xushuichi.png",
 //                   39.988965,116.3676281,"fdtest_poi", "#00FF00",16);
 
+            Log.d("FMap.AreaItem", "1234567");
 
-
-//            FMap.LineItem lineItem = (FMap.LineItem) FMap.INSTANCE.createDrawItem(FMap.DrawItemType.LINE);
-//            String aa = "116.35772,39.99226;116.358599,39.992297;116.358888,39.992307;116.359097,39.992317;116.359706,39.992325;116.360235,39.992344;116.361254,39.992373;116.36153,39.992377;116.361531,39.992377";
-//            StringBuilder stringBuffer = new StringBuilder();
-//            stringBuffer.append("[");
-//            stringBuffer.append("116.35772");
-//            stringBuffer.append(",");
-//            stringBuffer.append("39.99226");
-//            stringBuffer.append(",");
-//            stringBuffer.append("116.361531");
-//            stringBuffer.append(",");
-//            stringBuffer.append("39.992377");
-//            stringBuffer.append("]");
-//            JSONArray  array = null;
-//            try {
-//                array = new JSONArray(stringBuffer.toString());
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//            lineItem.points(array);
-//            lineItem.icon("2A");
-//            lineItem.width(20);
-//            lineItem.color("#0f0f0f");
-//            lineItem.id("11222");
-//            long uplinedate = lineItem.uplinedate();
+            FMap.AreaItem areaItem = (FMap.AreaItem) FMap.INSTANCE.createDrawItem(FMap.DrawItemType.AREA);
+            String aa = "116.35772,39.99226;116.358599,39.992297;116.358888,39.992307;116.359097,39.992317;116.359706,39.992325;116.360235,39.992344;116.361254,39.992373;116.36153,39.992377;116.361531,39.992377";
+            StringBuilder stringBuffer = new StringBuilder();
+            stringBuffer.append("[");
+            stringBuffer.append("116.35772");
+            stringBuffer.append(",");
+            stringBuffer.append("39.99226");
+            stringBuffer.append(",");
+            stringBuffer.append("116.361531");
+            stringBuffer.append(",");
+            stringBuffer.append("39.992377");
+            stringBuffer.append(",");
+            stringBuffer.append("116.398888");
+            stringBuffer.append(",");
+            stringBuffer.append("39.912307");
+            stringBuffer.append("]");
+            JSONArray  array = null;
+            try {
+                array = new JSONArray(stringBuffer.toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            areaItem.points(array);
+            areaItem.outlineWidth(6.0);
+            areaItem.outlineColor("#000000");
+            areaItem.color("#55ffff55");
+            areaItem.id("11222");
+            long uplinedate = areaItem.upareadate();
 //            int zoomlevel = FMap.INSTANCE.getZoomlevel();
 //            Log.d("zoomlevel", zoomlevel+"");
-            FMap.INSTANCE.followRoute("route-1");
+//            FMap.INSTANCE.LatLonToMapObject(39.988965415846174,116.36762810740483,(JSONObject results2) -> {
+//                try {
+//                    String poiName = results2.getString("poiName");
+//                    String poiAddress = results2.getString("poiAddress");
+//
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            });
+//            FMap.INSTANCE.followRoute("route-1");
         } else if (id == R.id.btnSearchPoi) {
             String aa = "116.35772,39.99226;116.358599,39.992297;116.358888,39.992307;116.359097,39.992317;116.359706,39.992325;116.360235,39.992344;116.361254,39.992373;116.36153,39.992377;116.361531,39.992377";
             String bb = "116.344908,39.985187;116.344908,39.985187;116.344916,39.985074;116.345086,39.985081;116.346582,39.985129;116.346574,39.985238;116.346564,39.985408;116.346564,39.985558;116.346553,39.985698;116.344458,39.985651;116.344268,39.985642;116.343503,39.985624;116.342653,39.985605;116.342352,39.985605;116.342014,39.985595;116.341744,39.985587;116.341663,39.985587;116.340647,39.985558;116.339737,39.985529;116.339311,39.985521;116.338710,39.985503;116.338442,39.985562;116.338251,39.985583;116.338112,39.985573;116.337195,39.985554;116.335768,39.985499;116.334853,39.985460;116.334612,39.985449;116.334561,39.985460;116.334451,39.985460;116.333442,39.985472;116.333075,39.985464;116.332595,39.985464;116.332514,39.985484;116.332455,39.985534;116.332404,39.985684;116.332404,39.985725;116.332356,39.986195;116.332326,39.986345;116.332320,39.986382;116.332205,39.986370;";
             String s = this.etSearchPoi.getText().toString();
             FMap.INSTANCE.cancelSearch();
-            FMap.INSTANCE.search(s, 39.988965415846174, 116.36762810740483, (results) -> {
+            FMap.INSTANCE.search(s, 39.985187, 116.344908, (results) -> {
                 String s1 = results.toString();
-                Log.d("Search", s1);
+                Log.d("Search22", s1);
             });
+//            int zoomlevel = FMap.INSTANCE.getZoomlevel();
+//            Log.d("zoomlevel", zoomlevel+"");
         } else if (id == R.id.btShowRoute) {
             ArrayList<Long> objects = new ArrayList<>();
             objects.add(1l);
@@ -254,11 +269,9 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
             FMap.INSTANCE.showRoute("route-1", "#ff0000", "#00ff00");
 //            FMap.INSTANCE.showRoute("route-2", "#00ff00", "#00ff00");
 
-//            FMap.INSTANCE.showRoute("a", "#ff0000", "#00ff00");
-//            FMap.INSTANCE.showRoute("b", "#00ff00", "#00ff00");
-//            FMap.INSTANCE.showRoute("c", "#0000ff", "#00ff00");
         } else if (id == R.id.btHideRoute) {
-            FMap.INSTANCE.updatePreviewModeAll();
+            FMap.INSTANCE.removeAreaItem(11222l);
+//            FMap.INSTANCE.updatePreviewModeAll();
 //            RoutingInfo mRoutingInfo=      FTMap.nativeGetRouteFollowingInfo();
 //                FMap.INSTANCE.getRouteTime("route-1", (result) -> {
 //                    String a = result.toString();
@@ -273,34 +286,57 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
 //                    Log.d("getRouteInfo", a1);
 //                });
         } else if (id == R.id.btnLocate) {
-            PointItem pointItem = (PointItem) FMap.INSTANCE.createDrawItem(DrawItemType.POINT);
-            pointItem.pos(new Point(116.40152D, 39.90768D));
-            pointItem.color("#00FF00");
-            pointItem.id("111111");
-            pointItem.icon("ftmap-chechang");
-            pointItem.radius(100.0D);
-            TtsPlayer.setEnabled(false);
+//            PointItem pointItem = (PointItem) FMap.INSTANCE.createDrawItem(DrawItemType.POINT);
+//            pointItem.pos(new Point(116.40152D, 39.90768D));
+//            pointItem.color("#00FF00");
+//            pointItem.id("111111");
+//            pointItem.icon("ftmap-chechang");
+//            pointItem.radius(100.0D);
+//            TtsPlayer.setEnabled(false);
+
+          String name  =  FTMap.nativeFindCountry(39.90768D, 116.40152D);
+          String name1  =  FTMap.nativeFindCountry(43.8339670D, 87.5712401D);
+            Log.d("nativeFindCountry", name+"---"+name1);
 //            long poiIdBack = pointItem.uppoidate();
 //            LocationState.nativeSwitchToNextMode();
 //            if (!LocationHelper.INSTANCE.isActive())
 //                LocationHelper.INSTANCE.start();
 //            FMap.INSTANCE.setMyDefaultPosition(39.90768D, 116.40152D);
         } else if (id == R.id.btnRoute) {
+
+//            43.8339670,87.5712401  39.552547,75.953821
+//
+//            37.36986,79.89765   41.7908,94.0441
+//
+//            46.86766,87.67186	37.12927,79.50925
+//
+//            45.18325,89.36705		37.889954,77.554389
+//
+//            42.97477,90.36613		39.51416,76.30483
+//
+//            43.940892,87.612627		41.21360,80.27815
+
             FMap.INSTANCE.removeRoute();
             FMap.INSTANCE.closeRouting();
             FTMapRoutePoint mFTMapRoutePoint = new FTMapRoutePoint();
             FTMapPoint startPoint = new FTMapPoint();
             Location lastLocation = LocationHelper.INSTANCE.getLastKnownLocation();
             startPoint.setName("我的位置");
-//            startPoint.setLat(40.10768D);
-//            startPoint.setLon(116.40152D);
-            startPoint.setLat(lastLocation.getLatitude());
-            startPoint.setLon(lastLocation.getLongitude());
+          // 103.497729,36.141007
+            startPoint.setLat(36.141007D);
+            startPoint.setLon(103.497729D);
+//            startPoint.setLat(43.8339670);
+//            startPoint.setLon(87.5712401 );
+//            startPoint.setLat(lastLocation.getLatitude());
+//            startPoint.setLon(lastLocation.getLongitude());
             startPoint.setMyPosition(true);
             FTMapPoint endPoint = new FTMapPoint();
             endPoint.setName("北京饭店");
-            endPoint.setLat(39.90768D);
-            endPoint.setLon(116.40152D);
+            //103.939793,36.044013
+            endPoint.setLat(36.044013D);
+            endPoint.setLon(103.939793D);
+//            endPoint.setLat(39.90768D);
+//            endPoint.setLon(116.40152D);
             endPoint.setMyPosition(false);
             mFTMapRoutePoint.setEndPoint(endPoint);
             mFTMapRoutePoint.setStartPoint(startPoint);
@@ -320,8 +356,8 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
 //                    String a1 = result.toString();
 //                    Log.d("getRouteInfo", a1);
 //                });
-            RoutingInfo routingInfo = FTMap.nativeGetRouteFollowingInfo();
-            Log.d("routingInfo", routingInfo.nextStreet);
+//            RoutingInfo routingInfo = FTMap.nativeGetRouteFollowingInfo();
+//            Log.d("routingInfo", routingInfo.nextStreet);
 //                bb = routingInfo.toString();
             TtsPlayer.INSTANCE.playTurnNotifications(mPlayer);
         } else if (id == R.id.btnZoomOut) {
@@ -404,7 +440,12 @@ public class MapTestActivity extends AppCompatActivity implements OnClickListene
             Log.d("移动了定位", s);
             Toast.makeText(this, distToTurn+"----"+turnUnits+"---"+nextStreet, Toast.LENGTH_LONG).show();
         }
+        if (FTMap.nativeIsRouteFinished()) {
 
+            Log.d("导航结束", "");
+        }else{
+            Log.d("导航中", "");
+        }
         TtsPlayer.INSTANCE.playTurnNotifications(mPlayer);
     }
 

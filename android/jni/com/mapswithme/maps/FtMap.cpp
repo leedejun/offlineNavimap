@@ -87,6 +87,7 @@ inline dp::Color stringToDpColor(std::string colorString) {
     uint32_t g = toIntFromHexString(stringG);
     uint32_t b = toIntFromHexString(stringB);
     uint32_t a = 255;//toIntFromHexString(stringA);
+//    uint32_t a = toIntFromHexString(stringA);
     if (stringA.length() > 0) {
         a = toIntFromHexString(stringA);
     }
@@ -491,7 +492,9 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
 
 //        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_RULER), 30, 1942,
 //                                 static_cast<dp::Anchor>(dp::Anchor::LeftBottom));
-        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_COMPASS), 665, 740,
+//x1=1125.0625
+//    y1=1793.066
+        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_COMPASS), 1125, 1765,
                                  static_cast<dp::Anchor>(dp::Anchor::Center));
 //        g_framework->SetupWidget(static_cast<gui::EWidget>(gui::WIDGET_COPYRIGHT), 150, 1942,
 //                                 static_cast<dp::Anchor>(dp::Anchor::LeftBottom));
@@ -729,6 +732,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         auto tmpMsg = env->NewGlobalRef(msg);
         auto onResults = [&, tmpMsg](search::Results const &results,
                                      std::vector<search::ProductInfo> const &productInfo) {
+            LOG(LINFO, ("onResults"));
             auto it = results.begin();
             auto array = json.createJSONArray();
             std::stringstream stream;
@@ -782,6 +786,7 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         params.m_lon = cmd.getDouble(msg, "lon");
         params.m_inputLocale = "zh_CN_#Hans";
         params.m_onResults = onResults;
+        LOG(LINFO, ("SearchEverywhere"));
         g_framework->NativeFramework()->GetSearchAPI().SearchEverywhere(params);
     } else if (cmdName == "LatLonToMapObject") {
         auto tmpMsg = env->NewGlobalRef(msg);
@@ -1179,6 +1184,24 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
 //            long  long  number = strtoll(id, NULL, 10);
             cmd.set(msg, "result", number);
 //            userMarks.notifyChanges();
+        } else if (type == "area") {
+            std::string id = cmd.getStr(msg, "id");
+            dp::Color color = stringToDpColor(cmd.getStr(msg, "color"));
+            dp::Color outlineColor = stringToDpColor(cmd.getStr(msg, "outlineColor"));
+            double outlineWidth = cmd.getDouble(msg, "outlineWidth");
+            jobject array = cmd.getObj(msg, "points");
+            int length = json.length(array);
+            std::vector<m2::PointD> points;
+            for (int i = 0; i < length; i += 2) {
+                double x = json.getDouble(array, i);
+                double y = json.getDouble(array, i + 1);
+                m2::PointD mercatorPoint = mercator::FromLatLon(y, x);
+                points.push_back(mercatorPoint);
+            }
+            df::DrapeApiPolygonData polygonData(points, color, outlineColor,outlineWidth);
+            g_framework->NativeFramework()->GetDrapeApi().AddPolygon(id,polygonData);
+            long number = std::atoi(id.c_str());
+            cmd.set(msg, "result", number);
         } else if (type == "coloredPoint") {
             std::string icon = cmd.getStr(msg, "icon");
             double x = cmd.getDouble(msg, "x");
@@ -1243,6 +1266,13 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         for (int i = 0; i < length; i++) {
             std::string lineIdStr = json.getString(array, i);
             g_framework->NativeFramework()->GetDrapeApi().RemoveLine(lineIdStr);
+        }
+    } else if (cmdName == "removeAreaItem") {
+        jobject array = cmd.getObj(msg, "areaIdList");
+        int length = json.length(array);
+        for (int i = 0; i < length; i++) {
+            std::string areaIdStr = json.getString(array, i);
+            g_framework->NativeFramework()->GetDrapeApi().RemovePolygon(areaIdStr);
         }
     } else if (cmdName == "removeDrawItem") {
         std::string id = cmd.getStr(msg, "id");
@@ -1587,6 +1617,13 @@ Java_com_ftmap_maps_FTMap_nativeGetBestRouter(JNIEnv *env, jclass,
                             mercator::FromLatLon(srcLat, srcLon),
                             mercator::FromLatLon(dstLat, dstLon)
                     ));
+}
+
+
+JNIEXPORT jstring JNICALL
+        Java_com_ftmap_maps_FTMap_nativeFindCountry(JNIEnv * env, jclass clazz, jdouble lat, jdouble lon)
+{
+return jni::ToJavaString(env, g_framework->NativeFramework()->GetCountryInfoGetter().GetRegionCountryId(mercator::FromLatLon(lat, lon)));
 }
 
 JNIEXPORT void JNICALL

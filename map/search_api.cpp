@@ -186,7 +186,9 @@ bool SearchAPI::SearchEverywhere(EverywhereSearchParams const &params) {
         p.m_position = m_delegate.GetCurrentPosition();
     }
     //116.37246,40.042569
-    SetViewportIfPossible(p);  // Search request will be delayed if viewport is not available.
+//    SetViewportIfPossible(p);  // Search request will be delayed if viewport is not available.
+    m2::RectD const viewport = mercator::RectByCenterLatLonAndSizeInMeters(params.m_lat,params.m_lon, 0.0);
+    p.m_viewport = viewport;
     p.m_maxNumResults = SearchParams::kDefaultNumResultsEverywhere;
     p.m_suggestsEnabled = true;
     p.m_needAddress = true;
@@ -207,7 +209,7 @@ bool SearchAPI::SearchEverywhere(EverywhereSearchParams const &params) {
             });
 
 //  m_delegate.OnBookingFilterParamsUpdate(params.m_bookingFilterTasks);
-
+    LOG(LINFO, ("SearchEverywhere-forceSearch"));
     return Search(p, true /* forceSearch */);
 }
 
@@ -480,7 +482,7 @@ bool SearchAPI::Search(SearchParams const &params, bool forceSearch) {
     intent.m_params.m_minDistanceOnMapBetweenResultsX = m_delegate.GetMinDistanceBetweenResults();
     intent.m_params.m_minDistanceOnMapBetweenResultsY =
             intent.m_params.m_minDistanceOnMapBetweenResultsX;
-
+    LOG(LINFO, ("SearchEverywhere-forceSearch-intent"));
     Search(intent);
 
     return true;

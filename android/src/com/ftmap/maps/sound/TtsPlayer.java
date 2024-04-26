@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.speech.tts.TextToSpeech;
 import android.text.TextUtils;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -160,6 +161,13 @@ public enum TtsPlayer implements Initializable<Context>
         }
 
         refreshLanguages(context);
+//        int result = mTts.setLanguage(Locale.CHINA);
+//        if (result != mTts.LANG_COUNTRY_AVAILABLE
+//                && result != mTts.LANG_AVAILABLE) {
+//          Toast.makeText(context, "TTS暂时不支持这种语音的朗读！",
+//                  Toast.LENGTH_SHORT).show();
+//        }
+
         mTts.setSpeechRate(SPEECH_RATE);
         mInitializing = false;
       }

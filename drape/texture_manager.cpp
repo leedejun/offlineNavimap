@@ -42,7 +42,7 @@ namespace dp
     float const kGlyphAreaCoverage = 0.9f;
 
     std::string const kDefaultSymbolsTexture = "symbols";
-    std::string const kSymbolTextures[] = { kDefaultSymbolsTexture, "symbols-ad","spritesheet","sprite","poiinfo"};
+    std::string const kSymbolTextures[] = { kDefaultSymbolsTexture, "symbols-ad","spritesheet","sprite","poiinfo","spritefddh"};
     uint32_t const kDefaultSymbolsIndex = 0;
 
     namespace

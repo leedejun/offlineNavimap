@@ -65,6 +65,7 @@ namespace routing {
         CHECK_THREAD_CHECKER(m_threadChecker, ());
         CHECK(!m_router, ());
         m_router = make_unique<AsyncRouter>(routingStatisticsFn, pointCheckCallback);
+//        三条路
         m_vec_router[0] = make_shared<AsyncRouter>(routingStatisticsFn, pointCheckCallback);
         m_vec_router[1] = make_shared<AsyncRouter>(routingStatisticsFn, pointCheckCallback);
         m_vec_router[2] = make_shared<AsyncRouter>(routingStatisticsFn, pointCheckCallback);
@@ -151,8 +152,9 @@ namespace routing {
     }
 
     void RoutingSession::DoReadyCallback::operator()(vector<shared_ptr<Route>> vec_route,
-                                                     RouterResultCode e) {
+            RouterResultCode e) {
         ASSERT(m_rs.m_route, ());
+        //三条路
         for (int i = 0; i < 3; i++) {
             m_rs.AssignRoute(vec_route[i], e);
 
