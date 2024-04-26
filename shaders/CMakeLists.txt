@@ -79,6 +79,8 @@ set(
     GL/user_mark.fsh.glsl
     GL/user_mark.vsh.glsl
     GL/user_mark_billboard.vsh.glsl
+    GL/dem.vsh.glsl
+    GL/dem.fsh.glsl
 )
 
 add_custom_command(

@@ -46,6 +46,7 @@ public:
 
 #ifdef DRAW_TILE_NET
   void DrawTileNet();
+  void DrawRasterTile();
 #endif
 
 private:

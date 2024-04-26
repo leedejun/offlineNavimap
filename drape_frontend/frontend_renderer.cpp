@@ -45,6 +45,8 @@
 #include <memory>
 #include <thread>
 #include <utility>
+#include "platform/Platform.hpp"
+#include "base/logging.hpp"
 
 using namespace std::placeholders;
 
@@ -2661,6 +2663,12 @@ void FrontendRenderer::CheckAndRunFirstLaunchAnimation()
   m2::PointD const pos = m_myPositionController->GetDrawablePosition();
   AddUserEvent(make_unique_dp<SetCenterEvent>(pos, kDesiredZoomLevel, true /* isAnim */,
                                               false /* trackVisibleViewport */, nullptr /* parallelAnimCreator */));
+
+  GetPlatform().EndPerformAnalysis();
+  std::stringstream ss;
+  ss<<"第一次加载地图完成耗时："<<GetPlatform().CostPerformAnalysis()<<" 秒。"<<std::endl;
+  std::string  str = ss.str();
+  LOG(LINFO, (str));
 }
 
 void FrontendRenderer::ScheduleOverlayCollecting()

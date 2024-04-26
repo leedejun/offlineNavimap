@@ -93,6 +93,20 @@ namespace df
         float m_baseGtoPScale = 1.0f;
     };
 
+    struct RasterTileViewParams : CommonViewParams
+    {
+        float m_minPosZ = 0.0f;
+        float m_posZ = 0.0f;
+        float m_baseGtoPScale = 1.0f;
+        std::string m_id;
+        std::string m_texturePath;
+        dp::TextureFormat m_format;
+        m2::RectD m_tileRect;
+        std::string strZ;
+        std::string strX;
+        std::string strY;
+    };
+
     struct LineViewParams : CommonViewParams
     {
         dp::Color m_color;

@@ -75,9 +75,13 @@ void TileInfo::ReadFeatures(MapDataProvider const & model)
     RuleDrawer drawer(std::bind(&TileInfo::InitStylist, this, deviceLang, _1, _2),
                       std::bind(&TileInfo::IsCancelled, this), model.m_isCountryLoadedByName,
                       model.GetFilter(), make_ref(m_context));
-    model.ReadFeatures(std::bind<void>(std::ref(drawer), _1), m_featureInfo);
 #ifdef DRAW_TILE_NET
-    drawer.DrawTileNet();
+    drawer.DrawRasterTile();
+#endif
+
+   model.ReadFeatures(std::bind<void>(std::ref(drawer), _1), m_featureInfo);
+#ifdef DRAW_TILE_NET
+   drawer.DrawTileNet();
 #endif
   }
 #if defined(DRAPE_MEASURER_BENCHMARK) && defined(TILES_STATISTIC)

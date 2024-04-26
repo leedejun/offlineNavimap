@@ -55,6 +55,7 @@ set(
         base_renderer.hpp
         batcher_bucket.hpp
         batchers_pool.hpp
+        buildRTIN.hpp
         circles_pack_shape.cpp
         circles_pack_shape.hpp
         color_constants.cpp
@@ -64,6 +65,8 @@ set(
         custom_features_context.hpp
         debug_rect_renderer.cpp
         debug_rect_renderer.hpp
+        downloadrastertiles.cpp
+        downloadrastertiles.hpp
         drape_api.cpp
         drape_api.hpp
         drape_api_builder.cpp
@@ -172,6 +175,8 @@ set(
         route_shape.hpp
         rule_drawer.cpp
         rule_drawer.hpp
+        raster_tile_shape.cpp
+        raster_tile_shape.hpp
         scenario_manager.cpp
         scenario_manager.hpp
         screen_animations.cpp

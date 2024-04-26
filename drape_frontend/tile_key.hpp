@@ -30,6 +30,8 @@ struct TileKey
 
   m2::RectD GetGlobalRect(bool clipByDataMaxZoom = true) const;
 
+  m2::RectD GetGlobalRectSmall(bool clipByDataMaxZoom = true) const;
+
   math::Matrix<float, 4, 4> GetTileBasedModelView(ScreenBase const & screen) const;
 
   m2::PointI GetTileCoords() const;

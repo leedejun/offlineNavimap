@@ -5,6 +5,7 @@
 #include "drape_frontend/stylist.hpp"
 #include "drape_frontend/traffic_renderer.hpp"
 #include "drape_frontend/visual_params.hpp"
+#include "drape_frontend/downloadrastertiles.hpp"
 
 #include "drape/drape_diagnostics.hpp"
 
@@ -31,6 +32,10 @@
 #ifdef DRAW_TILE_NET
 #include "drape_frontend/line_shape.hpp"
 #include "drape_frontend/text_shape.hpp"
+#include "drape_frontend/raster_tile_shape.hpp"
+#include "base/string_format.hpp"
+#include "platform/platform.hpp"
+#include <iostream>
 
 #include "base/string_utils.hpp"
 #endif
@@ -586,7 +591,6 @@ void RuleDrawer::DrawTileNet()
 
   auto const key = m_context->GetTileKey();
   auto const tileRect = key.GetGlobalRect();
-
   std::vector<m2::PointD> path;
   path.reserve(4);
   path.push_back(tileRect.LeftBottom());
@@ -633,6 +637,165 @@ void RuleDrawer::DrawTileNet()
   TMapShapes overlayShapes;
   overlayShapes.push_back(std::move(textShape));
   m_context->FlushOverlays(std::move(overlayShapes));
+}
+
+void RuleDrawer::DrawRasterTile()
+{
+  if (CheckCancelled())
+    return;
+
+  auto key = m_context->GetTileKey();
+  auto tileRect = key.GetGlobalRect();
+
+  if (key.m_zoomLevel==1)
+  {
+    tileRect = key.GetGlobalRectSmall();
+  }
+
+  m2::PointD tileCenter = tileRect.Center();
+  double lon = mercator::XToLon(tileCenter.x);
+  double lat = mercator::YToLat(tileCenter.y);
+
+  double n = std::pow(2, key.m_zoomLevel-1);
+  double xtile = n * (double(lon + 180.0) / double(360.0));
+  double ytile = n * (1.0 - (log(tan(lat * math::pi / double(180.0)) + double(1.0) / cos(lat * M_PI / double(180.0))) / math::pi)) / double(2.0);
+  int webX = (int) std::floor(xtile);
+  int webY = (int) std::floor(ytile);
+
+  //add test draw raster tile
+  {
+    //RasterTileShape tileShape;
+    std::string tileRootDir = "/storage/emulated/0/MapsWithMe/tiles/";
+    std::string strZ = strings::ToString(key.m_zoomLevel-1);
+
+    if (key.m_zoomLevel==1)
+    {
+      n = std::pow(2, key.m_zoomLevel);
+      xtile = n * (double(lon + 180.0) / double(360.0));
+      ytile = n * (1.0 - (log(tan(lat * math::pi / double(180.0)) + double(1.0) / cos(lat * M_PI / double(180.0))) / math::pi)) / double(2.0);
+      webX = (int) std::floor(xtile);
+      webY = (int) std::floor(ytile);
+      strZ = strings::ToString(key.m_zoomLevel);
+    }
+    else if (key.m_zoomLevel>17)
+    {
+      n = std::pow(2, 16);
+      xtile = n * (double(lon + 180.0) / double(360.0));
+      ytile = n * (1.0 - (log(tan(lat * math::pi / double(180.0)) + double(1.0) / cos(lat * M_PI / double(180.0))) / math::pi)) / double(2.0);
+      webX = (int) std::floor(xtile);
+      webY = (int) std::floor(ytile);
+      strZ = strings::ToString(16);
+    }
+    
+
+    std::string strX = strings::ToString(webX);
+    std::string strY = strings::ToString(webY);
+    std::string texturePath = tileRootDir + strZ + "/" + strX + "/" + strY + ".png";
+    // std::string texturePath = tileRootDir + strZ + "/" + strY + "/" + strX + ".png";
+    if (Platform::IsFileExistsByFullPath(texturePath))
+    {
+      std::cout << "texturePath: " << texturePath << std::endl;
+      RasterTileViewParams params;
+      params.m_tileCenter = m_globalRect.Center();
+      params.m_depthTestEnabled = true;
+      params.m_depth = 0.001;
+      params.m_minVisibleScale = 1;
+      params.m_baseGtoPScale = 1.0f;
+      params.m_texturePath = texturePath;
+      params.m_id = strZ + "_" + strX + "_" + strY;
+      params.m_tileRect = tileRect;
+      params.m_format = dp::TextureFormat::RGBA8;
+      params.strZ = strZ;
+      params.strX = strX;
+      params.strY = strY;
+
+      auto tileShape = make_unique_dp<RasterTileShape>(params);
+      tileShape->Prepare(m_context->GetTextureManager());
+      TMapShapes overlayShapes;
+      overlayShapes.push_back(std::move(tileShape));
+      m_context->FlushOverlays(std::move(overlayShapes));
+    }
+    else
+    {
+      //没有的瓦片，开始下瓦片
+      std::string textureDir = tileRootDir + strZ + "/" + strX + "/";
+      std::cout << "texturePath: " << texturePath << std::endl;
+      RasterTileViewParams params;
+      params.m_tileCenter = m_globalRect.Center();
+      params.m_depthTestEnabled = true;
+      params.m_depth = 0.001;
+      params.m_minVisibleScale = 1;
+      params.m_baseGtoPScale = 1.0f;
+      params.m_texturePath = texturePath;
+      params.m_id = strZ + "_" + strX + "_" + strY;
+      params.m_tileRect = tileRect;
+      params.m_format = dp::TextureFormat::RGBA8;
+      params.strZ = strZ;
+      params.strX = strX;
+      params.strY = strY;
+      if(Platform::MkDirRecursively(textureDir))
+      {
+       DownloadRasterTiles::Instance().Download(std::move(key), std::move(texturePath),
+                                                [=, this] (
+                                                        TileKey const & id,
+                                                        DownloadRasterTiles::DownloadResult result,
+                                                        std::string const & description,
+                                                        std::string const & filePath) mutable
+         {
+           DownloadRasterTiles::Instance().RemoveDownloadingByTileId(id);
+           switch (result)
+           {
+               case DownloadRasterTiles::DownloadResult::Success:
+               {
+                  try
+                  {
+                      FileWriter w(filePath);
+                      w.Write(description.c_str(), description.size());
+                  }
+                  catch (FileWriter::Exception const & exception)
+                  {
+                      LOG(LWARNING, ("Exception while writing file:", filePath, "reason:", exception.what()));
+                      return;
+                  }
+                  DownloadRasterTiles::Instance().RegisterByTileId(id);
+                  auto tileShape = make_unique_dp<RasterTileShape>(params);
+                  tileShape->Prepare(m_context->GetTextureManager());
+                  TMapShapes overlayShapes;
+                  overlayShapes.push_back(std::move(tileShape));
+                  m_context->FlushOverlays(std::move(overlayShapes));
+              }
+              break;
+               case DownloadRasterTiles::DownloadResult::HasDownloaded:
+               {
+                   auto tileShape = make_unique_dp<RasterTileShape>(params);
+                   tileShape->Prepare(m_context->GetTextureManager());
+                   TMapShapes overlayShapes;
+                   overlayShapes.push_back(std::move(tileShape));
+                   m_context->FlushOverlays(std::move(overlayShapes));
+               }
+               break;
+               case DownloadRasterTiles::DownloadResult::IsDownloading:
+               {
+               }
+                   break;
+              case DownloadRasterTiles::DownloadResult::NetworkError:
+                  break;
+              case DownloadRasterTiles::DownloadResult::ServerError:
+                  break;
+              case DownloadRasterTiles::DownloadResult::AuthError:
+                  break;
+              case DownloadRasterTiles::DownloadResult::DiskError:
+                  break;
+              case DownloadRasterTiles::DownloadResult::NeedPayment:
+                      break;
+          }
+
+         });
+      }
+      
+    }
+
+  }
 }
 #endif
 }  // namespace df

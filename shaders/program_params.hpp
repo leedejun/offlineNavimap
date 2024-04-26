@@ -89,7 +89,8 @@ struct MapProgramParams
     Program::BookmarkAboveText,
     Program::BookmarkAnimAboveText,
     Program::BookmarkAnimAboveTextBillboard,
-    Program::BookmarkAboveTextBillboard)
+    Program::BookmarkAboveTextBillboard,
+    Program::Dem)
 } ALIGNMENT;
 
 struct RouteProgramParams
