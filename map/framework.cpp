@@ -17,6 +17,7 @@
 #include "map/user_mark.hpp"
 //#include "map/utils.hpp"
 #include "map/viewport_search_params.hpp"
+#include "map/configsingleton.hpp"
 
 #include "ge0/parser.hpp"
 #include "ge0/url_generator.hpp"
@@ -4173,4 +4174,11 @@ void Framework::OnPowerSchemeChanged(power_management::Scheme const actualScheme
 
 notifications::NotificationManager &Framework::GetNotificationManager() {
     return m_notificationManager;
+}
+
+void Framework::SetVisableRasterTiles(bool value)
+{
+    ConfigSingleton::getInstance().setVisableRasterTiles(value);
+    if (m_drapeEngine != nullptr)
+        m_drapeEngine->UpdateMapStyle();
 }

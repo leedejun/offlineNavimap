@@ -372,6 +372,9 @@ public:
 //  ads::Engine const & GetAdsEngine() const;
 //  void DisableAdProvider(ads::Banner::Type const type, ads::Banner::Place const place);
 
+  //设置显示栅格瓦片的开关
+  void SetVisableRasterTiles(bool value);
+
 public:
   // SearchAPI::Delegate overrides:
   void RunUITask(std::function<void()> fn) override;

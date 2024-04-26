@@ -12,6 +12,7 @@
 
 #include "base/scope_guard.hpp"
 #include "base/logging.hpp"
+#include "map/configsingleton.hpp"
 
 #include <algorithm>
 #include <functional>
@@ -76,13 +77,16 @@ void TileInfo::ReadFeatures(MapDataProvider const & model)
                       std::bind(&TileInfo::IsCancelled, this), model.m_isCountryLoadedByName,
                       model.GetFilter(), make_ref(m_context));
 #ifdef DRAW_TILE_NET
-    drawer.DrawRasterTile();
+    if (ConfigSingleton::getInstance().getVisableRasterTiles())
+    {
+      drawer.DrawRasterTile();
+    }
 #endif
 
    model.ReadFeatures(std::bind<void>(std::ref(drawer), _1), m_featureInfo);
-#ifdef DRAW_TILE_NET
-   drawer.DrawTileNet();
-#endif
+// #ifdef DRAW_TILE_NET
+//    drawer.DrawTileNet();
+// #endif
   }
 #if defined(DRAPE_MEASURER_BENCHMARK) && defined(TILES_STATISTIC)
   DrapeMeasurer::Instance().EndTileReading();

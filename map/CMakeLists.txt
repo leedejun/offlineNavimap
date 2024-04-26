@@ -161,6 +161,7 @@ set(
   viewport_search_params.hpp
   viewport_search_callback.cpp
   viewport_search_callback.hpp
+  configsingleton.hpp
 )
 
 omim_add_library(${PROJECT_NAME} ${SRC})

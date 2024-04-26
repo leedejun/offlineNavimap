@@ -723,71 +723,74 @@ Java_com_ftmap_maps_FTMap_nativeReq(JNIEnv *env, jclass clazz, jobject msg) {
         g_framework->NativeFramework()->GetSearchAPI().SearchEverywhere(params);
 
     } else if (cmdName == "search") {
-        GetPlatform().BeginPerformAnalysis();
-        std::stringstream ss;
-        ss<<"开始搜索poi。"<<std::endl;
-        std::string  str = ss.str();
-        LOG(LINFO, (str));
+//         GetPlatform().BeginPerformAnalysis();
+//         std::stringstream ss;
+//         ss<<"开始搜索poi。"<<std::endl;
+//         std::string  str = ss.str();
+//         LOG(LINFO, (str));
 
-        auto tmpMsg = env->NewGlobalRef(msg);
-        auto onResults = [&, tmpMsg](search::Results const &results,
-                                     std::vector<search::ProductInfo> const &productInfo) {
-            LOG(LINFO, ("onResults"));
-            auto it = results.begin();
-            auto array = json.createJSONArray();
-            std::stringstream stream;
-            stream << "[";
-            while (it != results.end()) {
-                stream << "{";
-                std::string name = it->GetString();
-                std::string address = it->GetAddress();
-                double lat = 0;
-                double lon = 0;
-                if (it->HasPoint()) {
-                    m2::PointD pt = it->GetFeatureCenter();
-                    ms::LatLon latLon = mercator::ToLatLon(pt);
-                    lat = latLon.m_lat;
-                    lon = latLon.m_lon;
-                }
-                auto info = it->GetRankingInfo();
-                double distance = info.m_distanceToPivot;
+//         auto tmpMsg = env->NewGlobalRef(msg);
+//         auto onResults = [&, tmpMsg](search::Results const &results,
+//                                      std::vector<search::ProductInfo> const &productInfo) {
+//             LOG(LINFO, ("onResults"));
+//             auto it = results.begin();
+//             auto array = json.createJSONArray();
+//             std::stringstream stream;
+//             stream << "[";
+//             while (it != results.end()) {
+//                 stream << "{";
+//                 std::string name = it->GetString();
+//                 std::string address = it->GetAddress();
+//                 double lat = 0;
+//                 double lon = 0;
+//                 if (it->HasPoint()) {
+//                     m2::PointD pt = it->GetFeatureCenter();
+//                     ms::LatLon latLon = mercator::ToLatLon(pt);
+//                     lat = latLon.m_lat;
+//                     lon = latLon.m_lon;
+//                 }
+//                 auto info = it->GetRankingInfo();
+//                 double distance = info.m_distanceToPivot;
 
-                stream << "\"name\":" << "\"" << name << "\",";
-                stream << "\"address\":" << "\"" << address << "\",";
-                stream << "\"lat\":" << "\"" << lat << "\",";
-                stream << "\"lon\":" << "\"" << lon << "\",";
-                stream << "\"distance\":" << "\"" << distance << "\"";
-                stream << "}";
-                if (it != results.end() - 1) {
-                    stream << ",";
-                }
+//                 stream << "\"name\":" << "\"" << name << "\",";
+//                 stream << "\"address\":" << "\"" << address << "\",";
+//                 stream << "\"lat\":" << "\"" << lat << "\",";
+//                 stream << "\"lon\":" << "\"" << lon << "\",";
+//                 stream << "\"distance\":" << "\"" << distance << "\"";
+//                 stream << "}";
+//                 if (it != results.end() - 1) {
+//                     stream << ",";
+//                 }
 
-                it++;
-            }
-            stream << "]";
-
-
-//            jobject jObject = jobject.Parse(stream.str());
-            auto item = json.createJSONObject();
-            json.setString(item, "data", stream.str().c_str());
-            json.append(array, item);
-            cmd.asyncCall(tmpMsg, array);
+//                 it++;
+//             }
+//             stream << "]";
 
 
-            GetPlatform().EndPerformAnalysis();
-            std::stringstream ss1;
-            ss1<<"搜索poi总耗时："<<GetPlatform().CostPerformAnalysis()<<" 秒。"<<std::endl;
-            std::string  str1 = ss1.str();
-            LOG(LINFO, (str1));
-        };
-        search::EverywhereSearchParams params;
-        params.m_query = cmd.getStr(msg, "query");
-        params.m_lat = cmd.getDouble(msg, "lat");
-        params.m_lon = cmd.getDouble(msg, "lon");
-        params.m_inputLocale = "zh_CN_#Hans";
-        params.m_onResults = onResults;
-        LOG(LINFO, ("SearchEverywhere"));
-        g_framework->NativeFramework()->GetSearchAPI().SearchEverywhere(params);
+// //            jobject jObject = jobject.Parse(stream.str());
+//             auto item = json.createJSONObject();
+//             json.setString(item, "data", stream.str().c_str());
+//             json.append(array, item);
+//             cmd.asyncCall(tmpMsg, array);
+
+
+//             GetPlatform().EndPerformAnalysis();
+//             std::stringstream ss1;
+//             ss1<<"搜索poi总耗时："<<GetPlatform().CostPerformAnalysis()<<" 秒。"<<std::endl;
+//             std::string  str1 = ss1.str();
+//             LOG(LINFO, (str1));
+//         };
+//         search::EverywhereSearchParams params;
+//         params.m_query = cmd.getStr(msg, "query");
+//         params.m_lat = cmd.getDouble(msg, "lat");
+//         params.m_lon = cmd.getDouble(msg, "lon");
+//         params.m_inputLocale = "zh_CN_#Hans";
+//         params.m_onResults = onResults;
+//         LOG(LINFO, ("SearchEverywhere"));
+//         g_framework->NativeFramework()->GetSearchAPI().SearchEverywhere(params);
+           static bool bVisable = false;
+           bVisable = !(bVisable);
+           g_framework->NativeFramework()->SetVisableRasterTiles(bVisable);
     } else if (cmdName == "LatLonToMapObject") {
         auto tmpMsg = env->NewGlobalRef(msg);
         double_t lat = cmd.getDouble(msg, "lat");
