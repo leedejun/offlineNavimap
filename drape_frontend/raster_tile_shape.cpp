@@ -165,66 +165,66 @@ void RasterTileShape::Draw(ref_ptr<dp::GraphicsContext> context, ref_ptr<dp::Bat
     
     ref_ptr<dp::Texture> tielTexture = textures->GetCustomTexture(m_params.m_id);
 
-    //add heightmapTex
-    std::string heightmapPath = "/storage/emulated/0/MapsWithMe/terrain_mapbox";
-//    std::string heightmapPath = "/storage/emulated/0/MapsWithMe/terrain";
-    heightmapPath = heightmapPath + "/" + m_params.strZ + "/" + m_params.strX + "/"+ m_params.strY + ".png";
-    std::string heightmapTexId = heightmapPath;
-    if (!Platform::IsFileExistsByFullPath(heightmapPath))
-    {
-      heightmapPath = "/storage/emulated/0/MapsWithMe/heightmap.png";
-      heightmapTexId = "heightmapTex";
-        LOG(LINFO, (std::string("File NOT Exists:")+heightmapPath));
-//        return;
-    }
-    else
-    {
-        std::cout<<"FileExists:"<<heightmapPath<<std::endl;
-        LOG(LINFO, (std::string("FileExists:")+heightmapPath));
-    }
+//     //add heightmapTex
+//     std::string heightmapPath = "/storage/emulated/0/MapsWithMe/terrain_mapbox";
+// //    std::string heightmapPath = "/storage/emulated/0/MapsWithMe/terrain";
+//     heightmapPath = heightmapPath + "/" + m_params.strZ + "/" + m_params.strX + "/"+ m_params.strY + ".png";
+//     std::string heightmapTexId = heightmapPath;
+//     if (!Platform::IsFileExistsByFullPath(heightmapPath))
+//     {
+//       heightmapPath = "/storage/emulated/0/MapsWithMe/heightmap.png";
+//       heightmapTexId = "heightmapTex";
+//         LOG(LINFO, (std::string("File NOT Exists:")+heightmapPath));
+// //        return;
+//     }
+//     else
+//     {
+//         std::cout<<"FileExists:"<<heightmapPath<<std::endl;
+//         LOG(LINFO, (std::string("FileExists:")+heightmapPath));
+//     }
 
-//     heightmapPath = "/storage/emulated/0/MapsWithMe/heightmap.png";
-//     heightmapTexId = "heightmapTex";
+// //     heightmapPath = "/storage/emulated/0/MapsWithMe/heightmap.png";
+// //     heightmapTexId = "heightmapTex";
 
-    if(textures->GetCustomTexture(heightmapTexId)==nullptr)
-    {
-        textures->AddCustomTexture(context,
-                                    heightmapTexId,
-                                    heightmapPath,
-                                    m_params.m_format);
-    }
+//     if(textures->GetCustomTexture(heightmapTexId)==nullptr)
+//     {
+//         textures->AddCustomTexture(context,
+//                                     heightmapTexId,
+//                                     heightmapPath,
+//                                     m_params.m_format);
+//     }
     
-    ref_ptr<dp::Texture> heightmapTex = textures->GetCustomTexture(heightmapTexId);
+//     ref_ptr<dp::Texture> heightmapTex = textures->GetCustomTexture(heightmapTexId);
 
     m2::RectD tileRect = m_params.m_tileRect;
-    buffer_vector<gpu::AreaVertex, 24576> vertexes;
-    vertexes.resize(24576);
-    // buffer_vector<gpu::AreaVertex, 6> vertexes;
-    // vertexes.resize(6);
+    // buffer_vector<gpu::AreaVertex, 24576> vertexes;
+    // vertexes.resize(24576);
+    buffer_vector<gpu::AreaVertex, 6> vertexes;
+    vertexes.resize(6);
 
-    // //0,2,1
-    // vertexes[0]= gpu::AreaVertex(glsl::vec3(glsl::ToVec2(ConvertToLocal(tileRect.RightTop(), m_params.m_tileCenter, kShapeCoordScalar)),
-    //                 m_params.m_depth), glsl::vec2(1.0f, 0.0f));
-    // vertexes[1] = gpu::AreaVertex(glsl::vec3(glsl::ToVec2(ConvertToLocal(tileRect.RightBottom(), m_params.m_tileCenter, kShapeCoordScalar)),
-    //                 m_params.m_depth), glsl::vec2(1.0f, 1.0f));
-    // vertexes[2] = gpu::AreaVertex(glsl::vec3(glsl::ToVec2(ConvertToLocal(tileRect.LeftTop(), m_params.m_tileCenter, kShapeCoordScalar)),
-    //                 m_params.m_depth), glsl::vec2(0.0f, 0.0f));
-    // //0,3,2
-    // vertexes[3] = gpu::AreaVertex(glsl::vec3(glsl::ToVec2(ConvertToLocal(tileRect.RightBottom(), m_params.m_tileCenter, kShapeCoordScalar)),
-    //                 m_params.m_depth), glsl::vec2(1.0f, 1.0f));
-    // vertexes[4] = gpu::AreaVertex(glsl::vec3(glsl::ToVec2(ConvertToLocal(tileRect.LeftBottom(), m_params.m_tileCenter, kShapeCoordScalar)),
-    //                 m_params.m_depth), glsl::vec2(0.0f, 1.0f));
-    // vertexes[5] = gpu::AreaVertex(glsl::vec3(glsl::ToVec2(ConvertToLocal(tileRect.LeftTop(), m_params.m_tileCenter, kShapeCoordScalar)),
-    //                 m_params.m_depth), glsl::vec2(0.0f, 0.0f));
+    //0,2,1
+    vertexes[0]= gpu::AreaVertex(glsl::vec3(glsl::ToVec2(ConvertToLocal(tileRect.RightTop(), m_params.m_tileCenter, kShapeCoordScalar)),
+                    m_params.m_depth), glsl::vec2(1.0f, 0.0f));
+    vertexes[1] = gpu::AreaVertex(glsl::vec3(glsl::ToVec2(ConvertToLocal(tileRect.RightBottom(), m_params.m_tileCenter, kShapeCoordScalar)),
+                    m_params.m_depth), glsl::vec2(1.0f, 1.0f));
+    vertexes[2] = gpu::AreaVertex(glsl::vec3(glsl::ToVec2(ConvertToLocal(tileRect.LeftTop(), m_params.m_tileCenter, kShapeCoordScalar)),
+                    m_params.m_depth), glsl::vec2(0.0f, 0.0f));
+    //0,3,2
+    vertexes[3] = gpu::AreaVertex(glsl::vec3(glsl::ToVec2(ConvertToLocal(tileRect.RightBottom(), m_params.m_tileCenter, kShapeCoordScalar)),
+                    m_params.m_depth), glsl::vec2(1.0f, 1.0f));
+    vertexes[4] = gpu::AreaVertex(glsl::vec3(glsl::ToVec2(ConvertToLocal(tileRect.LeftBottom(), m_params.m_tileCenter, kShapeCoordScalar)),
+                    m_params.m_depth), glsl::vec2(0.0f, 1.0f));
+    vertexes[5] = gpu::AreaVertex(glsl::vec3(glsl::ToVec2(ConvertToLocal(tileRect.LeftTop(), m_params.m_tileCenter, kShapeCoordScalar)),
+                    m_params.m_depth), glsl::vec2(0.0f, 0.0f));
 
-    BuildMesh(tileRect, 64, vertexes);
+    // BuildMesh(tileRect, 64, vertexes);
 
-    // auto state = CreateRenderState(gpu::Program::Area, DepthLayer::OverlayLayer);
-    auto state = CreateRenderState(gpu::Program::Dem, DepthLayer::Geometry3dLayer);
+    auto state = CreateRenderState(gpu::Program::Area, DepthLayer::Geometry3dLayer);
+    // auto state = CreateRenderState(gpu::Program::Dem, DepthLayer::Geometry3dLayer);
     
     state.SetDepthTestEnabled(m_params.m_depthTestEnabled);
     state.SetColorTexture(tielTexture);
-    state.SetTexture("u_heightmapTex", heightmapTex);
+    // state.SetTexture("u_heightmapTex", heightmapTex);
 
     dp::AttributeProvider provider(1, static_cast<uint32_t>(vertexes.size()));
     provider.InitStream(0, gpu::AreaVertex::GetBindingInfo(), make_ref(vertexes.data()));
