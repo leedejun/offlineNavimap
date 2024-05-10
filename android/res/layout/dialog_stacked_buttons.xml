@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:orientation="vertical"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:paddingBottom="@dimen/margin_half"
+  android:background="@color/white_primary">
+
+  <LinearLayout
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="@dimen/margin_base_plus"
+    android:paddingStart="@dimen/margin_base_plus"
+    android:paddingEnd="@dimen/margin_base_plus">
+    <TextView
+      android:id="@+id/tv__title"
+      style="@style/MwmWidget.StackedButtonsDialogTitle"
+      tools:text="使用移动互联网显示详细信息？"/>
+
+    <TextView
+      android:id="@+id/tv__message"
+      style="@style/MwmWidget.StackedButtonsDialogMessage"
+      tools:text="需要移动互联网来显示有关地点的详细信息，如照片、价格和评论。"/>
+  </LinearLayout>
+
+  <TextView
+    android:id="@+id/btn__positive"
+    style="@style/MwmWidget.Button.StackedButtonsDialog"
+    tools:text="始终使用"/>
+
+  <TextView
+    android:id="@+id/btn__neutral"
+    style="@style/MwmWidget.Button.StackedButtonsDialog"
+    tools:text="仅此一次"/>
+
+  <TextView
+    android:id="@+id/btn__negative"
+    style="@style/MwmWidget.Button.StackedButtonsDialog"
+    tools:text="不允许使用"/>
+</LinearLayout>

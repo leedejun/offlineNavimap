@@ -1,0 +1,12 @@
+# Please use android/.gitignore for all Android stuff
+
+.vscode/
+3party/
+tools/
+
+# build
+
+data/
+build/
+build_version.hpp
+coding\SHA1.cpp

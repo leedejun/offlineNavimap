@@ -1,0 +1,26 @@
+package com.ftmap.maps.location;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
+
+import com.ftmap.util.log.Logger;
+import com.ftmap.util.log.LoggerFactory;
+
+//import static com.mapswithme.maps.MwmApplication.backgroundTracker;
+
+public class TrackRecorderWakeReceiver extends BroadcastReceiver
+{
+  private static final Logger LOGGER = LoggerFactory.INSTANCE.getLogger(LoggerFactory.Type.MISC);
+  private static final String TAG = TrackRecorderWakeReceiver.class.getSimpleName();
+  @Override
+  public void onReceive(Context context, Intent intent)
+  {
+//    String msg = "onReceive: " + intent + " app in background = "
+//                 + !backgroundTracker().isForeground();
+//    LOGGER.i(TAG, msg);
+//    CrashlyticsUtils.log(Log.INFO, TAG, msg);
+    TrackRecorder.onWakeAlarm(context);
+  }
+}

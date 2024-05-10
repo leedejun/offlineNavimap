@@ -1,0 +1,403 @@
+{
+    "v": 200607,
+    "id": "Countries",
+    "g": [
+        {
+            "id": "People's Republic of China",
+            "country_name_synonyms": [
+                "China"
+            ],
+            "g": [
+                {
+                    "id": "China_Anhui",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "5b895fbd7701"
+                    ],
+                    "s": 28794194,
+                    "sha1_base64": "HDyyjjafsr/Gu7FsFCdcyps+K0Y="
+                },
+                {
+                    "id": "China_Beijing",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "53174eac5e02"
+                    ],
+                    "s": 28794194,
+                    "sha1_base64": "lZYKeLKcnzjSbMK6DvPIORPFhZk="
+                },
+                {
+                    "id": "China_Tianjin",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "59296d255e02"
+                    ],
+                    "s": 28794194,
+                    "sha1_base64": "lZYKeLKcnzjSbMK6DvPIORPFhZk="
+                },
+                {
+                    "id": "China_Hainan",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "6d7753577701"
+                    ],
+                    "s": 28794194,
+                    "sha1_base64": "lZYKeLKcnzjSbMK6DvPIORPFhZk="
+                },
+                {
+                    "id": "China_Chongqing",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "91cd5e865e02",
+                        "4e2d56fd"
+                    ],
+                    "s": 31357328,
+                    "sha1_base64": "rsWNJbDYLOwZ/Erh3oi4NZYy5MA="
+                },
+                {
+                    "id": "China_Fujian",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "798f5efa7701"
+                    ],
+                    "s": 24547116,
+                    "sha1_base64": "7kTsOHwmzYv9GkUEPkau63z8y+c="
+                },
+                {
+                    "id": "China_Gansu",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "751880837701"
+                    ],
+                    "s": 21322880,
+                    "sha1_base64": "970fEWFUB1kB6O/t/7QDoftxXTY="
+                },
+                {
+                    "id": "China_Guangdong",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "5e7f4e1c7701",
+                        "6d7753577701"
+                    ],
+                    "country_name_synonyms": [
+                        "Hong Kong"
+                    ],
+                    "s": 86353605,
+                    "sha1_base64": "fVv+k8e0T/LSxw7+jOLbm2sjNyY=",
+                    "top_city_geo_id": 4611686018671468347
+                },
+                {
+                    "id": "China_Guangxi",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "5e7f897f58ee65cf81ea6cbb533a",
+                        "4e2d56fd"
+                    ],
+                    "s": 25846402,
+                    "sha1_base64": "gqonOE5tXyhEAW+CLbFkpHS5znE="
+                },
+                {
+                    "id": "China_Guizhou",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "8d355dde7701",
+                        "4e2d56fd"
+                    ],
+                    "s": 23599670,
+                    "sha1_base64": "XdRKcDt40hTER2nkyciF3tvYKWY="
+                },
+                {
+                    "id": "China_Hebei",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "53174eac5e02",
+                        "59296d255e02",
+                        "6cb353177701"
+                    ],
+                    "s": 59509883,
+                    "sha1_base64": "aMHlT40ukNjF8ef3jGZiYm5v3mM=",
+                    "top_city_geo_id": 4611686018452636566
+                },
+                {
+                    "id": "China_Heilongjiang",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "9ed19f996c5f7701"
+                    ],
+                    "s": 22028423,
+                    "sha1_base64": "sxh2HQwIrGwDOhlmnjF4RaPPhhQ="
+                },
+                {
+                    "id": "China_Henan",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "6cb353577701"
+                    ],
+                    "s": 40554073,
+                    "sha1_base64": "uKQ6tbrY2Sc1Sr6NqBbJP3AbdrA="
+                },
+                {
+                    "id": "China_Hubei",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "Border Henan - Hubei",
+                        "4e2d56fd",
+                        "6e5653177701"
+                    ],
+                    "s": 22764994,
+                    "sha1_base64": "PqAMo0IuHDVxq0+6eSatyBxj7Og="
+                },
+                {
+                    "id": "China_Hunan",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "6e5653577701"
+                    ],
+                    "s": 29633988,
+                    "sha1_base64": "7/aIRyLtqsOpYtuRzeIUuj/OhxU="
+                },
+                {
+                    "id": "China_Inner Mongolia",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "5185849953e481ea6cbb533a / Inner Mongolia"
+                    ],
+                    "s": 36691393,
+                    "sha1_base64": "meoBX04lk3UCwL85nlW4HMHRly0="
+                },
+                {
+                    "id": "China_Jiangsu",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "6c5f82cf7701",
+                        "79e65c715c9b"
+                    ],
+                    "s": 59161721,
+                    "sha1_base64": "SaspQshQO1nFeA8YhuLnQX51i8I="
+                },
+                {
+                    "id": "China_Jiangxi",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "6c5f897f7701"
+                    ],
+                    "s": 25172329,
+                    "sha1_base64": "fFJe3kXwncj85crkcGiWY2Hrhps="
+                },
+                {
+                    "id": "China_Jilin",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "540967977701"
+                    ],
+                    "s": 27975846,
+                    "sha1_base64": "9ajlGZ5hd3ngauhxESdX6nacfAM="
+                },
+                {
+                    "id": "China_Liaoning",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "8fbd5b817701",
+                        "4e2d56fd"
+                    ],
+                    "s": 29633609,
+                    "sha1_base64": "OD31aVrHvb9Es5/03DRJeAE9/3U="
+                },
+                {
+                    "id": "China_Ningxia Hui",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "5b81590f56de65cf81ea6cbb533a",
+                        "4e2d56fd"
+                    ],
+                    "s": 18202089,
+                    "sha1_base64": "pEzhXAsqWfO3AU+hBWvUhDjWte4="
+                },
+                {
+                    "id": "China_Qinghai",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "97526d777701",
+                        "4e2d56fd"
+                    ],
+                    "s": 27400860,
+                    "sha1_base64": "0Cah/CeKKeyHWFmXa7WfXKUctyA="
+                },
+                {
+                    "id": "China_Shaanxi",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "9655897f7701",
+                        "4e2d56fd"
+                    ],
+                    "s": 25879948,
+                    "sha1_base64": "Wi0xRrVz+e1F6fVw5jELvbzff9k="
+                },
+                {
+                    "id": "China_Shandong",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "5c714e1c7701"
+                    ],
+                    "s": 45990317,
+                    "sha1_base64": "FY02/ToohmlBpF+/CZWIvkcMq3o="
+                },
+                {
+                    "id": "China_Shanghai",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "4e0a6d775e02",
+                        "6d596c5f7701"
+                    ],
+                    "s": 13511126,
+                    "sha1_base64": "H0o21Hp+LPa2Vdw0MNw+HnYpa30=",
+                    "top_city_geo_id": 4611686019206298302
+                },
+                {
+                    "id": "China_Shanxi",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "5c71897f7701"
+                    ],
+                    "s": 17085685,
+                    "sha1_base64": "AEsIQzK0/hQsG2ZZRI7AgrU/POk="
+                },
+                {
+                    "id": "China_Sichuan",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "56db5ddd7701"
+                    ],
+                    "s": 43576414,
+                    "sha1_base64": "4V+NkMlST39eHac0lYMozuIko9k="
+                },
+                {
+                    "id": "China_Tibet Autonomous Region",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "897f85cf81ea6cbb533a (0f560f7c0f510f0b0f620f440f0b0f660f900fb10f7c0f440f0b0f630f970f7c0f440f660f0b)"
+                    ],
+                    "s": 17337806,
+                    "sha1_base64": "ewr9yFxNWTcYPY6yiW1+Bqu8PI8="
+                },
+                {
+                    "id": "China_Xinjiang",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "65b075867ef4543e5c1481ea6cbb533a"
+                    ],
+                    "s": 20534958,
+                    "sha1_base64": "T+3BpT7xqyyYyX32g34pqrpeLJk="
+                },
+                {
+                    "id": "China_Yunnan",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "4e9153577701"
+                    ],
+                    "s": 45015350,
+                    "sha1_base64": "NxsrhETa5i9iUQKzNw/KeaIfVCw="
+                },
+                {
+                    "id": "China_Zhejiang",
+                    "old": [
+                        "China"
+                    ],
+                    "affiliations": [
+                        "4e2d56fd",
+                        "6d596c5f7701"
+                    ],
+                    "s": 58058669,
+                    "sha1_base64": "C6XQt7rSv+fVaO/ZAKied9BKNWQ=",
+                    "top_city_geo_id": 4611686018671470140
+                }
+            ],
+            "top_countries_geo_ids": [
+                4611686018851701486
+            ]
+        }
+
+    ]
+}

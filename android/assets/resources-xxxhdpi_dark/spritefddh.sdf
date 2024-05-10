@@ -1,0 +1,47 @@
+<!DOCTYPE skin>
+<root>
+ <file width="1024" height="1024">
+  		<symbol minX="0" maxX="68" minY="0" maxY="172" name="bg-cheng"/>
+  		<symbol minX="68" maxX="136" minY="0" maxY="172" name="bg-hong"/>
+  		<symbol minX="136" maxX="204" minY="0" maxY="172" name="bg-hui"/>
+  		<symbol minX="204" maxX="272" minY="0" maxY="172" name="bg-lan"/>
+  		<symbol minX="272" maxX="340" minY="0" maxY="172" name="bg-lv"/>
+  		<symbol minX="340" maxX="408" minY="0" maxY="172" name="bg-qing"/>
+  		<symbol minX="0" maxX="68" minY="172" maxY="344" name="cheliangweixiu"/>
+  		<symbol minX="68" maxX="136" minY="172" maxY="344" name="ljgh-qidian"/>
+  		<symbol minX="136" maxX="204" minY="172" maxY="344" name="ljgh-tu1"/>
+  		<symbol minX="204" maxX="272" minY="172" maxY="344" name="ljgh-tu2"/>
+  		<symbol minX="272" maxX="340" minY="172" maxY="344" name="ljgh-tu3"/>
+  		<symbol minX="340" maxX="408" minY="172" maxY="344" name="ljgh-tu4"/>
+  		<symbol minX="408" maxX="476" minY="0" maxY="172" name="ljgh-tu"/>
+  		<symbol minX="408" maxX="476" minY="172" maxY="344" name="ljgh-zhongdian"/>
+  		<symbol minX="476" maxX="544" minY="0" maxY="172" name="xiaogudite"/>
+  		<symbol minX="476" maxX="544" minY="172" maxY="344" name="zycx-buji"/>
+  		<symbol minX="0" maxX="68" minY="344" maxY="516" name="zycx-chakou"/>
+  		<symbol minX="68" maxX="136" minY="344" maxY="516" name="zycx-cheliang"/>
+  		<symbol minX="136" maxX="204" minY="344" maxY="516" name="zycx-daijizhendi 2"/>
+  		<symbol minX="204" maxX="272" minY="344" maxY="516" name="zycx-daijizhendi"/>
+  		<symbol minX="272" maxX="340" minY="344" maxY="516" name="zycx-daoluqiaoliang"/>
+  		<symbol minX="340" maxX="408" minY="344" maxY="516" name="zycx-diwudian"/>
+  		<symbol minX="408" maxX="476" minY="344" maxY="516" name="zycx-fasheluduan"/>
+  		<symbol minX="476" maxX="544" minY="344" maxY="516" name="zycx-jiayouzhan"/>
+  		<symbol minX="544" maxX="612" minY="0" maxY="172" name="zycx-jinjiqingkuang"/>
+  		<symbol minX="544" maxX="612" minY="172" maxY="344" name="zycx-junshidanwei"/>
+  		<symbol minX="544" maxX="612" minY="344" maxY="516" name="zycx-keyirenyuan"/>
+  		<symbol minX="612" maxX="680" minY="0" maxY="172" name="zycx-meishi"/>
+  		<symbol minX="612" maxX="680" minY="172" maxY="344" name="zycx-qiaoliang"/>
+  		<symbol minX="612" maxX="680" minY="344" maxY="516" name="zycx-renyuan"/>
+  		<symbol minX="680" maxX="748" minY="0" maxY="172" name="zycx-shangwang"/>
+  		<symbol minX="680" maxX="748" minY="172" maxY="344" name="zycx-tianqi"/>
+  		<symbol minX="680" maxX="748" minY="344" maxY="516" name="zycx-tongxin"/>
+  		<symbol minX="0" maxX="68" minY="516" maxY="688" name="zycx-weixianbaogao"/>
+  		<symbol minX="68" maxX="136" minY="516" maxY="688" name="zycx-xiuzhengdian 2"/>
+  		<symbol minX="136" maxX="204" minY="516" maxY="688" name="zycx-xiuzhengdian"/>
+  		<symbol minX="204" maxX="272" minY="516" maxY="688" name="zycx-yingbiqu"/>
+  		<symbol minX="272" maxX="340" minY="516" maxY="688" name="zycx-yiyuan"/>
+  		<symbol minX="340" maxX="408" minY="516" maxY="688" name="zycx-zaihaibaogao"/>
+  		<symbol minX="408" maxX="476" minY="516" maxY="688" name="zycx-zaoxi"/>
+  		<symbol minX="476" maxX="544" minY="516" maxY="688" name="zycx-ZDsunhuai"/>
+  		<symbol minX="544" maxX="612" minY="516" maxY="688" name="zycx-zhendi"/>
+ </file>
+</root>
